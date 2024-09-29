@@ -5,52 +5,59 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 public class claw {
-    private Servo leftTalon;
-    private Servo rightTalon;
+    private Servo claw;
+    private Servo wrist;
     private DcMotor extender;
+    private DcMotor leftSlide;
+    private DcMotor rightSlide;
 
 
-    public claw(Servo left, Servo right, DcMotor lifter){
-        leftTalon = left;
-        rightTalon = right;
-        extender = lifter;
-        extender.setDirection(DcMotor.Direction.FORWARD);
-        extender.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        extender.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        extender.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+    public claw(Servo claw, Servo wrist, DcMotor lifterLeft, DcMotor lifterRight, DcMotor extension){
+        this.claw = claw;
+        this.wrist = wrist;
+        extender = extension;
+        leftSlide = lifterLeft;
+        rightSlide = lifterRight;
+
+        leftSlide.setDirection(DcMotor.Direction.FORWARD);
+        leftSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        rightSlide.setDirection(DcMotor.Direction.FORWARD);
+        rightSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public void close(){
-        leftTalon.setPosition(0);
-        rightTalon.setPosition(0.4);
+        claw.setPosition(0);
     }
 
     public void open(){
-        leftTalon.setPosition(0.5);
-        rightTalon.setPosition(0);
+        claw.setPosition(1);
     }
 
-    public void liftTo(int targetPos, double holdingForce){
+    public void liftTo(int targetPos){
 
-        extender.setTargetPosition(targetPos);
-        extender.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        extender.setPower(.5);
+        leftSlide.setTargetPosition(targetPos);
+        leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-      /* int currentPos = extender.getCurrentPosition();
-      if(currentPos < targetPos){
-            while(currentPos < targetPos){
-                extender.setPower(-1);
-                currentPos = extender.getCurrentPosition();
-            }
+        rightSlide.setTargetPosition(targetPos);
+        rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        if((int) (Math.random() * 2) == 0){
+            leftSlide.setPower(.5);
+            rightSlide.setPower(.5);
         }
-        else if(currentPos > targetPos){
-            while(currentPos > targetPos){
-                extender.setPower(1);
-                currentPos = extender.getCurrentPosition();
-            }
+        else {
+            rightSlide.setPower(.5);
+            leftSlide.setPower(.5);
         }
-        extender.setPower(-1 * holdingForce);*/
     }
+
+    // Add Extend & Rotate Functionality
 
     public int getLiftPos(){ return extender.getCurrentPosition();}
 }
