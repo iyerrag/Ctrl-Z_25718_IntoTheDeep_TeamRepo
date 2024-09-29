@@ -34,10 +34,16 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+
+import java.util.ArrayList;
 
 
 /*
@@ -56,6 +62,16 @@ import com.qualcomm.robotcore.util.Range;
 
 @TeleOp
 public class BasicOpMode_Linear extends LinearOpMode {
+
+    private static final double tolX = .05;
+    private static final double tolY = .05;
+    private static final double tolTheta = 1;
+    private static final double deccelScale = 3.0;
+
+    static final double frontLeftBias = 0.97;
+    static final double frontRightBias = 0.92;
+    static final double backLeftBias = 1.0;
+    static final double backRightBias = 0.96;
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -77,18 +93,24 @@ public class BasicOpMode_Linear extends LinearOpMode {
         bL = hardwareMap.get(DcMotor.class, "BackLeft");
         bR = hardwareMap.get(DcMotor.class, "BackRight");
         BHI260IMU IMU = hardwareMap.get(BHI260IMU.class, "imu");
+        VoltageSensor voltmeter = hardwareMap.voltageSensor.iterator().next();
+        WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
 
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU");
-        claw gripper = new claw(hardwareMap.get(Servo.class, "LeftTalon"), hardwareMap.get(Servo.class, "RightTalon"), hardwareMap.get(DcMotor.class, "Extender"));
-
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 0, 0, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
+        claw gripper = new claw(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "leftTalon"), hardwareMap.get(Servo.class, "rightTalon"), hardwareMap.get(CRServo.class,
+                "intakeServo"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"));
         double[] position = new double[3];
         double[] differentials = new double[3];
         double primes;
         double gyroAngle = 0.0;
+        double[] storage = new double[] {0, 0, 0, 0};
+        double previousX = 0;
+        double previousY = 0;
+        double previousTurn = 0;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -105,138 +127,335 @@ public class BasicOpMode_Linear extends LinearOpMode {
 
             // Choose to drive using either Tank Mode, or POV Mode
             // Comment out the method that's not used.  The default below is POV.
-            if(gamepad1.a){
-                /*robot.waypointSettings(1, 1,  .0135,0.000, 0.0, 0.25, 0.1, 0.1, 0.33, .1, .1);
-                robot.toWaypoint(-120, 0, 45);
-                robot.toWaypoint(-60, 120, 0);
-                robot.toWaypoint(-120, 240, 15);
-                robot.toWaypoint(0, 240, -15);
-                robot.toWaypoint(-60, 120, -45);
-                robot.waypointSettings(.1, 1,  .0135,0.000, 0.0, 0.15, 0.1, 0.1, 0.33, .1, .1);
-                robot.toWaypoint(0, 0, 0);*/
-
-
-                //robot.waypointSettings(1.5, 1.5,.027,0.0027, .0027, .0075, .00375, .00375, 15, .1, .1, .1);
-                robot.waypointSettings(1, 1.5,.027,0.0054, .0108, 0, 0, 0, 12, .1, .1, 14);
-                robot.toWaypoint(120, 120,0, 3);
-                robot.toWaypoint(0,120,90,3);
-                robot.toWaypoint(0,0,0,3);
-                //robot.toWaypoint(0, 120, 0, 10);
-                //robot.toWaypoint(0, 0,0,10);
-                /*robot.deflectTo(-60,60,0, 10,10, -60,110, 0, 2.5);
-                robot.toWaypoint(-60,0,0,1.5);
-                robot.toWaypoint(-140, 0, -90, 2.5);
-                robot.deflectTo(-140, 120, -90, 5,5,-120, 120, -90, 3.5);
-                robot.deflectTo(-140, 120, -90, 5, 5, -140, 0, -90, 3.5);
-                robot.toWaypoint(0,0,0, 3.5);
-                robot.deflectTo(0,240,0, 10,10, -110, 240, 180, 5);
-                robot.toWaypoint(-110, 180, 180, 1.5);
-                robot.deflectTo(-110, 240, 180, 20, 10, 0, 240, 0, 3);
-                robot.toWaypoint(0,0,0, 2.5);
-                robot.deflectTo(0, 170, 90, 5,5,-60, 170,90, 2.5);
-                robot.deflectTo(0, 170, 90, 5,5,0,0,0, 2.5);*/
-
-
-
-                //robot.toWaypoint(0, 60, 0, 1);
-               // robot.deflectTo(-60, 100, 0, 20, 10, 0, 180, 90, 3);
-                //robot.deflectTo(-60, 240, 90, 20, 10, -120, 180, 90, 3);
-               // robot.deflectTo(-60, 120, 90, 20, 10, -120, 60, 90, 3);
-                //robot.deflectTo(-60, 0, 90, 20, 10, 0, 0, 0, 3);
-
-
-
-
-
-                /*robot.toWaypoint(0, 240, 0);
-                robot.toWaypoint(-120, 240, 0);
-                robot.toWaypoint(-120, 0, 0);
-                robot.toWaypoint(0,0,0);
-                robot.toWaypoint(0, 240, 0);
-                robot.toWaypoint(0, 240, 90);
-                robot.toWaypoint(-120, 240, 90);
-                robot.toWaypoint(-120, 240, 180);
-                robot.toWaypoint(-120, 0, 180);
-                robot.toWaypoint(-120, 0, 270);
-                robot.toWaypoint(0, 0,270);
-                robot.toWaypoint(0,0,0);
-                robot.toWaypoint(0, 240, 90);
-                robot.toWaypoint(-120, 240, 180);
-                robot.toWaypoint(-120, 0, 270);
-                robot.toWaypoint(0, 0, 0);
-                //robot.waypointSettings(1, 1,  0.027,0.0027, .0027, .00375, .00375, .00375, 15, .1, .1, .1);
-                /*robot.toWaypoint(0, 240, 45);
-                robot.toWaypoint(0, 0, 0);
-                robot.toWaypoint(-120, 0, 0);
-                robot.waypointSettings(1, 1,  0.027,0, 0.027 * 0.05, 0, 0, 0.1, 1, .1, .1);
-                robot.toWaypoint(-120, 0, 180);
-                robot.toWaypoint(-120, 0, 0);
-                robot.toWaypoint(0,0,0);
-                robot.gyroTurn(-1, 1, 90);
-                robot.gyroTurn(1, -1, 0);*/
-
-
-
-                /*robot.toWaypoint(-60, 240, 45, 2);
-                robot.toWaypoint(-60, 240, 0, 2);
-                robot.toWaypoint(0,0,0,2);
-                robot.toWaypoint(-60, 120, 0,2);
-                robot.toWaypoint(-120, 240, 15,2);
-                robot.toWaypoint(0, 240, -15,2);
-                robot.toWaypoint(-60, 120, -45,2);
-                robot.toWaypoint(0, 0, 0,2);
-                robot.toWaypoint(0, 240, 0,2);
-                robot.toWaypoint(-60, 0, -30,2);
-                robot.toWaypoint(-120, 240, 30,2);
-                robot.toWaypoint(-120, 0, -30,2);
-                robot.toWaypoint(-60, 240, 30,2);
-                robot.waypointSettings(1.5, 1.5,.027,0.0027, .0027, .00375, .00375, .00375, 15, .1, .1, .1);
-                robot.toWaypoint(0, 0, 0, 3);*/
+            if(gamepad2.left_trigger == 1){
+                while(gamepad2.left_trigger == 1){
+                    gripper.lift(-1);
+                }
+                gripper.hold();
             }
-            else if(gamepad1.b){
-                gripper.open();
+            else if(gamepad2.left_bumper){
+                while(gamepad2.left_bumper){
+                    gripper.lift(1);
+                }
+                gripper.hold();
             }
-            else if(gamepad1.x){
-                gripper.liftTo(0,0);
-                telemetry.addData("LiftPow: ", gripper.getLiftPos());
+            /*else if(gamepad2.left_bumper){
+                gripper.wristRotateTo((double) Math.abs(Math.round(gamepad2.left_stick_y * 1000)) / 1000);
+            }*/
+            /*else if(gamepad2.y){
+                if(gripper.state()){
+                    //gripper.open();
+                }
+                else{
+                    //gripper.close();
+                }
+            }*/
+            else if(gamepad2.right_trigger == 1){
+                while(gamepad2.right_trigger == 1){
+                    gripper.rotateElbow(0.50);
+                }
+                gripper.hold();
             }
-            else if(gamepad1.y){
-                gripper.liftTo(1000, 0);
-                telemetry.addData("LiftPos: ", gripper.getLiftPos());
+            else if(gamepad2.right_bumper){
+                while(gamepad2.right_bumper){
+                    gripper.rotateElbow(-0.50);
+                }
+                gripper.hold();
             }
-            else if(gamepad1.right_bumper){
-                gripper.close();
-            }
-            else{
-                // POV Mode uses left stick to go forward, and right stick to turn.
-                // - This uses basic math to combine motions and is easier to drive straight.
-                double powX = gamepad1.right_stick_x;
-                double powY = -gamepad1.right_stick_y;
-                double addLeft = 0.5 * gamepad1.left_stick_x;
-                double addRight = -0.5 * gamepad1.left_stick_x;
+            else if(gamepad2.a){
+                gripper.intakeRotate("IN");
+               /* gripper.wristRotateTo(0.12);
+                gripper.elbowTo(-4600, 0.5);
+                gripper.liftTo(0);
+                robot.toWaypoint(robot.getPosition()[0] - 15, robot.getPosition()[1], robot.getPosition()[2], 0.5);
+                gripper.elbowTo(-4900, 0.5);
+                // Placeholder for intake
+                Thread.sleep(500);
+                gripper.elbowTo(4600, 0.5);
+                robot.toWaypoint(robot.getPosition()[0] + 15, robot.getPosition()[1], robot.getPosition()[2], 0.5);*/
 
+            }
+            else if(gamepad2.b){
+                gripper.intakeRotate("OUT");
+                /*gripper.liftTo(600);
+                gripper.elbowTo(2600, 0.5);
+                gripper.wristRotateTo(0);*/
+            }
+            else if(gamepad2.x){
+                gripper.leftTalonRotateTo(0.1);
+                gripper.rightTalonRotateTo(0.8);
+            }
+            else if(gamepad2.y){
+                gripper.leftTalonRotateTo(.43);
+                gripper.rightTalonRotateTo(0.47);
+            }
+            else if(gamepad1.left_bumper){
+                //Responsive Control: Local Vectors w/o Rate Limiters
+                double powX;
+                double powY;
+                double addLeft;
+                double addRight;
+                if(gamepad1.right_stick_x >= 0){
+                    powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+                }
+                else{
+                    powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+                }
+                if(gamepad1.right_stick_y >= 0){
+                    powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+                }
+                else{
+                    powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+                }
+                if(gamepad1.left_stick_x >= 0){
+                    addLeft = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                    addRight = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                }
+                else{
+                    addLeft = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                    addRight = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                }
 
                 // Send calculated power to wheels
                 double a = (powX + powY) * (Math.pow(2, -0.5));
                 double b = (-powX + powY) * (Math.pow(2, -0.5));
-                fL.setPower(a + addLeft);
-                fR.setPower(b + addRight);
-                bL.setPower(b + addLeft);
-                bR.setPower(a + addRight);
+                fL.setPower((a + addLeft) * frontLeftBias);
+                fR.setPower((b + addRight) * frontRightBias);
+                bL.setPower((b + addLeft) * backLeftBias);
+                bR.setPower((a + addRight) * backRightBias);
 
                 robot.updateOdometry();
                 position = robot.getPosition();
                 gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
-                        /*double A[][] = { { 1, 1, 1 },
-                                { 2, 2, 2 },
-                                { 3, 3, 3 },
-                                { 4, 4, 4 } };
 
-                        double B[][] = { { 1, 1, 1, 1 },
-                                { 2, 2, 2, 2 },
-                                { 3, 3, 3, 3 } };
+                // telemetry.addData("dx: ", "" + temp[0]);
 
-                        double[][] c = Odometry.multiplyMatrix(A, B);*/
+                //telemetry.addData("dy: ", "" + temp[1]);
+
+                // telemetry.addData("dTheta: ", "" + temp[2]);
+            }
+            else if(gamepad1.right_bumper){
+                //Global Control: Global Vectors + Rate Limiters
+                double powX;
+                double powY;
+                double addLeft;
+                double addRight;
+                if(gamepad1.right_stick_x >= 0){
+                    powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+                }
+                else{
+                    powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+                }
+                if(gamepad1.right_stick_y >= 0){
+                    powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+                }
+                else{
+                    powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+                }
+                if(gamepad1.left_stick_x >= 0){
+                    addLeft = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                    addRight = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                }
+                else{
+                    addLeft = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                    addRight = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                }
+
+
+                if(Math.abs(powX) > Math.abs(previousX)){
+                    if(powX > previousX && powX - previousX > tolX){
+                        powX = previousX + tolX;
+                    }
+                    else if(powX < previousX && previousX - powX > tolX){
+                        powX = previousX - tolX;
+                    }
+                }
+                else{
+                    if(powX > previousX && powX - previousX > deccelScale * tolX){
+                        powX = previousX + deccelScale * tolX;
+                    }
+                    else if(powX < previousX && previousX - powX > deccelScale * tolX){
+                        powX = previousX - deccelScale * tolX;
+                    }
+                }
+                if(Math.abs(powY) > Math.abs(previousY)){
+                    if(powY > previousY && powY - previousY > tolY){
+                        powY = previousY + tolY;
+                    }
+                    else if(powY < previousY && previousY - powY > tolY){
+                        powY = previousY - tolY;
+                    }
+                }
+                else{
+                    if(powY > previousY && powY - previousY > deccelScale * tolY){
+                        powY = previousY + deccelScale * tolY;
+                    }
+                    else if(powY < previousY && previousY - powY > deccelScale * tolY){
+                        powY = previousY - deccelScale * tolY;
+                    }
+                }
+                double theta = robot.getPosition()[2];
+                double tempPowX = (powY * Math.sin(theta) + powX * Math.cos(theta));
+                double tempPowY = (powY * Math.cos(theta) + powX * Math.sin(-theta));
+
+                previousX = powX;
+                previousY = powY;
+
+                powY = tempPowY;
+                powX = tempPowX;
+
+                // Send calculated power to wheels
+                double a = (powX + powY) * (Math.pow(2, -0.5));
+                double b = (-powX + powY) * (Math.pow(2, -0.5));
+                fL.setPower((a + addLeft) * frontLeftBias);
+                fR.setPower((b + addRight) * frontRightBias);
+                bL.setPower((b + addLeft) * backLeftBias);
+                bR.setPower((a + addRight) * backRightBias);
+
+                robot.updateOdometry();
+                position = robot.getPosition();
+                gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
+
+
+                // telemetry.addData("dx: ", "" + temp[0]);
+
+                //telemetry.addData("dy: ", "" + temp[1]);
+
+                // telemetry.addData("dTheta: ", "" + temp[2]);
+            }
+            /*&if else(gamepad2.left_stick_y != 0){
+                claw.close();
+                claw.liftTo(gamepad2.)
+
+            }*/
+            else if(gamepad1.right_trigger != 0){
+                //Local Y-Lock w/o Rate Limiters:
+                double powX = 0;
+                double powY;
+                double addLeft = 0;
+                double addRight = 0;
+
+                if(gamepad1.right_stick_y >= 0){
+                    powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+                }
+                else{
+                    powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+                }
+
+                // Send calculated power to wheels
+                double a = (powX + powY) * (Math.pow(2, -0.5));
+                double b = (-powX + powY) * (Math.pow(2, -0.5));
+                fL.setPower((a + addLeft) * frontLeftBias);
+                fR.setPower((b + addRight) * frontRightBias);
+                bL.setPower((b + addLeft) * backLeftBias);
+                bR.setPower((a + addRight) * backRightBias);
+
+                robot.updateOdometry();
+                position = robot.getPosition();
+                gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
+            }
+            else if(gamepad1.left_trigger != 0){
+                //Local X-Lock w/o Rate Limiters:
+                double powX;
+                double powY = 0;
+                double addLeft = 0;
+                double addRight = 0;
+
+                if(gamepad1.right_stick_x >= 0){
+                    powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+                }
+                else{
+                    powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+                }
+
+                // Send calculated power to wheels
+                double a = (powX + powY) * (Math.pow(2, -0.5));
+                double b = (-powX + powY) * (Math.pow(2, -0.5));
+                fL.setPower((a + addLeft) * frontLeftBias);
+                fR.setPower((b + addRight) * frontRightBias);
+                bL.setPower((b + addLeft) * backLeftBias);
+                bR.setPower((a + addRight) * backRightBias);
+
+                robot.updateOdometry();
+                position = robot.getPosition();
+                gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
+            }
+            else{
+                //Default Control: Local Vectors + Rate Limiters
+                double powX;
+                double powY;
+                double addLeft;
+                double addRight;
+                if(gamepad1.right_stick_x >= 0){
+                    powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+                }
+                else{
+                    powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+                }
+                if(gamepad1.right_stick_y >= 0){
+                    powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+                }
+                else{
+                    powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+                }
+                if(gamepad1.left_stick_x >= 0){
+                    addLeft = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                    addRight = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                }
+                else{
+                    addLeft = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                    addRight = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                }
+
+
+                if(Math.abs(powX) > Math.abs(previousX)){
+                    if(powX > previousX && powX - previousX > tolX){
+                        powX = previousX + tolX;
+                    }
+                    else if(powX < previousX && previousX - powX > tolX){
+                        powX = previousX - tolX;
+                    }
+                }
+                else{
+                    if(powX > previousX && powX - previousX > deccelScale * tolX){
+                        powX = previousX + deccelScale * tolX;
+                    }
+                    else if(powX < previousX && previousX - powX > deccelScale * tolX){
+                        powX = previousX - deccelScale * tolX;
+                    }
+                }
+                if(Math.abs(powY) > Math.abs(previousY)){
+                    if(powY > previousY && powY - previousY > tolY){
+                        powY = previousY + tolY;
+                    }
+                    else if(powY < previousY && previousY - powY > tolY){
+                        powY = previousY - tolY;
+                    }
+                }
+                else{
+                    if(powY > previousY && powY - previousY > deccelScale * tolY){
+                        powY = previousY + deccelScale * tolY;
+                    }
+                    else if(powY < previousY && previousY - powY > deccelScale * tolY){
+                        powY = previousY - deccelScale * tolY;
+                    }
+                }
+
+                // Send calculated power to wheels
+                double a = (powX + powY) * (Math.pow(2, -0.5));
+                double b = (-powX + powY) * (Math.pow(2, -0.5));
+                fL.setPower((a + addLeft) * frontLeftBias);
+                fR.setPower((b + addRight) * frontRightBias);
+                bL.setPower((b + addLeft) * backLeftBias);
+                bR.setPower((a + addRight) * backRightBias);
+
+                robot.updateOdometry();
+                position = robot.getPosition();
+                gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
+
+                previousX = powX;
+                previousY = powY;
+
 
                 // telemetry.addData("dx: ", "" + temp[0]);
 
@@ -253,6 +472,9 @@ public class BasicOpMode_Linear extends LinearOpMode {
             telemetry.addData("Y:", "" + Math.round(position[1] * 100.0) / 100.0);
             telemetry.addData("Theta:", "" + (Math.round(position[2] * 100.0) / 100.0) * 180.0 / Math.PI);
             telemetry.addData("Gyro Angle:", "" + gyroAngle * 180.0 / Math.PI);
+            telemetry.addData("Optimal Clamp: ", "" + storage[0]);
+            telemetry.addData("Battery Voltage Reading: ", "" + storage[1]);
+            telemetry.addData("Elbow Pos:", gripper.getElbowPos());
             /*telemetry.addData("globalCorrectionX: ", "" + ab[0]);
             telemetry.addData("globalCorrectionY: ", "" + ab[1]);
             telemetry.addData("correctionX: ", "" + ab[2]);

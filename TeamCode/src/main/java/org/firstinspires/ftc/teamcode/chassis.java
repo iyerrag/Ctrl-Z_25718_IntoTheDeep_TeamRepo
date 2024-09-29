@@ -2,9 +2,13 @@ package org.firstinspires.ftc.teamcode;
 
 import static java.lang.Thread.sleep;
 
-import java.lang.*;
+import android.util.Size;
 
-import com.acmerobotics.roadrunner.util.NanoClock;
+import java.lang.*;
+import java.util.ArrayList;
+import java.util.List;
+
+//import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -12,10 +16,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import com.qualcomm.robotcore.hardware.*;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.vision.VisionPortal;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 public class chassis{
 
@@ -32,15 +42,31 @@ public class chassis{
     static final double leftBias = 1.0;
     static private String angleMode;
 
-    private double waypointToleranceDist, waypointToleranceAng, waypointKp, waypointKi, waypointKd, waypointKcx, waypointKcy, waypointKctheta, waypointThetaWeight, waypointAccelLimXY, waypointAccelLimTheta, waypointClamping;
+    private double waypointToleranceDistX, waypointToleranceDistY, waypointToleranceAng, waypointKpx, waypointKix, waypointKdx, waypointKcx, waypointKpy, waypointKiy, waypointKdy, waypointKcy, waypointKptheta, waypointKitheta, waypointKdtheta, waypointKctheta, waypointAccelLimX, waypointAccelLimY, waypointAccelLimTheta, waypointClampingX, waypointClampingY, waypointClampingTheta;
     static final double maxA = 0.3;
 
-    public chassis(DcMotor FL, DcMotor FR, DcMotor BL, DcMotor BR, BHI260IMU IMU, String thetaMode) {
+    static private VoltageSensor sensor;
+    static final double nominalVoltage = 12.15;
+
+    static private WebcamName camera;
+    static private double[] cameraOffsetPose;
+
+    /**
+     * The variable to store our instance of the AprilTag processor.
+     */
+    private AprilTagProcessor aprilTag;
+
+    /**
+     * The variable to store our instance of the vision portal.
+     */
+    private VisionPortal visionPortal;
+
+    public chassis(DcMotor FL, DcMotor FR, DcMotor BL, DcMotor BR, BHI260IMU IMU, String thetaMode, double startingX, double startingY, double startingTheta, VoltageSensor voltmeter, WebcamName cameraName, double[] cameraNameOffset) {
         // Define Timer Objects:
         timer = new ElapsedTime();
         imu = new robotIMU(IMU);
         angleMode = thetaMode;
-        localizer = new NonEulerianOdometry(0.0, 0.0, 0.0, BL, BR, FL, imu, angleMode);
+        localizer = new NonEulerianOdometry(startingX, startingY, startingTheta, BL, BR, FL, imu, angleMode);
 
         // Define Motor Objects for Chassis:
         fL = FL;
@@ -68,10 +94,81 @@ public class chassis{
         fR.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
 
 
-       // extender.setDirection(DcMotor.Direction.FORWARD);
+        // extender.setDirection(DcMotor.Direction.FORWARD);
+
+        sensor = voltmeter;
+
+        camera = cameraName;
+        cameraOffsetPose = cameraNameOffset;
+        cameraOffsetPose[2] *= Math.PI / 180;
+
+        initAprilTag();
     }
 
-    private boolean eqWT(double val1, double val2, double e){
+    private void initAprilTag() {
+
+        // Create the AprilTag processor.
+        aprilTag = new AprilTagProcessor.Builder()
+
+                // The following default settings are available to un-comment and edit as needed.
+                //.setDrawAxes(false)
+                //.setDrawCubeProjection(false)
+                //.setDrawTagOutline(true)
+                //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+                //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+
+                .setOutputUnits(DistanceUnit.CM, AngleUnit.RADIANS)
+
+                // == CAMERA CALIBRATION ==
+                // If you do not manually specify calibration parameters, the SDK will attempt
+                // to load a predefined calibration for your camera.
+                .setLensIntrinsics(1196.94, 1196.94, 804.849, 411.195)
+                // ... these parameters are fx, fy, cx, cy.
+
+                .build();
+
+        // Adjust Image Decimation to trade-off detection-range for detection-rate.
+        // eg: Some typical detection data using a Logitech C920 WebCam
+        // Decimation = 1 ..  Detect 2" Tag from 10 feet away at 10 Frames per second
+        // Decimation = 2 ..  Detect 2" Tag from 6  feet away at 22 Frames per second
+        // Decimation = 3 ..  Detect 2" Tag from 4  feet away at 30 Frames Per Second (default)
+        // Decimation = 3 ..  Detect 5" Tag from 10 feet away at 30 Frames Per Second (default)
+        // Note: Decimation can be changed on-the-fly to adapt during a match.
+        aprilTag.setDecimation(3);
+
+        // Create the vision portal by using a builder.
+        VisionPortal.Builder builder = new VisionPortal.Builder();
+
+        // Set the camera
+        builder.setCamera(camera);
+
+
+        // Choose a camera resolution. Not all cameras support all resolutions.
+        builder.setCameraResolution(new Size(1600, 896));
+
+        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
+        //builder.enableLiveView(true);
+
+        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
+        //builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
+
+        // Choose whether or not LiveView stops if no processors are enabled.
+        // If set "true", monitor shows solid orange screen if no processors enabled.
+        // If set "false", monitor shows camera view without annotations.
+        //builder.setAutoStopLiveView(false);
+
+        // Set and enable the processor.
+        builder.addProcessor(aprilTag);
+
+        // Build the Vision Portal, using the above settings.
+        visionPortal = builder.build();
+
+        // Disable or re-enable the aprilTag processor at any time.
+        //visionPortal.setProcessorEnabled(aprilTag, true);
+
+    }   // end method initAprilTag()
+
+    public boolean eqWT(double val1, double val2, double e){
         return Math.abs(val1 - val2) <= e;
     }
 
@@ -149,20 +246,34 @@ public class chassis{
         localizer = new NonEulerianOdometry(x, y, theta, bL, bR, fL, imu, angleMode);
     }
 
-    public void waypointSettings(double toleranceDist, double toleranceAng, double Kp, double Ki, double Kd, double Kcx, double Kcy, double Kctheta, double thetaWeight, double accelLimXY, double accelLimTheta, double clamping){
-        waypointToleranceDist = toleranceDist;
+    public void waypointSettings(double toleranceDistX, double toleranceDistY, double toleranceAng, double Kpx, double Kix, double Kdx, double Kcx, double Kpy, double Kiy, double Kdy, double Kcy, double Kptheta, double Kitheta, double Kdtheta, double Kctheta, double accelLimX, double accelLimY, double accelLimTheta, double clampingX, double clampingY, double clampingTheta){
+        waypointToleranceDistX = toleranceDistX;
+        waypointToleranceDistY = toleranceDistY;
         waypointToleranceAng = toleranceAng * Math.PI / 180;
-        waypointKp = Kp;
-        waypointKi = Ki;
-        waypointKd = Kd;
+        waypointKpx = Kpx;
+        waypointKix = Kix;
+        waypointKdx = Kdx;
         waypointKcx = Kcx;
+        waypointKpy = Kpy;
+        waypointKiy = Kiy;
+        waypointKdy = Kdy;
         waypointKcy = Kcy;
+        waypointKptheta = Kptheta;
+        waypointKitheta = Kitheta;
+        waypointKdtheta = Kdtheta;
         waypointKctheta = Kctheta;
-        waypointThetaWeight = thetaWeight;
-        waypointAccelLimXY = accelLimXY;
+        waypointAccelLimX = accelLimX;
+        waypointAccelLimY = accelLimY;
         waypointAccelLimTheta = accelLimTheta;
-        waypointClamping = clamping;
+        waypointClampingX = clampingX;
+        waypointClampingY = clampingY;
+        waypointClampingTheta = clampingTheta;
     }
+
+    private double getBatteryVoltage(){
+        return sensor.getVoltage();
+    }
+
 
     public double[] toWaypoint(double waypointTargetX, double waypointTargetY, double waypointTargetTheta, double timeout){
         waypointTargetTheta *= Math.PI / 180.0;
@@ -182,9 +293,9 @@ public class chassis{
         double globalCorrectionX = 0;
         double globalCorrectionY = 0;
         double globalCorrectionTheta = 0;
-        double previousGlobalCorrectionX;
-        double previousGlobalCorrectionY;
-        double previousGlobalCorrectionTheta;
+        double previousLocalCorrectionX = 0;
+        double previousLocalCorrectionY = 0;
+        double previousGlobalCorrectionTheta = 0;
         double previousErrX;
         double previousErrY;
         double previousErrTheta;
@@ -194,10 +305,10 @@ public class chassis{
         double errX = 0;
         double errY = 0;
         double errTheta = 0;
-        double correctionVectorMagnitude = 0.0;
-        double correctionVectorAngle = 0.0;
         double localCorrectionX = 0.0;
         double localCorrectionY = 0.0;
+
+        double Imax = 0;
 
 
         // Read current odometry position
@@ -208,7 +319,7 @@ public class chassis{
         double currentTheta = currentPos[2];
 
         // PID control to waypoint
-        while((!eqWT(currentX, waypointTargetX, waypointToleranceDist) || !eqWT(currentY, waypointTargetY, waypointToleranceDist) || !eqWT(currentTheta, waypointTargetTheta, waypointToleranceAng)) && ((timer.seconds() - startTime) < timeout)){
+        while((!eqWT(currentX, waypointTargetX, waypointToleranceDistX) || !eqWT(currentY, waypointTargetY, waypointToleranceDistY) || !eqWT(currentTheta, waypointTargetTheta, waypointToleranceAng)) && ((timer.seconds() - startTime) < timeout)){
             // Read current odometry position
             localizer.updateOdometry();
             currentPos = localizer.getPosition();
@@ -233,7 +344,7 @@ public class chassis{
             Ptheta = errTheta;
 
             if(Px > 0){
-               Kcx = Math.abs(waypointKcx);
+                Kcx = Math.abs(waypointKcx);
             }
             else if(Px == 0){
                 Kcx = 0;
@@ -266,25 +377,25 @@ public class chassis{
             Iy += dt * (errY + previousErrY) / 2.0;
             Itheta += dt * (errTheta + previousErrTheta) / 2.0;
 
-            if(Ix > Math.abs(waypointClamping)){
-                Ix = Math.abs(waypointClamping);
+            if(Ix * waypointKix > Math.abs(waypointClampingX)){
+                Ix = Math.abs(waypointClampingX) / waypointKix;
             }
-            else if(Ix < -1 * Math.abs(waypointClamping)){
-                Ix = -1 * Math.abs(waypointClamping);
-            }
-
-            if(Iy > Math.abs(waypointClamping)){
-                Iy = Math.abs(waypointClamping);
-            }
-            else if(Iy < - Math.abs(waypointClamping)){
-                Iy = -1 * Math.abs(waypointClamping);
+            else if(Ix * waypointKix < -1 * Math.abs(waypointClampingX)){
+                Ix = -1 * Math.abs(waypointClampingX) / waypointKix;
             }
 
-            if(Itheta > Math.abs(waypointClamping * waypointThetaWeight)){
-                Itheta = Math.abs(waypointClamping * waypointThetaWeight);
+            if(Iy * waypointKiy > Math.abs(waypointClampingY)){
+                Iy = Math.abs(waypointClampingY) / waypointKiy;
             }
-            else if(Itheta < - Math.abs(waypointClamping * waypointThetaWeight)){
-                Itheta = -1 * Math.abs(waypointClamping * waypointThetaWeight);
+            else if(Iy * waypointKiy < - Math.abs(waypointClampingY)){
+                Iy = -1 * Math.abs(waypointClampingY) / waypointKiy;
+            }
+
+            if(Itheta * waypointKitheta > Math.abs(waypointClampingTheta)){
+                Itheta = Math.abs(waypointClampingTheta) / (waypointKitheta);
+            }
+            else if(Itheta * waypointKitheta < - Math.abs(waypointClampingTheta)){
+                Itheta = -1 * Math.abs(waypointClampingTheta) / (waypointKitheta);
             }
 
             Dx = (errX - previousErrX) / dt;
@@ -292,79 +403,109 @@ public class chassis{
             Dtheta = (errTheta - previousErrTheta) / dt;
 
             // Calculate correction (multiply components by -1):
-            previousGlobalCorrectionX = globalCorrectionX;
-            previousGlobalCorrectionY = globalCorrectionY;
-            previousGlobalCorrectionTheta = globalCorrectionTheta;
 
-            globalCorrectionX = (waypointKp * Px + waypointKi * Ix + waypointKd * Dx + Kcx);
-            globalCorrectionY = (waypointKp * Py + waypointKi * Iy + waypointKd * Dy + Kcy);
-            globalCorrectionTheta = (waypointKp * Ptheta + waypointKi * Itheta + waypointKd * Dtheta + Kctheta);
+            globalCorrectionX = (waypointKpx * Px + waypointKix * Ix + waypointKdx * Dx + Kcx);
+            globalCorrectionY = (waypointKpy * Py + waypointKiy * Iy + waypointKdy * Dy + Kcy);
+            globalCorrectionTheta = (waypointKptheta * Ptheta + waypointKitheta * Itheta + waypointKdtheta * Dtheta + Kctheta);
 
             localCorrectionY = globalCorrectionY * Math.cos(currentTheta) - globalCorrectionX * Math.sin(currentTheta);
             localCorrectionX = globalCorrectionY * Math.sin(currentTheta) + globalCorrectionX * Math.cos(currentTheta);
 
-            localCorrectionX *= 1.25;
-            localCorrectionY *= 0.9;
+            localCorrectionX *= 1;
+            localCorrectionY *= 1;
 
-            //localCorrectionY = globalCorrectionX * Math.cos(-1.0 * currentTheta) - globalCorrectionY * Math.sin(-1.0 * currentTheta);
-            //localCorrectionX = globalCorrectionX * Math.sin(-1.0 * currentTheta) + globalCorrectionY * Math.cos(currentTheta);
-
-            //localCorrectionX = 0.6;
-            //localCorrectionY = 0.6;
-
-            /*// Check if correction is within accelLim of previous correction to avoid slip
-            if(!eqWT(correctionX, previousCorrectionX, accelLimXY)){
-                if(correctionX > previousCorrectionX){
-                    correctionX = previousCorrectionX + accelLimXY;
+            // Rate Limiter: Check if correction is within accelLim of previous correction to avoid slip
+            if(!eqWT(localCorrectionX, previousLocalCorrectionX, waypointAccelLimX)){
+                if(localCorrectionX > previousLocalCorrectionX){
+                    localCorrectionX = previousLocalCorrectionX + waypointAccelLimX;
                 }
                 else{
-                    correctionX = previousCorrectionX - accelLimXY;
+                    localCorrectionX = previousLocalCorrectionX - waypointAccelLimX;
                 }
             }
-            if(!eqWT(correctionY, previousCorrectionY, accelLimXY)){
-                if(correctionY > previousCorrectionY){
-                    correctionY = previousCorrectionY + accelLimXY;
+            if(!eqWT(localCorrectionY, previousLocalCorrectionY, waypointAccelLimY)){
+                if(localCorrectionY > previousLocalCorrectionY){
+                    localCorrectionY = previousLocalCorrectionY + waypointAccelLimY;
                 }
                 else{
-                    correctionY = previousCorrectionY - accelLimXY;
+                    localCorrectionY = previousLocalCorrectionY - waypointAccelLimY;
                 }
             }
-            if(!eqWT(correctionTheta, previousCorrectionTheta, accelLimTheta)){
-                if(correctionTheta > previousCorrectionTheta){
-                    correctionTheta = previousCorrectionTheta + accelLimTheta;
+            if(!eqWT(globalCorrectionTheta, previousGlobalCorrectionTheta, waypointAccelLimTheta)){
+                if(globalCorrectionTheta > previousGlobalCorrectionTheta){
+                    globalCorrectionTheta = previousGlobalCorrectionTheta + waypointAccelLimTheta;
                 }
                 else{
-                    correctionTheta = previousCorrectionTheta - accelLimTheta;
+                    globalCorrectionTheta = previousGlobalCorrectionTheta - waypointAccelLimTheta;
                 }
             }
+
+            // Controller Toggle:
+
+            /*if(eqWT(currentX, waypointTargetX, waypointToleranceDist)){
+                localCorrectionX = 0;
+            }
+            if(eqWT(currentY, waypointTargetY, waypointToleranceDist)){
+                localCorrectionY = 0;
+            }
+            if(eqWT(currentTheta, waypointTargetTheta, waypointToleranceAng)){
+                globalCorrectionTheta = 0;
+            }*/
+
+            if(Iy * waypointKiy > Imax){
+                Imax = Iy * waypointKiy;
+            }
+
+            // Voltage Regulator:
+            double voltage = getBatteryVoltage();
+            double voltageScale = voltage / nominalVoltage;
 
             // Actuate Correction
-            double a = (correctionX  + correctionY)*(Math.pow(2, -0.5));
-            double b = (-correctionX + correctionY)*(Math.pow(2, -0.5));
-            fL.setPower(a * leftBias - correctionTheta * waypointThetaWeight);
-            fR.setPower(b * rightBias + correctionTheta * waypointThetaWeight);
-            bL.setPower(b * leftBias - correctionTheta * waypointThetaWeight);
-            bR.setPower(a * rightBias + correctionTheta * waypointThetaWeight);
-            */
-            // Actuate Correction
-            double denominator = Math.max(Math.abs(localCorrectionX) + Math.abs(localCorrectionY) + Math.abs(globalCorrectionTheta * waypointThetaWeight), 1.0);
+            double denominator = voltageScale * Math.max(Math.abs(localCorrectionX) + Math.abs(localCorrectionY) + Math.abs(globalCorrectionTheta), 1.0);
             double a = (localCorrectionX  + localCorrectionY);
             double b = (-localCorrectionX + localCorrectionY);
-            fL.setPower((a * leftBias - globalCorrectionTheta * waypointThetaWeight) / denominator);
-            fR.setPower((b * rightBias + globalCorrectionTheta * waypointThetaWeight) / denominator);
-            bL.setPower((b * leftBias - globalCorrectionTheta * waypointThetaWeight) / denominator);
-            bR.setPower((a * rightBias + globalCorrectionTheta * waypointThetaWeight) / denominator);
+            // Randomize Motor Acutation
+            double randomNum = (int)(Math.random() * 4) + 1;
+            if(randomNum == 1){
+                fR.setPower((b * rightBias + globalCorrectionTheta) / denominator);
+                fL.setPower((a * leftBias - globalCorrectionTheta) / denominator);
+                bR.setPower((a * rightBias + globalCorrectionTheta) / denominator);
+                bL.setPower((b * leftBias - globalCorrectionTheta) / denominator);
+            }
+            else if(randomNum == 2){
+                fL.setPower((a * leftBias - globalCorrectionTheta) / denominator);
+                bR.setPower((a * rightBias + globalCorrectionTheta) / denominator);
+                bL.setPower((b * leftBias - globalCorrectionTheta) / denominator);
+                fR.setPower((b * rightBias + globalCorrectionTheta) / denominator);
+            }
+            else if(randomNum == 3){
+                bR.setPower((a * rightBias + globalCorrectionTheta) / denominator);
+                bL.setPower((b * leftBias - globalCorrectionTheta) / denominator);
+                fR.setPower((b * rightBias + globalCorrectionTheta) / denominator);
+                fL.setPower((a * leftBias - globalCorrectionTheta) / denominator);
+            }
+            else{
+                bL.setPower((b * leftBias - globalCorrectionTheta) / denominator);
+                fR.setPower((b * rightBias + globalCorrectionTheta) / denominator);
+                fL.setPower((a * leftBias - globalCorrectionTheta) / denominator);
+                bR.setPower((a * rightBias + globalCorrectionTheta) / denominator);
+            }
+
+
+            previousLocalCorrectionX = localCorrectionX;
+            previousLocalCorrectionY = localCorrectionY;
+            previousGlobalCorrectionTheta = globalCorrectionTheta;
 
             //return new double[]{localCorrectionX, localCorrectionY, globalCorrectionX, globalCorrectionY, a, b};
-       }
+        }
         fL.setPower(0);
         fR.setPower(0);
         bL.setPower(0);
         bR.setPower(0);
-        return new double[]{0.0, 0.0, 0.0, 0.0};
+        return new double[]{Imax, getBatteryVoltage(), 0.0, 0.0};
     }
 
-    public void deflectTo(double deflectionXtarget, double deflectionYtarget, double deflectionThetatarget, double XYTol, double AngTol, double finalXtarget, double finalYtarget, double finalThetatarget, double timeout){
+    /*public void deflectTo(double deflectionXtarget, double deflectionYtarget, double deflectionThetatarget, double XYTol, double AngTol, double finalXtarget, double finalYtarget, double finalThetatarget, double timeout){
         bL.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.FLOAT));
         bR.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.FLOAT));
         fL.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.FLOAT));
@@ -389,7 +530,7 @@ public class chassis{
         bR.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
         fL.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
         fR.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
-    }
+    }*/
 
     public void gyroTurn(double powLeft, double powRight, double targetAngle){
         targetAngle *= Math.PI / 180.0;
@@ -446,6 +587,361 @@ public class chassis{
 
     public double getAngle(){
         return imu.updateAngle()[0];
+    }
+
+    private int factorial(int n){
+        int product = 1;
+        if(n == 0){
+            return 1;
+        }
+        for(int i = 0; i < n; i++){
+            product *= (i + 1);
+        }
+        return product;
+    }
+
+
+    private double Brez(ArrayList<Double> X, double t){
+        double cord = 0;
+        int sz = X.size();
+        int n = sz - 1;
+        for(int i = 0; i <= n; i++){
+            cord = cord + (factorial(n) / (factorial(i) * factorial(n - i))) * Math.pow(1 - t, n - i) * X.get(i) * Math.pow(t, i);
+        }
+        return cord;
+    }
+
+    // NOTE: High Chance for Computational Failure With More Than 10 Bezier Points; Guarenteed Failure With 14 or More Bezier Points;
+    public double[] toWaypointBezier(ArrayList<double[]> targetPoints,  double runtime, double timeout){
+        for(int i = 0; i < targetPoints.size(); i++){
+            double[] point = targetPoints.get(i);
+            point[2] *= Math.PI / 180.0;
+            targetPoints.set(i, point);
+        }
+
+        ArrayList<Double> xPoints = new ArrayList<Double>();
+        ArrayList<Double> yPoints = new ArrayList<Double>();
+        ArrayList<Double> thetaPoints = new ArrayList<Double>();
+        for(double[] point : targetPoints){
+            xPoints.add(point[0]);
+            yPoints.add(point[1]);
+            thetaPoints.add(point[2]);
+        }
+
+        double Px = 0;
+        double Ix = 0;
+        double Dx = 0;
+        double Py = 0;
+        double Iy = 0;
+        double Dy = 0;
+        double Ptheta = 0;
+        double Itheta = 0;
+        double Dtheta = 0;
+        double previousTime;
+        double currentTime = timer.seconds();
+        double startTime = timer.seconds();
+        double dt;
+        double globalCorrectionX = 0;
+        double globalCorrectionY = 0;
+        double globalCorrectionTheta = 0;
+        double previousLocalCorrectionX = 0;
+        double previousLocalCorrectionY = 0;
+        double previousGlobalCorrectionTheta = 0;
+        double previousErrX;
+        double previousErrY;
+        double previousErrTheta;
+        double Kcx = waypointKcx;
+        double Kcy = waypointKcy;
+        double Kctheta = waypointKctheta;
+        double errX = 0;
+        double errY = 0;
+        double errTheta = 0;
+        double localCorrectionX = 0.0;
+        double localCorrectionY = 0.0;
+
+        double Imax = 0;
+
+        double t = 0;
+
+
+        // Read current odometry position
+        localizer.updateOdometry();
+        double[] currentPos = localizer.getPosition();
+        double currentX = currentPos[0];
+        double currentY = currentPos[1];
+        double currentTheta = currentPos[2];
+
+        // PID control to waypoint
+        while((!eqWT(currentX, targetPoints.get(targetPoints.size() - 1)[0], waypointToleranceDistX) || !eqWT(currentY, targetPoints.get(targetPoints.size() - 1)[1], waypointToleranceDistY) || !eqWT(currentTheta, targetPoints.get(targetPoints.size() - 1)[2], waypointToleranceAng) || (t != 1)) && ((timer.seconds() - startTime) < timeout)){
+            // Read current odometry position
+            localizer.updateOdometry();
+            currentPos = localizer.getPosition();
+            currentX = currentPos[0];
+            currentY = currentPos[1];
+            currentTheta = currentPos[2];
+            previousTime = currentTime;
+            currentTime = timer.seconds();
+            dt = currentTime - previousTime;
+
+            // Update Proportional, Integral, and Derivative Errors
+            previousErrX = errX;
+            previousErrY = errY;
+            previousErrTheta = errTheta;
+
+            // Get Brezier Target
+            t = (timer.seconds() - startTime) / runtime;
+            if(t > 1){
+                t = 1;
+            }
+            double waypointTargetX = Brez(xPoints, t);
+            double waypointTargetY = Brez(yPoints, t);
+            double waypointTargetTheta = Brez(thetaPoints, t);
+
+            errX = waypointTargetX - currentX;
+            errY = waypointTargetY - currentY;
+            errTheta = waypointTargetTheta - currentTheta;
+
+            Px = errX;
+            Py = errY;
+            Ptheta = errTheta;
+
+
+
+            if(Px > 0){
+                Kcx = Math.abs(waypointKcx);
+            }
+            else if(Px == 0){
+                Kcx = 0;
+            }
+            else{
+                Kcx = -Math.abs(waypointKcx);
+            }
+
+            if(Py > 0){
+                Kcy = Math.abs(waypointKcy);
+            }
+            else if(Py == 0){
+                Kcy = 0;
+            }
+            else{
+                Kcy = -Math.abs(waypointKcy);
+            }
+
+            if(Ptheta > 0){
+                Kctheta = Math.abs(waypointKctheta);
+            }
+            else if(Ptheta == 0){
+                Kctheta = 0;
+            }
+            else{
+                Kctheta = -Math.abs(waypointKctheta);
+            }
+
+            Ix += dt * (errX + previousErrX) / 2.0;
+            Iy += dt * (errY + previousErrY) / 2.0;
+            Itheta += dt * (errTheta + previousErrTheta) / 2.0;
+
+            if(Ix * waypointKix > Math.abs(waypointClampingX)){
+                Ix = Math.abs(waypointClampingX) / waypointKix;
+            }
+            else if(Ix * waypointKix < -1 * Math.abs(waypointClampingX)){
+                Ix = -1 * Math.abs(waypointClampingX) / waypointKix;
+            }
+
+            if(Iy * waypointKiy > Math.abs(waypointClampingY)){
+                Iy = Math.abs(waypointClampingY) / waypointKiy;
+            }
+            else if(Iy * waypointKiy < - Math.abs(waypointClampingY)){
+                Iy = -1 * Math.abs(waypointClampingY) / waypointKiy;
+            }
+
+            if(Itheta * waypointKitheta > Math.abs(waypointClampingTheta)){
+                Itheta = Math.abs(waypointClampingTheta) / (waypointKitheta);
+            }
+            else if(Itheta * waypointKitheta < - Math.abs(waypointClampingTheta)){
+                Itheta = -1 * Math.abs(waypointClampingTheta) / (waypointKitheta);
+            }
+
+            Dx = (errX - previousErrX) / dt;
+            Dy = (errY - previousErrY) / dt;
+            Dtheta = (errTheta - previousErrTheta) / dt;
+
+            // Calculate correction (multiply components by -1):
+
+            globalCorrectionX = (waypointKpx * Px + waypointKix * Ix + waypointKdx * Dx + Kcx);
+            globalCorrectionY = (waypointKpy * Py + waypointKiy * Iy + waypointKdy * Dy + Kcy);
+            globalCorrectionTheta = (waypointKptheta * Ptheta + waypointKitheta * Itheta + waypointKdtheta * Dtheta + Kctheta);
+
+            localCorrectionY = globalCorrectionY * Math.cos(currentTheta) - globalCorrectionX * Math.sin(currentTheta);
+            localCorrectionX = globalCorrectionY * Math.sin(currentTheta) + globalCorrectionX * Math.cos(currentTheta);
+
+            localCorrectionX *= 1;
+            localCorrectionY *= 1;
+
+            // Rate Limiter: Check if correction is within accelLim of previous correction to avoid slip
+            if(!eqWT(localCorrectionX, previousLocalCorrectionX, waypointAccelLimX)){
+                if(localCorrectionX > previousLocalCorrectionX){
+                    localCorrectionX = previousLocalCorrectionX + waypointAccelLimX;
+                }
+                else{
+                    localCorrectionX = previousLocalCorrectionX - waypointAccelLimX;
+                }
+            }
+            if(!eqWT(localCorrectionY, previousLocalCorrectionY, waypointAccelLimY)){
+                if(localCorrectionY > previousLocalCorrectionY){
+                    localCorrectionY = previousLocalCorrectionY + waypointAccelLimY;
+                }
+                else{
+                    localCorrectionY = previousLocalCorrectionY - waypointAccelLimY;
+                }
+            }
+            if(!eqWT(globalCorrectionTheta, previousGlobalCorrectionTheta, waypointAccelLimTheta)){
+                if(globalCorrectionTheta > previousGlobalCorrectionTheta){
+                    globalCorrectionTheta = previousGlobalCorrectionTheta + waypointAccelLimTheta;
+                }
+                else{
+                    globalCorrectionTheta = previousGlobalCorrectionTheta - waypointAccelLimTheta;
+                }
+            }
+
+            // Controller Toggle:
+
+            /*if(eqWT(currentX, waypointTargetX, waypointToleranceDist)){
+                localCorrectionX = 0;
+            }
+            if(eqWT(currentY, waypointTargetY, waypointToleranceDist)){
+                localCorrectionY = 0;
+            }
+            if(eqWT(currentTheta, waypointTargetTheta, waypointToleranceAng)){
+                globalCorrectionTheta = 0;
+            }*/
+
+            if(Iy * waypointKiy > Imax){
+                Imax = Iy * waypointKiy;
+            }
+
+            // Voltage Regulator:
+            double voltage = getBatteryVoltage();
+            double voltageScale = voltage / nominalVoltage;
+
+            // Actuate Correction
+            double denominator = voltageScale * Math.max(Math.abs(localCorrectionX) + Math.abs(localCorrectionY) + Math.abs(globalCorrectionTheta), 1.0);
+            double a = (localCorrectionX  + localCorrectionY);
+            double b = (-localCorrectionX + localCorrectionY);
+            // Randomize Motor Acutation
+            double randomNum = (int)(Math.random() * 4) + 1;
+            if(randomNum == 1){
+                fR.setPower((b * rightBias + globalCorrectionTheta) / denominator);
+                fL.setPower((a * leftBias - globalCorrectionTheta) / denominator);
+                bR.setPower((a * rightBias + globalCorrectionTheta) / denominator);
+                bL.setPower((b * leftBias - globalCorrectionTheta) / denominator);
+            }
+            else if(randomNum == 2){
+                fL.setPower((a * leftBias - globalCorrectionTheta) / denominator);
+                bR.setPower((a * rightBias + globalCorrectionTheta) / denominator);
+                bL.setPower((b * leftBias - globalCorrectionTheta) / denominator);
+                fR.setPower((b * rightBias + globalCorrectionTheta) / denominator);
+            }
+            else if(randomNum == 3){
+                bR.setPower((a * rightBias + globalCorrectionTheta) / denominator);
+                bL.setPower((b * leftBias - globalCorrectionTheta) / denominator);
+                fR.setPower((b * rightBias + globalCorrectionTheta) / denominator);
+                fL.setPower((a * leftBias - globalCorrectionTheta) / denominator);
+            }
+            else{
+                bL.setPower((b * leftBias - globalCorrectionTheta) / denominator);
+                fR.setPower((b * rightBias + globalCorrectionTheta) / denominator);
+                fL.setPower((a * leftBias - globalCorrectionTheta) / denominator);
+                bR.setPower((a * rightBias + globalCorrectionTheta) / denominator);
+            }
+
+            previousLocalCorrectionX = localCorrectionX;
+            previousLocalCorrectionY = localCorrectionY;
+            previousGlobalCorrectionTheta = globalCorrectionTheta;
+
+            //return new double[]{localCorrectionX, localCorrectionY, globalCorrectionX, globalCorrectionY, a, b};
+        }
+        fL.setPower(0);
+        fR.setPower(0);
+        bL.setPower(0);
+        bR.setPower(0);
+        return new double[]{Imax, getBatteryVoltage(), 0.0, 0.0};
+    }
+
+    /*public void deflectTo(double deflectionXtarget, double deflectionYtarget, double deflectionThetatarget, double XYTol, double AngTol, double finalXtarget, double finalYtarget, double finalThetatarget, double timeout){
+        bL.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.FLOAT));
+        bR.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.FLOAT));
+        fL.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.FLOAT));
+        fR.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.FLOAT));
+        double prevTolDist = waypointToleranceDist;
+        double prevTolAng = waypointToleranceAng;
+        double prevKp = waypointKp;
+        double prevKi = waypointKi;
+        double prevKd = waypointKd;
+        double prevKcx = waypointKcx;
+        double prevKcy = waypointKcy;
+        double prevKctheta = waypointKctheta;
+        double prevThetaWeight = waypointThetaWeight;
+        double prevAccelLimXY = waypointAccelLimXY;
+        double prevAccelLimTheta = waypointAccelLimTheta;
+        double prevClamping = waypointClamping;
+        waypointSettings(XYTol, AngTol,.027,0.0027, .0027, .00375, .00375, .00375, 15, .1, .1, .1);
+        toWaypoint(deflectionXtarget, deflectionYtarget, deflectionThetatarget, timeout);
+        waypointSettings(prevTolDist, prevTolAng, prevKp, prevKi, prevKd, prevKcx, prevKcy, prevKctheta, prevThetaWeight, prevAccelLimXY, prevAccelLimTheta, prevClamping);
+        toWaypoint(finalXtarget, finalYtarget, finalThetatarget, timeout);
+        bL.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
+        bR.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
+        fL.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
+        fR.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
+    }*/
+
+    public void visualLocalization(double[] aprilTagPosition, int aprilTagID, int filterSize){
+
+        aprilTagPosition[2] *= Math.PI / 180;
+
+        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+        double xDist = 0;
+        double yDist = 0;
+        double thetaDiff = 0;
+        for (AprilTagDetection detection : currentDetections) {
+            if (detection.metadata != null && detection.id == aprilTagID) {
+                double xSum = 0;
+                double ySum = 0;
+                double thetaSum = 0;
+                for(int i = 0; i < filterSize; i++){
+                    xSum += detection.ftcPose.x;
+                    ySum += detection.ftcPose.y;
+                    thetaSum += detection.ftcPose.yaw;
+                }
+                xDist = xSum / filterSize;
+                yDist = ySum / filterSize;
+                thetaDiff = thetaSum / filterSize;
+            }
+        }   // end for() loop
+
+        double thetaPos = aprilTagPosition[2] - thetaDiff + Math.PI;
+
+        double xPos = aprilTagPosition[0] + (Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2)) * Math.cos(thetaPos - (Math.PI / 2)));
+        double yPos = aprilTagPosition[1] + (Math.sqrt(Math.pow(xDist, 2) + Math.pow(yDist, 2)) * Math.sin(thetaPos - (Math.PI / 2)));
+        thetaPos -= cameraOffsetPose[2];
+        double beta = 0;
+        if(cameraOffsetPose[0] > 0){
+            beta = Math.atan(cameraOffsetPose[1] / cameraOffsetPose[0]);
+        }
+        else if(cameraOffsetPose[0] < 0){
+            beta = Math.atan(cameraOffsetPose[1]) + Math.PI;
+        }
+        else if(cameraOffsetPose[0] == 0 && cameraOffsetPose[1] > 0){
+            beta = Math.PI / 2;
+        }
+        else{
+            beta = - Math.PI / 2;
+        }
+        xPos += (Math.sqrt(Math.pow(cameraOffsetPose[0], 2) + Math.pow(cameraOffsetPose[1], 2)) * Math.cos(thetaPos + beta - Math.PI));
+        yPos += (Math.sqrt(Math.pow(cameraOffsetPose[0], 2) + Math.pow(cameraOffsetPose[1], 2)) * Math.sin(thetaPos + beta - Math.PI));
+
+        localize(xPos, yPos, thetaPos * 180 / Math.PI);
+
     }
 
 }

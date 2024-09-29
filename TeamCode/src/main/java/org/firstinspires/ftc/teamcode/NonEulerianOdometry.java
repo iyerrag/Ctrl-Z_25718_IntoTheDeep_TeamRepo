@@ -9,7 +9,7 @@ public class NonEulerianOdometry {
     // Constant "c" is the width between parallel odometry wheels
     static final double c = 30;
     // Constant "r" is the radius of the odometry wheels in centimeters
-    static final double r = 2.4;
+    static final double r = 2.375;
     // Constant "ticksPerRev" is the number of ticks per odometry wheel revolution
     static final double ticksPerRev = 2000.0;
     // Constant "distancePerTick" is the distance moved per odometry wheel tick [autocalculated]
@@ -51,7 +51,7 @@ public class NonEulerianOdometry {
     public NonEulerianOdometry(double startingX, double startingY, double startingTheta, DcMotor left, DcMotor right, DcMotor front, robotIMU IMU, String thetaMode){
         x = startingX;
         y = startingY;
-        theta = startingTheta;
+        theta = startingTheta * Math.PI / 180;
         leftEncoder = left;
         rightEncoder = right;
         frontEncoder = front;

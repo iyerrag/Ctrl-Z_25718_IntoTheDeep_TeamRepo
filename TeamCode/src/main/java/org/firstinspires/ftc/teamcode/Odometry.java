@@ -104,31 +104,31 @@ public class Odometry {
         dtheta = (dxmax + dxmin) / (c);
 
         // Sign Change on the Basis of Left/Right Turn
-       if(dxright > 0 && dxleft < 0){
-           dx *= -1;
-           //dtheta is positive here
-       }
-       else{ //dxright < 0 && dxleft > 0
-           dtheta *= -1;
-           //dx is positive here
-       }
+        if(dxright > 0 && dxleft < 0){
+            dx *= -1;
+            //dtheta is positive here
+        }
+        else{ //dxright < 0 && dxleft > 0
+            dtheta *= -1;
+            //dx is positive here
+        }
 
-       // Sign Change on the Basis of Pivot Direction [Forwards/Backwards]
-       if(Math.abs(dxright) > Math.abs(dxleft) && dxright > 0){
-           //Do nothing; dy is positive
-       }
-       else if(Math.abs(dxright) > Math.abs(dxleft) && dxright < 0){
-           dy *= -1;
-       }
-       else if(Math.abs(dxright) < Math.abs(dxleft) && dxleft > 0){
-           //Do nothing; dy is positive
-       }
-       else if(Math.abs(dxright) < Math.abs(dxleft) &&  dxleft < 0){
-           dy *= -1;
-       }
-       else{
-           //error; should never be true
-       }
+        // Sign Change on the Basis of Pivot Direction [Forwards/Backwards]
+        if(Math.abs(dxright) > Math.abs(dxleft) && dxright > 0){
+            //Do nothing; dy is positive
+        }
+        else if(Math.abs(dxright) > Math.abs(dxleft) && dxright < 0){
+            dy *= -1;
+        }
+        else if(Math.abs(dxright) < Math.abs(dxleft) && dxleft > 0){
+            //Do nothing; dy is positive
+        }
+        else if(Math.abs(dxright) < Math.abs(dxleft) &&  dxleft < 0){
+            dy *= -1;
+        }
+        else{
+            //error; should never be true
+        }
 
     }
 
@@ -220,8 +220,8 @@ public class Odometry {
         //Define transformation matrix and robot differential vector
         double[][] differentialVector = new double[][]{{dx}, {dy}, {1}};
         double[][] transformationMatrix = new double[][]{{Math.cos(theta), -1 *  Math.sin(theta), x},
-                                                        {Math.sin(theta), Math.cos(theta), y },
-                                                        {0, 0, 1}  };
+                {Math.sin(theta), Math.cos(theta), y },
+                {0, 0, 1}  };
 
         //Linear transformation of robot differential vector to global field coordinates
         double[][] primes = multiplyMatrix(transformationMatrix, differentialVector);
