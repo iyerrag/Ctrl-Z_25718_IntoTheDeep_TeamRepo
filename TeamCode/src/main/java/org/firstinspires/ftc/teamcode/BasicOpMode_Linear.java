@@ -163,10 +163,9 @@ public class BasicOpMode_Linear extends LinearOpMode {
                 gripper.hold();
             }
             else if(gamepad2.a){
-                gripper.intakeRotate("IN");
-               /* gripper.wristRotateTo(0.12);
-                gripper.elbowTo(-4600, 0.5);
-                gripper.liftTo(0);
+                gripper.changeClawState();
+                //gripper.intakeRotate("IN");
+               /*
                 robot.toWaypoint(robot.getPosition()[0] - 15, robot.getPosition()[1], robot.getPosition()[2], 0.5);
                 gripper.elbowTo(-4900, 0.5);
                 // Placeholder for intake
@@ -176,18 +175,27 @@ public class BasicOpMode_Linear extends LinearOpMode {
 
             }
             else if(gamepad2.b){
-                gripper.intakeRotate("OUT");
-                /*gripper.liftTo(600);
-                gripper.elbowTo(2600, 0.5);
-                gripper.wristRotateTo(0);*/
+                gripper.moveToSpeciminExtractPos();
+               //gripper.changeIntakeState();
+                //gripper.intakeRotate_Hold("IN");
             }
             else if(gamepad2.x){
-                gripper.leftTalonRotateTo(0.1);
-                gripper.rightTalonRotateTo(0.8);
+                gripper.intakeRotate_Hold("IN");
             }
             else if(gamepad2.y){
-                gripper.leftTalonRotateTo(.43);
-                gripper.rightTalonRotateTo(0.47);
+                gripper.intakeRotate_Hold("OUT");
+            }
+            else if(gamepad1.a){
+                gripper.moveToTransportPosition();
+            }
+            else if(gamepad1.b){
+                gripper.moveToInsertPosition();
+            }
+            else if(gamepad1.x){
+                gripper.moveToPickupPosition();
+            }
+            else if(gamepad1.y){
+                gripper.moveToHighBucketPosition();
             }
             else if(gamepad1.left_bumper){
                 //Responsive Control: Local Vectors w/o Rate Limiters
@@ -474,7 +482,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
             telemetry.addData("Gyro Angle:", "" + gyroAngle * 180.0 / Math.PI);
             telemetry.addData("Optimal Clamp: ", "" + storage[0]);
             telemetry.addData("Battery Voltage Reading: ", "" + storage[1]);
-            telemetry.addData("Elbow Pos:", gripper.getElbowPos());
+            telemetry.addData("Lift Pos:", gripper.getLiftPos());
             /*telemetry.addData("globalCorrectionX: ", "" + ab[0]);
             telemetry.addData("globalCorrectionY: ", "" + ab[1]);
             telemetry.addData("correctionX: ", "" + ab[2]);

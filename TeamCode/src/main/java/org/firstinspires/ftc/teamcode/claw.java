@@ -14,6 +14,7 @@ public class claw {
     private Servo rightTalon;
     private CRServo intakeServo;
     private boolean closeState;
+    private boolean holdState;
 
 
 
@@ -43,6 +44,7 @@ public class claw {
 
         wrist.setDirection(Servo.Direction.FORWARD);
         closeState = true;
+        holdState = false;
     }
 
     public boolean state(){
@@ -112,7 +114,7 @@ public class claw {
         Thread.sleep(500);
     }
 
-    public void intakeRotate(String direction) throws InterruptedException {
+    public void intakeRotate_Hold(String direction) throws InterruptedException {
         // Insert Conversion Formula
         if(direction.equals("IN")){
             intakeServo.setPower(1);
@@ -124,6 +126,21 @@ public class claw {
             intakeServo.setPower(0);
         }
         Thread.sleep(50);
+        intakeServo.setPower(0);
+    }
+
+    public void intakeRotate_FixedDuration(String direction) throws InterruptedException {
+        // Insert Conversion Formula
+        if(direction.equals("IN")){
+            intakeServo.setPower(1);
+        }
+        else if(direction.equals("OUT")){
+            intakeServo.setPower(-1);
+        }
+        else{
+            intakeServo.setPower(0);
+        }
+        Thread.sleep(500);
         intakeServo.setPower(0);
     }
 
@@ -142,15 +159,61 @@ public class claw {
     public void changeClawState() throws InterruptedException {
         if(closeState){
             closeState = false;
-            leftTalonRotateTo(0);
-            rightTalonRotateTo(0);
+            leftTalonRotateTo(0.1);
+            rightTalonRotateTo(0.8);
         }
 
         else{
             closeState = true;
-            leftTalonRotateTo(1);
-            rightTalonRotateTo(1);
+            leftTalonRotateTo(.43);
+            rightTalonRotateTo(0.47);
         }
+        Thread.sleep(500);
+    }
+
+    public void changeIntakeState() throws InterruptedException {
+        if(!holdState){
+            holdState = true;
+            intakeRotate_FixedDuration("IN");
+        }
+        else{
+            holdState = false;
+            intakeRotate_FixedDuration("OUT");
+        }
+        Thread.sleep(500);
+    }
+
+    public void moveToHighBucketPosition() throws InterruptedException {
+         liftTo(4600);
+         elbowTo(-600, 0.5);
+         wristRotateTo(0);
+    }
+
+    public void moveToInsertPosition() throws InterruptedException {
+        wristRotateTo(0.12);
+        elbowTo(-2500, 0.5);
+        liftTo(0);
+    }
+
+    public void moveToPickupPosition() throws InterruptedException {
+        wristRotateTo(0.12);
+        elbowTo(-2900, 0.5);
+        liftTo(0);
+    }
+
+    public void moveToTransportPosition() throws InterruptedException {
+        intakeServo.setPower(0.2);
+        liftTo(0);
+        elbowTo(-4000, 0.5);
+        wristRotateTo(1);
+        elbowTo(0, 0.5);
+    }
+
+    public void moveToSpeciminExtractPos() throws InterruptedException {
+        liftTo(1400);
+        elbowTo(-4000, 0.5);
+        wristRotateTo(1);
+        elbowTo(0, 0.5);
     }
 
     // Add Extend & Rotate Functionality
