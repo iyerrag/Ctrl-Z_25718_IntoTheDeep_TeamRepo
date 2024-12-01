@@ -100,17 +100,17 @@ public class BasicOpMode_Linear extends LinearOpMode {
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
 
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 0, 0, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 0, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
         claw gripper = new claw(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "leftTalon"), hardwareMap.get(Servo.class, "rightTalon"), hardwareMap.get(CRServo.class,
                 "intakeServo"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"));
         double[] position = new double[3];
         double[] differentials = new double[3];
         double primes;
         double gyroAngle = 0.0;
-        double[] storage = new double[] {0, 0, 0, 0};
-        double previousX = 0;
-        double previousY = 0;
+        double[] previous = {0, 0};
         double previousTurn = 0;
+
+        boolean lockDualInput;
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -121,387 +121,371 @@ public class BasicOpMode_Linear extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
-            // Setup a variable for each drive wheel to save power level for telemetry
-            double leftPower;
-            double rightPower;
+            lockDualInput = false;
 
-            // Choose to drive using either Tank Mode, or POV Mode
-            // Comment out the method that's not used.  The default below is POV.
             if(gamepad2.left_trigger == 1){
+                gripper.lift(-1);
                 while(gamepad2.left_trigger == 1){
-                    gripper.lift(-1);
+                   previous = driveBase(robot, previous[0], previous[1]);
                 }
                 gripper.hold();
+                lockDualInput = true;
             }
             else if(gamepad2.left_bumper){
+                gripper.lift(1);
                 while(gamepad2.left_bumper){
-                    gripper.lift(1);
+                    previous = driveBase(robot, previous[0], previous[1]);
                 }
                 gripper.hold();
             }
-            /*else if(gamepad2.left_bumper){
-                gripper.wristRotateTo((double) Math.abs(Math.round(gamepad2.left_stick_y * 1000)) / 1000);
-            }*/
-            /*else if(gamepad2.y){
-                if(gripper.state()){
-                    //gripper.open();
-                }
-                else{
-                    //gripper.close();
-                }
-            }*/
             else if(gamepad2.right_trigger == 1){
+                gripper.rotateElbow(-0.50);
                 while(gamepad2.right_trigger == 1){
-                    gripper.rotateElbow(0.50);
+                    previous = driveBase(robot, previous[0], previous[1]);
                 }
                 gripper.hold();
             }
             else if(gamepad2.right_bumper){
+                gripper.rotateElbow(0.50);
                 while(gamepad2.right_bumper){
-                    gripper.rotateElbow(-0.50);
+                    previous = driveBase(robot, previous[0], previous[1]);
                 }
                 gripper.hold();
             }
             else if(gamepad2.a){
+                fL.setPower(0);
+                fR.setPower(0);
+                bL.setPower(0);
+                bR.setPower(0);
                 gripper.changeClawState();
-                //gripper.intakeRotate("IN");
-               /*
-                robot.toWaypoint(robot.getPosition()[0] - 15, robot.getPosition()[1], robot.getPosition()[2], 0.5);
-                gripper.elbowTo(-4900, 0.5);
-                // Placeholder for intake
-                Thread.sleep(500);
-                gripper.elbowTo(4600, 0.5);
-                robot.toWaypoint(robot.getPosition()[0] + 15, robot.getPosition()[1], robot.getPosition()[2], 0.5);*/
-
             }
             else if(gamepad2.b){
+                fL.setPower(0);
+                fR.setPower(0);
+                bL.setPower(0);
+                bR.setPower(0);
                 gripper.moveToSpeciminExtractPos();
-               //gripper.changeIntakeState();
-                //gripper.intakeRotate_Hold("IN");
             }
             else if(gamepad2.x){
                 gripper.intakeRotate_Hold("IN");
+                while(gamepad2.x){
+                    previous = driveBase(robot, previous[0], previous[1]);
+                }
+                gripper.stopIntakeRotation();
             }
             else if(gamepad2.y){
                 gripper.intakeRotate_Hold("OUT");
+                while(gamepad2.y){
+                    previous = driveBase(robot, previous[0], previous[1]);
+                }
+                gripper.stopIntakeRotation();
             }
             else if(gamepad1.a){
                 gripper.moveToTransportPosition();
             }
             else if(gamepad1.b){
+                fL.setPower(0);
+                fR.setPower(0);
+                bL.setPower(0);
+                bR.setPower(0);
                 gripper.moveToInsertPosition();
             }
             else if(gamepad1.x){
+                fL.setPower(0);
+                fR.setPower(0);
+                bL.setPower(0);
+                bR.setPower(0);
                 gripper.moveToPickupPosition();
             }
             else if(gamepad1.y){
+                fL.setPower(0);
+                fR.setPower(0);
+                bL.setPower(0);
+                bR.setPower(0);
                 gripper.moveToHighBucketPosition();
             }
-            else if(gamepad1.left_bumper){
-                //Responsive Control: Local Vectors w/o Rate Limiters
-                double powX;
-                double powY;
-                double addLeft;
-                double addRight;
-                if(gamepad1.right_stick_x >= 0){
-                    powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
-                }
-                else{
-                    powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
-                }
-                if(gamepad1.right_stick_y >= 0){
-                    powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
-                }
-                else{
-                    powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
-                }
-                if(gamepad1.left_stick_x >= 0){
-                    addLeft = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                    addRight = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                }
-                else{
-                    addLeft = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                    addRight = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                }
-
-                // Send calculated power to wheels
-                double a = (powX + powY) * (Math.pow(2, -0.5));
-                double b = (-powX + powY) * (Math.pow(2, -0.5));
-                fL.setPower((a + addLeft) * frontLeftBias);
-                fR.setPower((b + addRight) * frontRightBias);
-                bL.setPower((b + addLeft) * backLeftBias);
-                bR.setPower((a + addRight) * backRightBias);
-
-                robot.updateOdometry();
-                position = robot.getPosition();
-                gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
-
-                // telemetry.addData("dx: ", "" + temp[0]);
-
-                //telemetry.addData("dy: ", "" + temp[1]);
-
-                // telemetry.addData("dTheta: ", "" + temp[2]);
+            else{
+                previous = driveBase(robot, previous[0], previous[1]);
             }
-            else if(gamepad1.right_bumper){
-                //Global Control: Global Vectors + Rate Limiters
-                double powX;
-                double powY;
-                double addLeft;
-                double addRight;
-                if(gamepad1.right_stick_x >= 0){
-                    powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
-                }
-                else{
-                    powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
-                }
-                if(gamepad1.right_stick_y >= 0){
-                    powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
-                }
-                else{
-                    powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
-                }
-                if(gamepad1.left_stick_x >= 0){
-                    addLeft = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                    addRight = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                }
-                else{
-                    addLeft = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                    addRight = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                }
 
+        }
+    }
 
-                if(Math.abs(powX) > Math.abs(previousX)){
-                    if(powX > previousX && powX - previousX > tolX){
-                        powX = previousX + tolX;
-                    }
-                    else if(powX < previousX && previousX - powX > tolX){
-                        powX = previousX - tolX;
-                    }
-                }
-                else{
-                    if(powX > previousX && powX - previousX > deccelScale * tolX){
-                        powX = previousX + deccelScale * tolX;
-                    }
-                    else if(powX < previousX && previousX - powX > deccelScale * tolX){
-                        powX = previousX - deccelScale * tolX;
-                    }
-                }
-                if(Math.abs(powY) > Math.abs(previousY)){
-                    if(powY > previousY && powY - previousY > tolY){
-                        powY = previousY + tolY;
-                    }
-                    else if(powY < previousY && previousY - powY > tolY){
-                        powY = previousY - tolY;
-                    }
-                }
-                else{
-                    if(powY > previousY && powY - previousY > deccelScale * tolY){
-                        powY = previousY + deccelScale * tolY;
-                    }
-                    else if(powY < previousY && previousY - powY > deccelScale * tolY){
-                        powY = previousY - deccelScale * tolY;
-                    }
-                }
-                double theta = robot.getPosition()[2];
-                double tempPowX = (powY * Math.sin(theta) + powX * Math.cos(theta));
-                double tempPowY = (powY * Math.cos(theta) + powX * Math.sin(-theta));
-
-                previousX = powX;
-                previousY = powY;
-
-                powY = tempPowY;
-                powX = tempPowX;
-
-                // Send calculated power to wheels
-                double a = (powX + powY) * (Math.pow(2, -0.5));
-                double b = (-powX + powY) * (Math.pow(2, -0.5));
-                fL.setPower((a + addLeft) * frontLeftBias);
-                fR.setPower((b + addRight) * frontRightBias);
-                bL.setPower((b + addLeft) * backLeftBias);
-                bR.setPower((a + addRight) * backRightBias);
-
-                robot.updateOdometry();
-                position = robot.getPosition();
-                gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
-
-
-                // telemetry.addData("dx: ", "" + temp[0]);
-
-                //telemetry.addData("dy: ", "" + temp[1]);
-
-                // telemetry.addData("dTheta: ", "" + temp[2]);
-            }
-            /*&if else(gamepad2.left_stick_y != 0){
-                claw.close();
-                claw.liftTo(gamepad2.)
-
-            }*/
-            else if(gamepad1.right_trigger != 0){
-                //Local Y-Lock w/o Rate Limiters:
-                double powX = 0;
-                double powY;
-                double addLeft = 0;
-                double addRight = 0;
-
-                if(gamepad1.right_stick_y >= 0){
-                    powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
-                }
-                else{
-                    powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
-                }
-
-                // Send calculated power to wheels
-                double a = (powX + powY) * (Math.pow(2, -0.5));
-                double b = (-powX + powY) * (Math.pow(2, -0.5));
-                fL.setPower((a + addLeft) * frontLeftBias);
-                fR.setPower((b + addRight) * frontRightBias);
-                bL.setPower((b + addLeft) * backLeftBias);
-                bR.setPower((a + addRight) * backRightBias);
-
-                robot.updateOdometry();
-                position = robot.getPosition();
-                gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
-            }
-            else if(gamepad1.left_trigger != 0){
-                //Local X-Lock w/o Rate Limiters:
-                double powX;
-                double powY = 0;
-                double addLeft = 0;
-                double addRight = 0;
-
-                if(gamepad1.right_stick_x >= 0){
-                    powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
-                }
-                else{
-                    powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
-                }
-
-                // Send calculated power to wheels
-                double a = (powX + powY) * (Math.pow(2, -0.5));
-                double b = (-powX + powY) * (Math.pow(2, -0.5));
-                fL.setPower((a + addLeft) * frontLeftBias);
-                fR.setPower((b + addRight) * frontRightBias);
-                bL.setPower((b + addLeft) * backLeftBias);
-                bR.setPower((a + addRight) * backRightBias);
-
-                robot.updateOdometry();
-                position = robot.getPosition();
-                gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
+    public double[] driveBase(chassis robot, double previousX, double previousY) {
+        double[] position;
+        double gyroAngle;
+        if(gamepad1.left_bumper){
+            //Responsive Control: Local Vectors w/o Rate Limiters
+            double powX;
+            double powY;
+            double addLeft;
+            double addRight;
+            if(gamepad1.right_stick_x >= 0){
+                powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
             }
             else{
-                //Default Control: Local Vectors + Rate Limiters
-                double powX;
-                double powY;
-                double addLeft;
-                double addRight;
-                if(gamepad1.right_stick_x >= 0){
-                    powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
-                }
-                else{
-                    powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
-                }
-                if(gamepad1.right_stick_y >= 0){
-                    powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
-                }
-                else{
-                    powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
-                }
-                if(gamepad1.left_stick_x >= 0){
-                    addLeft = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                    addRight = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                }
-                else{
-                    addLeft = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                    addRight = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
-                }
-
-
-                if(Math.abs(powX) > Math.abs(previousX)){
-                    if(powX > previousX && powX - previousX > tolX){
-                        powX = previousX + tolX;
-                    }
-                    else if(powX < previousX && previousX - powX > tolX){
-                        powX = previousX - tolX;
-                    }
-                }
-                else{
-                    if(powX > previousX && powX - previousX > deccelScale * tolX){
-                        powX = previousX + deccelScale * tolX;
-                    }
-                    else if(powX < previousX && previousX - powX > deccelScale * tolX){
-                        powX = previousX - deccelScale * tolX;
-                    }
-                }
-                if(Math.abs(powY) > Math.abs(previousY)){
-                    if(powY > previousY && powY - previousY > tolY){
-                        powY = previousY + tolY;
-                    }
-                    else if(powY < previousY && previousY - powY > tolY){
-                        powY = previousY - tolY;
-                    }
-                }
-                else{
-                    if(powY > previousY && powY - previousY > deccelScale * tolY){
-                        powY = previousY + deccelScale * tolY;
-                    }
-                    else if(powY < previousY && previousY - powY > deccelScale * tolY){
-                        powY = previousY - deccelScale * tolY;
-                    }
-                }
-
-                // Send calculated power to wheels
-                double a = (powX + powY) * (Math.pow(2, -0.5));
-                double b = (-powX + powY) * (Math.pow(2, -0.5));
-                fL.setPower((a + addLeft) * frontLeftBias);
-                fR.setPower((b + addRight) * frontRightBias);
-                bL.setPower((b + addLeft) * backLeftBias);
-                bR.setPower((a + addRight) * backRightBias);
-
-                robot.updateOdometry();
-                position = robot.getPosition();
-                gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
-
-                previousX = powX;
-                previousY = powY;
-
-
-                // telemetry.addData("dx: ", "" + temp[0]);
-
-                //telemetry.addData("dy: ", "" + temp[1]);
-
-                // telemetry.addData("dTheta: ", "" + temp[2]);
+                powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+            }
+            if(gamepad1.right_stick_y >= 0){
+                powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+            }
+            else{
+                powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+            }
+            if(gamepad1.left_stick_x >= 0){
+                addLeft = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                addRight = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+            }
+            else{
+                addLeft = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                addRight = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
             }
 
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            // Send calculated power to wheels
+            double a = (powX + powY) * (Math.pow(2, -0.5));
+            double b = (-powX + powY) * (Math.pow(2, -0.5));
+            fL.setPower((a + addLeft) * frontLeftBias);
+            fR.setPower((b + addRight) * frontRightBias);
+            bL.setPower((b + addLeft) * backLeftBias);
+            bR.setPower((a + addRight) * backRightBias);
 
+            robot.updateOdometry();
+            position = robot.getPosition();
+            gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
 
-            telemetry.addData("X:", "" + Math.round(position[0] * 100.0) / 100.0);
-            telemetry.addData("Y:", "" + Math.round(position[1] * 100.0) / 100.0);
-            telemetry.addData("Theta:", "" + (Math.round(position[2] * 100.0) / 100.0) * 180.0 / Math.PI);
-            telemetry.addData("Gyro Angle:", "" + gyroAngle * 180.0 / Math.PI);
-            telemetry.addData("Optimal Clamp: ", "" + storage[0]);
-            telemetry.addData("Battery Voltage Reading: ", "" + storage[1]);
-            telemetry.addData("Lift Pos:", gripper.getLiftPos());
-            /*telemetry.addData("globalCorrectionX: ", "" + ab[0]);
-            telemetry.addData("globalCorrectionY: ", "" + ab[1]);
-            telemetry.addData("correctionX: ", "" + ab[2]);
-            telemetry.addData("correctionY: ", "" + ab[3]);
-            telemetry.addData("correctionVectorMagnitude: ", "" + ab[4]);
-            telemetry.addData("correctionVectorAngle: ", "" + ab[5]);*/
+            // telemetry.addData("dx: ", "" + temp[0]);
 
-            /*telemetry.addData("dx:", "" + differentials[0]);
-            telemetry.addData("dy:", "" + differentials[1]);
-            telemetry.addData("dtheta:", "" + differentials[2]);
-            telemetry.addData("leftCount':", "" + primes);
-            telemetry.addData("y':", "" + primes[1]);
-            telemetry.addData("theta':", "" + primes[2]);
-            telemetry.addData("", "" + c[0][0] + "" + c[0][1] + "" + c[0][2] + "" + c[0][3]);
-            telemetry.addData("", "" + c[1][0] + "" + c[1][1] + "" + c[1][2] + "" + c[1][3]);
-            telemetry.addData("", "" + c[2][0] + "" + c[2][1] + "" + c[2][2] + "" + c[2][3]);
-            telemetry.addData("", "" + c[3][0] + "" + c[3][1] + "" + c[3][2] + "" + c[3][3]);*/
+            //telemetry.addData("dy: ", "" + temp[1]);
 
-            telemetry.update();
+            // telemetry.addData("dTheta: ", "" + temp[2]);
         }
+        else if(gamepad1.right_bumper){
+            //Global Control: Global Vectors + Rate Limiters
+            double powX;
+            double powY;
+            double addLeft;
+            double addRight;
+            if(gamepad1.right_stick_x >= 0){
+                powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+            }
+            else{
+                powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+            }
+            if(gamepad1.right_stick_y >= 0){
+                powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+            }
+            else{
+                powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+            }
+            if(gamepad1.left_stick_x >= 0){
+                addLeft = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                addRight = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+            }
+            else{
+                addLeft = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                addRight = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+            }
+
+
+            if(Math.abs(powX) > Math.abs(previousX)){
+                if(powX > previousX && powX - previousX > tolX){
+                    powX = previousX + tolX;
+                }
+                else if(powX < previousX && previousX - powX > tolX){
+                    powX = previousX - tolX;
+                }
+            }
+            else{
+                if(powX > previousX && powX - previousX > deccelScale * tolX){
+                    powX = previousX + deccelScale * tolX;
+                }
+                else if(powX < previousX && previousX - powX > deccelScale * tolX){
+                    powX = previousX - deccelScale * tolX;
+                }
+            }
+            if(Math.abs(powY) > Math.abs(previousY)){
+                if(powY > previousY && powY - previousY > tolY){
+                    powY = previousY + tolY;
+                }
+                else if(powY < previousY && previousY - powY > tolY){
+                    powY = previousY - tolY;
+                }
+            }
+            else{
+                if(powY > previousY && powY - previousY > deccelScale * tolY){
+                    powY = previousY + deccelScale * tolY;
+                }
+                else if(powY < previousY && previousY - powY > deccelScale * tolY){
+                    powY = previousY - deccelScale * tolY;
+                }
+            }
+            double theta = robot.getPosition()[2];
+            double tempPowX = (powY * Math.sin(theta) + powX * Math.cos(theta));
+            double tempPowY = (powY * Math.cos(theta) + powX * Math.sin(-theta));
+
+            previousX = powX;
+            previousY = powY;
+
+            powY = tempPowY;
+            powX = tempPowX;
+
+            // Send calculated power to wheels
+            double a = (powX + powY) * (Math.pow(2, -0.5));
+            double b = (-powX + powY) * (Math.pow(2, -0.5));
+            fL.setPower((a + addLeft) * frontLeftBias);
+            fR.setPower((b + addRight) * frontRightBias);
+            bL.setPower((b + addLeft) * backLeftBias);
+            bR.setPower((a + addRight) * backRightBias);
+
+            robot.updateOdometry();
+            position = robot.getPosition();
+            gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
+
+
+            // telemetry.addData("dx: ", "" + temp[0]);
+
+            //telemetry.addData("dy: ", "" + temp[1]);
+
+            // telemetry.addData("dTheta: ", "" + temp[2]);
+        }
+
+        else if(gamepad1.right_trigger != 0){
+            //Local Y-Lock w/o Rate Limiters:
+            double powX = 0;
+            double powY;
+            double addLeft = 0;
+            double addRight = 0;
+
+            if(gamepad1.right_stick_y >= 0){
+                powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+            }
+            else{
+                powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+            }
+
+            // Send calculated power to wheels
+            double a = (powX + powY) * (Math.pow(2, -0.5));
+            double b = (-powX + powY) * (Math.pow(2, -0.5));
+            fL.setPower((a + addLeft) * frontLeftBias);
+            fR.setPower((b + addRight) * frontRightBias);
+            bL.setPower((b + addLeft) * backLeftBias);
+            bR.setPower((a + addRight) * backRightBias);
+
+            robot.updateOdometry();
+            position = robot.getPosition();
+            gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
+        }
+
+        else if(gamepad1.left_trigger != 0){
+            //Local X-Lock w/o Rate Limiters:
+            double powX;
+            double powY = 0;
+            double addLeft = 0;
+            double addRight = 0;
+
+            if(gamepad1.right_stick_x >= 0){
+                powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+            }
+            else{
+                powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+            }
+
+            // Send calculated power to wheels
+            double a = (powX + powY) * (Math.pow(2, -0.5));
+            double b = (-powX + powY) * (Math.pow(2, -0.5));
+            fL.setPower((a + addLeft) * frontLeftBias);
+            fR.setPower((b + addRight) * frontRightBias);
+            bL.setPower((b + addLeft) * backLeftBias);
+            bR.setPower((a + addRight) * backRightBias);
+
+            robot.updateOdometry();
+            position = robot.getPosition();
+            gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
+        }
+        else{
+            //Default Control: Local Vectors + Rate Limiters
+            double powX;
+            double powY;
+            double addLeft;
+            double addRight;
+            if(gamepad1.right_stick_x >= 0){
+                powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+            }
+            else{
+                powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+            }
+            if(gamepad1.right_stick_y >= 0){
+                powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+            }
+            else{
+                powY = Math.pow(Math.abs(gamepad1.right_stick_y), 2);
+            }
+            if(gamepad1.left_stick_x >= 0){
+                addLeft = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                addRight = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+            }
+            else{
+                addLeft = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+                addRight = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
+            }
+
+
+            if(Math.abs(powX) > Math.abs(previousX)){
+                if(powX > previousX && powX - previousX > tolX){
+                    powX = previousX + tolX;
+                }
+                else if(powX < previousX && previousX - powX > tolX){
+                    powX = previousX - tolX;
+                }
+            }
+            else{
+                if(powX > previousX && powX - previousX > deccelScale * tolX){
+                    powX = previousX + deccelScale * tolX;
+                }
+                else if(powX < previousX && previousX - powX > deccelScale * tolX){
+                    powX = previousX - deccelScale * tolX;
+                }
+            }
+            if(Math.abs(powY) > Math.abs(previousY)){
+                if(powY > previousY && powY - previousY > tolY){
+                    powY = previousY + tolY;
+                }
+                else if(powY < previousY && previousY - powY > tolY){
+                    powY = previousY - tolY;
+                }
+            }
+            else{
+                if(powY > previousY && powY - previousY > deccelScale * tolY){
+                    powY = previousY + deccelScale * tolY;
+                }
+                else if(powY < previousY && previousY - powY > deccelScale * tolY){
+                    powY = previousY - deccelScale * tolY;
+                }
+            }
+
+            // Send calculated power to wheels
+            double a = (powX + powY) * (Math.pow(2, -0.5));
+            double b = (-powX + powY) * (Math.pow(2, -0.5));
+            fL.setPower((a + addLeft) * frontLeftBias);
+            fR.setPower((b + addRight) * frontRightBias);
+            bL.setPower((b + addLeft) * backLeftBias);
+            bR.setPower((a + addRight) * backRightBias);
+
+            robot.updateOdometry();
+            position = robot.getPosition();
+            gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
+
+            previousX = powX;
+            previousY = powY;
+        }
+
+        // DriveBase Data Update
+        telemetry.addData("Status", "Run Time: " + runtime.toString());
+        telemetry.addData("X:", "" + Math.round(position[0] * 100.0) / 100.0);
+        telemetry.addData("Y:", "" + Math.round(position[1] * 100.0) / 100.0);
+        telemetry.addData("Theta:", "" + (Math.round(position[2] * 100.0) / 100.0) * 180.0 / Math.PI);
+        telemetry.addData("Gyro Angle:", "" + gyroAngle * 180.0 / Math.PI);
+        telemetry.update();
+        return (new double[] {previousX, previousY});
     }
 }

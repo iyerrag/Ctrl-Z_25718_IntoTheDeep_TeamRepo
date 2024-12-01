@@ -125,7 +125,9 @@ public class claw {
         else{
             intakeServo.setPower(0);
         }
-        Thread.sleep(50);
+    }
+
+    public void stopIntakeRotation(){
         intakeServo.setPower(0);
     }
 
@@ -159,8 +161,8 @@ public class claw {
     public void changeClawState() throws InterruptedException {
         if(closeState){
             closeState = false;
-            leftTalonRotateTo(0.1);
-            rightTalonRotateTo(0.8);
+            leftTalonRotateTo(0.3);
+            rightTalonRotateTo(0.6);
         }
 
         else{
@@ -184,7 +186,7 @@ public class claw {
     }
 
     public void moveToHighBucketPosition() throws InterruptedException {
-         liftTo(4600);
+         liftTo(4800);
          elbowTo(-600, 0.5);
          wristRotateTo(0);
     }
@@ -197,16 +199,17 @@ public class claw {
 
     public void moveToPickupPosition() throws InterruptedException {
         wristRotateTo(0.12);
-        elbowTo(-2900, 0.5);
+        elbowTo(-2950, 0.5);
         liftTo(0);
     }
 
     public void moveToTransportPosition() throws InterruptedException {
-        intakeServo.setPower(0.2);
-        liftTo(0);
-        elbowTo(-4000, 0.5);
-        wristRotateTo(1);
+        intakeServo.setPower(0);
+        wristRotateTo(0.12);
         elbowTo(0, 0.5);
+        liftTo(0);
+        wristRotateTo(0.66);
+
     }
 
     public void moveToSpeciminExtractPos() throws InterruptedException {
