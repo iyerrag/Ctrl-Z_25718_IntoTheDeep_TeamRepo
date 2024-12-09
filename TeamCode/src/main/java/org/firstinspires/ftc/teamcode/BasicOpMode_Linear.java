@@ -63,14 +63,14 @@ import java.util.ArrayList;
 @TeleOp
 public class BasicOpMode_Linear extends LinearOpMode {
 
-    private static final double tolX = .05;
-    private static final double tolY = .05;
+    private static final double tolX = .03;
+    private static final double tolY = .03;
     private static final double tolTheta = 1;
     private static final double deccelScale = 3.0;
 
     static final double frontLeftBias = 0.97;
     static final double frontRightBias = 0.92;
-    static final double backLeftBias = 1.0;
+    static final double backLeftBias = .93;
     static final double backRightBias = 0.96;
 
     // Declare OpMode members.

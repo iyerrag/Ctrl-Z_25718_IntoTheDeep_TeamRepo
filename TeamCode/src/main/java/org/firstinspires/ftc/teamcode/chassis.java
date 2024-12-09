@@ -612,7 +612,7 @@ public class chassis{
     }
 
     // NOTE: High Chance for Computational Failure With More Than 10 Bezier Points; Guarenteed Failure With 14 or More Bezier Points;
-    public double[] toWaypointBezier(ArrayList<double[]> targetPoints,  double runtime, double timeout){
+    public double[] toWaypointBezier(ArrayList<double[]> targetPoints, double runtime, double timeout){
         for(int i = 0; i < targetPoints.size(); i++){
             double[] point = targetPoints.get(i);
             point[2] *= Math.PI / 180.0;
