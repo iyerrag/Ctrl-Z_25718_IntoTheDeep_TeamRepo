@@ -100,9 +100,9 @@ public class BasicOpMode_Linear extends LinearOpMode {
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
 
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 0, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
-        claw gripper = new claw(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "leftTalon"), hardwareMap.get(Servo.class, "rightTalon"), hardwareMap.get(CRServo.class,
-                "intakeServo"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"));
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 300, 30, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
+        claw gripper = new claw(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "leftTalon"), hardwareMap.get(Servo.class, "rightTalon"), hardwareMap.get(Servo.class,
+                "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"));
         double[] position = new double[3];
         double[] differentials = new double[3];
         double primes;
@@ -159,45 +159,49 @@ public class BasicOpMode_Linear extends LinearOpMode {
                 bR.setPower(0);
                 gripper.changeClawState();
             }
-            else if(gamepad2.b){
+            else if(gamepad1.b){
                 fL.setPower(0);
                 fR.setPower(0);
                 bL.setPower(0);
                 bR.setPower(0);
+
+                robot.waypointSettings(1.5, 1.5, 1,
+                        .0145, .008125, 0, 0,
+                        .012, .002025, 0, 0,
+                        .125, .1425, 0, 0,
+                        .024, .03, 10,
+                        .075, .03, .05);
+                ArrayList<double[]> speciminExtractMov = new ArrayList<double[]>();
+                speciminExtractMov.add(new double[]{300, 120, 180});
+                speciminExtractMov.add(new double[]{300, 35, 180});
                 gripper.moveToSpeciminExtractPos();
+                robot.toWaypointBezier(speciminExtractMov, 4,  4.25);
+
             }
-            else if(gamepad2.x){
-                gripper.intakeRotate_Hold("IN");
-                while(gamepad2.x){
-                    previous = driveBase(robot, previous[0], previous[1]);
-                }
-                gripper.stopIntakeRotation();
+            else if(gamepad1.x){
+
             }
-            else if(gamepad2.y){
-                gripper.intakeRotate_Hold("OUT");
-                while(gamepad2.y){
-                    previous = driveBase(robot, previous[0], previous[1]);
-                }
-                gripper.stopIntakeRotation();
+            else if(gamepad1.y){
+
             }
             else if(gamepad1.a){
                 gripper.moveToTransportPosition();
             }
-            else if(gamepad1.b){
+            else if(gamepad2.b){
                 fL.setPower(0);
                 fR.setPower(0);
                 bL.setPower(0);
                 bR.setPower(0);
                 gripper.moveToInsertPosition();
             }
-            else if(gamepad1.x){
+            else if(gamepad2.x){
                 fL.setPower(0);
                 fR.setPower(0);
                 bL.setPower(0);
                 bR.setPower(0);
                 gripper.moveToPickupPosition();
             }
-            else if(gamepad1.y){
+            else if(gamepad2.y){
                 fL.setPower(0);
                 fR.setPower(0);
                 bL.setPower(0);
