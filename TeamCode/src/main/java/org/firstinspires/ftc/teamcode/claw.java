@@ -12,18 +12,17 @@ public class claw {
     private DcMotor rightSlide;
     private Servo leftTalon;
     private Servo rightTalon;
-    private CRServo intakeServo;
+    private Servo beak;
     private boolean closeState;
-    private boolean holdState;
 
 
 
-    public claw(Servo wrist, Servo leftTalon, Servo rightTalon, CRServo intakeServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow){
+    public claw(Servo wrist, Servo leftTalon, Servo rightTalon, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow){
         this.wrist = wrist;
         this.elbow = elbow;
         this.leftTalon = leftTalon;
         this.rightTalon = rightTalon;
-        this.intakeServo = intakeServo;
+        this.beak = beakServo;
         leftSlide = lifterLeft;
         rightSlide = lifterRight;
 
@@ -44,7 +43,6 @@ public class claw {
 
         wrist.setDirection(Servo.Direction.FORWARD);
         closeState = true;
-        holdState = false;
     }
 
     public boolean state(){
@@ -114,7 +112,7 @@ public class claw {
         Thread.sleep(500);
     }
 
-    public void intakeRotate_Hold(String direction) throws InterruptedException {
+    /*public void intakeRotate_Hold(String direction) throws InterruptedException {
         // Insert Conversion Formula
         if(direction.equals("IN")){
             intakeServo.setPower(1);
@@ -144,7 +142,7 @@ public class claw {
         }
         Thread.sleep(500);
         intakeServo.setPower(0);
-    }
+    }*/
 
     public void leftTalonRotateTo(double targetAngle) throws InterruptedException {
         // Insert Conversion Formula
@@ -158,22 +156,31 @@ public class claw {
         rightTalon.setPosition(targetPos);
     }
 
+    public void beakRotateTo(double targetAngle) throws InterruptedException {
+        // Insert Conversion Formula
+        double targetPos = targetAngle;
+        beak.setPosition(targetPos);
+    }
+
+
     public void changeClawState() throws InterruptedException {
         if(closeState){
             closeState = false;
             leftTalonRotateTo(0.3);
             rightTalonRotateTo(0.6);
+            beakRotateTo(0.2);
         }
 
         else{
             closeState = true;
             leftTalonRotateTo(.43);
             rightTalonRotateTo(0.47);
+            beakRotateTo(0.55);
         }
         Thread.sleep(500);
     }
 
-    public void changeIntakeState() throws InterruptedException {
+    /*public void changeIntakeState() throws InterruptedException {
         if(!holdState){
             holdState = true;
             intakeRotate_FixedDuration("IN");
@@ -183,7 +190,7 @@ public class claw {
             intakeRotate_FixedDuration("OUT");
         }
         Thread.sleep(500);
-    }
+    }*/
 
     public void moveToHighBucketPosition() throws InterruptedException {
          liftTo(4800);
@@ -193,18 +200,18 @@ public class claw {
 
     public void moveToInsertPosition() throws InterruptedException {
         wristRotateTo(0.12);
-        elbowTo(-2500, 0.5);
+        elbowTo(-2600, 0.5);
         liftTo(0);
     }
 
     public void moveToPickupPosition() throws InterruptedException {
-        wristRotateTo(0.12);
-        elbowTo(-2950, 0.5);
+        wristRotateTo(0.66);
+        elbowTo(-2600, 0.5);
         liftTo(0);
     }
 
     public void moveToTransportPosition() throws InterruptedException {
-        intakeServo.setPower(0);
+        beakRotateTo(0.6);
         wristRotateTo(0.12);
         elbowTo(0, 0.5);
         liftTo(0);
@@ -217,6 +224,7 @@ public class claw {
         elbowTo(-4000, 0.5);
         wristRotateTo(1);
         elbowTo(0, 0.5);
+        beakRotateTo(0.55);
     }
 
     // Add Extend & Rotate Functionality

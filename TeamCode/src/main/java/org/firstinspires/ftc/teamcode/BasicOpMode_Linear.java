@@ -101,8 +101,8 @@ public class BasicOpMode_Linear extends LinearOpMode {
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
 
         chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 0, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
-        claw gripper = new claw(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "leftTalon"), hardwareMap.get(Servo.class, "rightTalon"), hardwareMap.get(CRServo.class,
-                "intakeServo"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"));
+        claw gripper = new claw(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "leftTalon"), hardwareMap.get(Servo.class, "rightTalon"), hardwareMap.get(Servo.class,
+                "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"));
         double[] position = new double[3];
         double[] differentials = new double[3];
         double primes;
@@ -167,18 +167,10 @@ public class BasicOpMode_Linear extends LinearOpMode {
                 gripper.moveToSpeciminExtractPos();
             }
             else if(gamepad2.x){
-                gripper.intakeRotate_Hold("IN");
-                while(gamepad2.x){
-                    previous = driveBase(robot, previous[0], previous[1]);
-                }
-                gripper.stopIntakeRotation();
+
             }
             else if(gamepad2.y){
-                gripper.intakeRotate_Hold("OUT");
-                while(gamepad2.y){
-                    previous = driveBase(robot, previous[0], previous[1]);
-                }
-                gripper.stopIntakeRotation();
+
             }
             else if(gamepad1.a){
                 gripper.moveToTransportPosition();
