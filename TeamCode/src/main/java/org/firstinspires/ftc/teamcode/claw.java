@@ -165,19 +165,23 @@ public class claw {
 
     public void changeClawState() throws InterruptedException {
         if(closeState){
-            closeState = false;
             leftTalonRotateTo(0.3);
             rightTalonRotateTo(0.6);
             beakRotateTo(0.2);
+            closeState = false;
         }
 
         else{
-            closeState = true;
             leftTalonRotateTo(.43);
             rightTalonRotateTo(0.47);
             beakRotateTo(0.55);
+            closeState = true;
         }
         Thread.sleep(500);
+    }
+
+    public boolean getCloseState(){
+        return closeState;
     }
 
     /*public void changeIntakeState() throws InterruptedException {
@@ -193,27 +197,30 @@ public class claw {
     }*/
 
     public void moveToHighBucketPosition() throws InterruptedException {
-         liftTo(4800);
-         elbowTo(-600, 0.5);
+         liftTo(5400);
+         Thread.sleep(2000);
+         elbowTo(-450, 1);
          wristRotateTo(0);
     }
 
     public void moveToInsertPosition() throws InterruptedException {
         wristRotateTo(0.12);
-        elbowTo(-2600, 0.5);
+        elbowTo(-2750, 1);
         liftTo(0);
     }
 
     public void moveToPickupPosition() throws InterruptedException {
+        wristRotateTo(0.12);
+        elbowTo(-2600, 1);
         wristRotateTo(0.66);
-        elbowTo(-2600, 0.5);
+        if(closeState){changeClawState();}
         liftTo(0);
     }
 
     public void moveToTransportPosition() throws InterruptedException {
         beakRotateTo(0.6);
         wristRotateTo(0.12);
-        elbowTo(0, 0.5);
+        elbowTo(0, 1);
         liftTo(0);
         wristRotateTo(0.66);
 
