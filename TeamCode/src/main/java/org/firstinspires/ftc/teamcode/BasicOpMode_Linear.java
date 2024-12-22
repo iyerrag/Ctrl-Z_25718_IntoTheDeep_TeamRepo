@@ -100,7 +100,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
 
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 300, 30, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 300, 0, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
         claw gripper = new claw(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "leftTalon"), hardwareMap.get(Servo.class, "rightTalon"), hardwareMap.get(Servo.class,
                 "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"));
         double[] position = new double[3];
@@ -168,14 +168,15 @@ public class BasicOpMode_Linear extends LinearOpMode {
                 robot.waypointSettings(1.5, 1.5, 1,
                         .0145, .008125, 0, 0,
                         .012, .002025, 0, 0,
-                        .125, .1425, 0, 0,
+                        .25, .1425, 0, 0,
                         .024, .03, 10,
                         .075, .03, .05);
                 ArrayList<double[]> speciminExtractMov = new ArrayList<double[]>();
                 speciminExtractMov.add(new double[]{300, 120, 180});
-                speciminExtractMov.add(new double[]{300, 35, 180});
+                speciminExtractMov.add(new double[]{300, 0, 180});
                 gripper.moveToSpeciminExtractPos();
-                robot.toWaypointBezier(speciminExtractMov, 4,  4.25);
+                robot.toWaypointBezier(speciminExtractMov, 3,  3.25);
+                robot.localize(robot.getPosition()[0], 28, 180);
 
             }
             else if(gamepad1.x){
