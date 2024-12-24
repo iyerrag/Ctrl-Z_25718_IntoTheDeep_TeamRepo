@@ -45,113 +45,205 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
 import java.util.ArrayList;
 
-
-/*
- * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
- * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
- * of the FTC Driver Station. When a selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all linear OpModes contain.
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode liTt
- */
-
-
 @TeleOp
-public class BasicOpMode_Linear extends LinearOpMode {
+public class TeleOpSubmersible extends LinearOpMode {
 
+    //Define Rate Limiter Constants (Rate Limiters = Limits Robot Acceleration)
     private static final double tolX = .03;
     private static final double tolY = .03;
     private static final double tolTheta = 1;
     private static final double deccelScale = 3.0;
 
+    //Define Wheel Biases to Manage Robot Drift
     static final double frontLeftBias = 0.97;
     static final double frontRightBias = 0.92;
     static final double backLeftBias = .93;
     static final double backRightBias = 0.96;
 
-    // Declare OpMode members.
+    //Define Timer Object
     private ElapsedTime runtime = new ElapsedTime();
+
+    //Declare Motor Objects
     private DcMotor fL;
     private DcMotor fR;
     private DcMotor bL;
     private DcMotor bR;
 
+    //Enter Run-Mode:
     @Override
     public void runOpMode() throws InterruptedException {
+
+        //Initialize Telemetry Print:
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
+        //Assign Motors
         fL = hardwareMap.get(DcMotor.class, "FrontLeft");
         fR = hardwareMap.get(DcMotor.class, "FrontRight");
         bL = hardwareMap.get(DcMotor.class, "BackLeft");
         bR = hardwareMap.get(DcMotor.class, "BackRight");
+
+        //Define Sensors (IMU, battery voltmeter, webcam)
         BHI260IMU IMU = hardwareMap.get(BHI260IMU.class, "imu");
         VoltageSensor voltmeter = hardwareMap.voltageSensor.iterator().next();
         WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
 
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
+        //Define DriveBase: new chassis(motor1, motor2, motor3, motor4, IMU, angleMode, startingX, startingY, startingTheta, voltmeter, webcam, camera offset array)
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 15, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
 
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 300, 0, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
-        claw gripper = new claw(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "leftTalon"), hardwareMap.get(Servo.class, "rightTalon"), hardwareMap.get(Servo.class,
-                "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"));
-        double[] position = new double[3];
-        double[] differentials = new double[3];
-        double primes;
-        double gyroAngle = 0.0;
+        //Define TaskManipulator: new claw(wrist servo, beak servo, left lifter, right lifter, elbow);
+        actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"));
+
+        //Define Previous Var (stores the previous velocity command sig. to motors)
         double[] previous = {0, 0};
-        double previousTurn = 0;
 
-        boolean lockDualInput;
-
-        // Wait for the game to start (driver presses PLAY)
+        //Wait for Driver to Start
         waitForStart();
+
+        //Re-initialize Runtime
         runtime.reset();
 
-        double[] ab = {0, 0, 0, 0, 0, 0};
-
-        // run until the end of the match (driver presses STOP)
+        //Until the Match-End:
         while (opModeIsActive()) {
 
-            lockDualInput = false;
-
+            //If Left Trigger is pressed on the task controller, lower the lift
             if(gamepad2.left_trigger == 1){
+
+                //Set lift to moving downward
                 gripper.lift(-1);
+
+                //Allow DriveBase movement while lift is moving (until the left trigger is released)
                 while(gamepad2.left_trigger == 1){
-                   previous = driveBase(robot, previous[0], previous[1]);
+                    previous = driveBase(robot, previous[0], previous[1]);
                 }
+
+                //Set TaskManipulator to hold
                 gripper.hold();
-                lockDualInput = true;
             }
+
+            //If Left Bumper is pressed on the task controller, raise the lift
             else if(gamepad2.left_bumper){
+
+                //Set lift to moving upward
                 gripper.lift(1);
+
+                //Allow DriveBase movement while lift is moving (until the left bumper is released)
                 while(gamepad2.left_bumper){
                     previous = driveBase(robot, previous[0], previous[1]);
                 }
+
+                //Set TaskManipulator to hold
                 gripper.hold();
             }
+
+            //If Right Trigger is pressed on the task controller, rotate the elbow forward
             else if(gamepad2.right_trigger == 1){
+
+                //Set elbow to forward rotation
                 gripper.rotateElbow(-0.50);
+
+                //Allow DriveBase movement while elbow is moving (until the right trigger is released)
                 while(gamepad2.right_trigger == 1){
                     previous = driveBase(robot, previous[0], previous[1]);
                 }
+
+                //Set TaskManipulator to hold
                 gripper.hold();
             }
+
+            //If Right Bumper is pressed on the task controller, rotate the elbow backward
             else if(gamepad2.right_bumper){
+
+                //Set the elbow to backward rotation
                 gripper.rotateElbow(0.50);
+
+                //Allow DriveBase movement while elbow is moving (until the right bumper is released)
                 while(gamepad2.right_bumper){
                     previous = driveBase(robot, previous[0], previous[1]);
                 }
+
+                //Set TaskManipulator to hold
                 gripper.hold();
             }
+
+            //If button "a" is pressed on the driver controller, insert claw into submersible
+            else if(gamepad1.a){
+
+                //Initialize Robot Controller Settings
+                robot.waypointSettings(1, 1, 1,
+                        .01575, .020125, .0025, 0,
+                        .012, .006025, 0.0025, 0,
+                        .35, .035, .0035, 0,
+                        .024, .03, 10,
+                        .15, .15, .4);
+
+                //Movement
+                robot.toWaypoint(60, 60, -90, 2.5);
+                gripper.moveToTransportPosition();
+                robot.toWaypoint(60, 180, -90, 2.5);
+                gripper.moveToInsertPosition();
+                Thread.sleep(1250);
+                robot.toWaypoint(110, 180, -90, 1);
+                gripper.moveToPickupPosition();
+
+            }
+
+            //If the button "b" is pressed on the driver controller, extract the claw from the submersible
+            else if(gamepad1.b){
+
+                //Initialize Robot Controller Settings
+                robot.waypointSettings(1, 1, 1,
+                        .01575, .020125, .0025, 0,
+                        .012, .006025, 0.0025, 0,
+                        .35, .035, .0035, 0,
+                        .024, .03, 10,
+                        .15, .15, .4);
+
+                //Movement
+                gripper.moveToInsertPosition();
+                robot.toWaypoint(60, 180, -90, 0.75);
+                gripper.moveToTransportPosition();
+                robot.toWaypoint(60, 180, 0, 1);
+
+            }
+
+            //If the button "x" is pressed on the driver controller, position the robot for extracting specimen from human player
+            else if(gamepad1.x){
+
+                //Initialize Robot Controller Settings
+                robot.waypointSettings(1, 1, 1,
+                        .01575, .020125, .0025, 0,
+                        .012, .006025, 0.0025, 0,
+                        .35, .035, .0035, 0,
+                        .024, .03, 10,
+                        .15, .15, .4);
+
+                //Movement
+                gripper.moveToTransportPosition();
+                robot.toWaypoint(300, 45, 0, 2.5);
+                gripper.moveToSpecimenExtractPos();
+
+            }
+
+            //If the button "y" on the driver controller is pressed, position the robot for inserting the specimen below the high bar (for hanging)
+            else if(gamepad1.y){
+
+                //Initialize Robot Controller Settings
+                robot.waypointSettings(1, 1, 1,
+                        .01575, .020125, .0025, 0,
+                        .012, .006025, 0.0025, 0,
+                        .35, .035, .0035, 0,
+                        .024, .03, 10,
+                        .15, .15, .4);
+
+                //Movement
+                robot.toWaypoint(180, 45, 0, 1.75);
+                gripper.moveToHangInsertPosition();
+                robot.toWaypoint(180, 90, 0, 0.5);
+
+            }
+
+            //If button "a" on the task controller is pressed, close or open the claw (with alternating function)
             else if(gamepad2.a){
                 fL.setPower(0);
                 fR.setPower(0);
@@ -159,56 +251,52 @@ public class BasicOpMode_Linear extends LinearOpMode {
                 bR.setPower(0);
                 gripper.changeClawState();
             }
-            else if(gamepad1.b){
-                fL.setPower(0);
-                fR.setPower(0);
-                bL.setPower(0);
-                bR.setPower(0);
 
-                robot.waypointSettings(1.5, 1.5, 1,
-                        .0145, .008125, 0, 0,
-                        .012, .002025, 0, 0,
-                        .25, .1425, 0, 0,
+            //If button "b" on the task controller is pressed, hang the specimen and back away from the bar
+            else if(gamepad2.b){
+                fL.setPower(-.05);
+                fR.setPower(-.05);
+                bL.setPower(-.05);
+                bR.setPower(-.05);
+                gripper.hang();
+                Thread.sleep(1250);
+                gripper.changeClawState();
+                robot.waypointSettings(1, 1, 1,
+                        .01575, .020125, .0025, 0,
+                        .012, .006025, 0.0025, 0,
+                        .35, .035, .0035, 0,
                         .024, .03, 10,
-                        .075, .03, .05);
-                ArrayList<double[]> speciminExtractMov = new ArrayList<double[]>();
-                speciminExtractMov.add(new double[]{300, 120, 180});
-                speciminExtractMov.add(new double[]{300, 0, 180});
-                gripper.moveToSpeciminExtractPos();
-                robot.toWaypointBezier(speciminExtractMov, 3,  3.25);
-                robot.localize(robot.getPosition()[0], 28, 180);
-
-            }
-            else if(gamepad1.x){
-
-            }
-            else if(gamepad1.y){
-
-            }
-            else if(gamepad1.a){
+                        .15, .15, .4);
+                robot.toWaypoint(180, 45, 0, .75);
                 gripper.moveToTransportPosition();
             }
-            else if(gamepad2.b){
-                fL.setPower(0);
-                fR.setPower(0);
-                bL.setPower(0);
-                bR.setPower(0);
-                gripper.moveToInsertPosition();
-            }
+
+            //If button "x" on the task controller is pressed, grab the specimen from its position (it was put there by the human player)
             else if(gamepad2.x){
-                fL.setPower(0);
-                fR.setPower(0);
-                bL.setPower(0);
-                bR.setPower(0);
-                gripper.moveToPickupPosition();
+                gripper.moveToSpecimenExtractPos();
+                if(!gripper.getCloseState()){gripper.changeClawState();}
+                gripper.liftTo(1000);
             }
+
+            //If button "y" on the task controller is pressed, move the robot to the bucket and drop off the sample
             else if(gamepad2.y){
-                fL.setPower(0);
-                fR.setPower(0);
-                bL.setPower(0);
-                bR.setPower(0);
+                robot.waypointSettings(1, 1, 1,
+                        .01575, .020125, .0025, 0,
+                        .012, .006025, 0.0025, 0,
+                        .35, .035, .0035, 0,
+                        .024, .03, 10,
+                        .15, .15, .4);
+                gripper.moveToTransportPosition();
+                robot.toWaypoint(50, 50, -45, 2);
                 gripper.moveToHighBucketPosition();
+                Thread.sleep(2500);
+                robot.toWaypoint(25, 25, -45, 0.75);
+                gripper.changeClawState();
+                robot.toWaypoint(50, 50, -45, 1);
+                gripper.moveToTransportPosition();
             }
+
+            //If no buttons are pressed on any controller, exhibit normal DriveBase functionality
             else{
                 previous = driveBase(robot, previous[0], previous[1]);
             }
@@ -216,11 +304,15 @@ public class BasicOpMode_Linear extends LinearOpMode {
         }
     }
 
+    //Normal DriveBase Functionality
     public double[] driveBase(chassis robot, double previousX, double previousY) {
+
+        //Declare Position Variables
         double[] position;
         double gyroAngle;
+
+        //Responsive Control: Local Vectors w/o Rate Limiters
         if(gamepad1.left_bumper){
-            //Responsive Control: Local Vectors w/o Rate Limiters
             double powX;
             double powY;
             double addLeft;
@@ -257,15 +349,10 @@ public class BasicOpMode_Linear extends LinearOpMode {
             robot.updateOdometry();
             position = robot.getPosition();
             gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
-
-            // telemetry.addData("dx: ", "" + temp[0]);
-
-            //telemetry.addData("dy: ", "" + temp[1]);
-
-            // telemetry.addData("dTheta: ", "" + temp[2]);
         }
+
+        //Global Control: Global Vectors + Rate Limiters
         else if(gamepad1.right_bumper){
-            //Global Control: Global Vectors + Rate Limiters
             double powX;
             double powY;
             double addLeft;
@@ -345,17 +432,11 @@ public class BasicOpMode_Linear extends LinearOpMode {
             robot.updateOdometry();
             position = robot.getPosition();
             gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
-
-
-            // telemetry.addData("dx: ", "" + temp[0]);
-
-            //telemetry.addData("dy: ", "" + temp[1]);
-
-            // telemetry.addData("dTheta: ", "" + temp[2]);
         }
 
+        //Local Y-Lock w/o Rate Limiters:
         else if(gamepad1.right_trigger != 0){
-            //Local Y-Lock w/o Rate Limiters:
+
             double powX = 0;
             double powY;
             double addLeft = 0;
@@ -381,8 +462,9 @@ public class BasicOpMode_Linear extends LinearOpMode {
             gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
         }
 
+        //Local X-Lock w/o Rate Limiters:
         else if(gamepad1.left_trigger != 0){
-            //Local X-Lock w/o Rate Limiters:
+
             double powX;
             double powY = 0;
             double addLeft = 0;
@@ -407,8 +489,10 @@ public class BasicOpMode_Linear extends LinearOpMode {
             position = robot.getPosition();
             gyroAngle = Math.round(robot.getAngle() * 100.0) / 100.0;
         }
+
+        //Default Control: Local Vectors + Rate Limiters
         else{
-            //Default Control: Local Vectors + Rate Limiters
+
             double powX;
             double powY;
             double addLeft;
@@ -433,7 +517,6 @@ public class BasicOpMode_Linear extends LinearOpMode {
                 addLeft = -0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
                 addRight = 0.5 * Math.pow(Math.abs(gamepad1.left_stick_x), 2);
             }
-
 
             if(Math.abs(powX) > Math.abs(previousX)){
                 if(powX > previousX && powX - previousX > tolX){
@@ -484,7 +567,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
             previousY = powY;
         }
 
-        // DriveBase Data Update
+        // DriveBase Data Update (Via Telemetry)
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("X:", "" + Math.round(position[0] * 100.0) / 100.0);
         telemetry.addData("Y:", "" + Math.round(position[1] * 100.0) / 100.0);
