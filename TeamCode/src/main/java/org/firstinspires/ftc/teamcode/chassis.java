@@ -11,6 +11,7 @@ import java.util.List;
 //import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -36,6 +37,7 @@ public class chassis{
     static private DcMotor bR;
     static private NonEulerianOdometry localizer;
     static private robotIMU imu;
+    static private Rev2mDistanceSensor frontDistanceSensor;
     static private ElapsedTime timer;
 
     static final double rightBias = 1.0;
@@ -61,7 +63,7 @@ public class chassis{
      */
     private VisionPortal visionPortal;
 
-    public chassis(DcMotor FL, DcMotor FR, DcMotor BL, DcMotor BR, BHI260IMU IMU, String thetaMode, double startingX, double startingY, double startingTheta, VoltageSensor voltmeter, WebcamName cameraName, double[] cameraNameOffset) {
+    public chassis(DcMotor FL, DcMotor FR, DcMotor BL, DcMotor BR, BHI260IMU IMU, String thetaMode, double startingX, double startingY, double startingTheta, VoltageSensor voltmeter, WebcamName cameraName, double[] cameraNameOffset, DistanceSensor frontDistanceSensor) {
         // Define Timer Objects:
         timer = new ElapsedTime();
         imu = new robotIMU(IMU);
@@ -103,6 +105,8 @@ public class chassis{
         cameraOffsetPose[2] *= Math.PI / 180;
 
         initAprilTag();
+
+        this.frontDistanceSensor = (Rev2mDistanceSensor) frontDistanceSensor;
     }
 
     private void initAprilTag() {
@@ -688,7 +692,7 @@ public class chassis{
             previousErrY = errY;
             previousErrTheta = errTheta;
 
-            // Get Brezier Target
+            // Get Bezier Target
             t = (timer.seconds() - startTime) / runtime;
             if(t > 1){
                 t = 1;
@@ -942,6 +946,26 @@ public class chassis{
 
         localize(xPos, yPos, thetaPos * 180 / Math.PI);
 
+    }
+
+    public void ultrasonicLocalization(double[] objectPos){
+        double Xobj = objectPos[0];
+        double Yobj = objectPos[1];
+
+        double ThetaR = localizer.getPosition()[2];
+        double Xr = localizer.getPosition()[0];
+        double Yr = localizer.getPosition()[1];
+
+        double Xupdated;
+        double Yupdated;
+
+        double xPrime = Xr * Math.cos(ThetaR) + Yr * Math.sin(ThetaR);
+        double yPrime = Yobj * Math.cos(ThetaR) - Xobj * Math.sin(ThetaR) - frontDistanceSensor.getDistance(DistanceUnit.CM);
+
+        Xupdated = xPrime * Math.cos(ThetaR) - yPrime * Math.sin(ThetaR);
+        Yupdated = xPrime * Math.sin(ThetaR) + yPrime * Math.cos(ThetaR);
+
+        localize(Xupdated, Yupdated, ThetaR);
     }
 
 }

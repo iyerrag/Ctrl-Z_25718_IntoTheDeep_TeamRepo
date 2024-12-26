@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -29,7 +30,7 @@ public class MyFIRSTJavaOpMode extends LinearOpMode {
         BHI260IMU IMU = hardwareMap.get(BHI260IMU.class, "imu");
         VoltageSensor voltmeter = hardwareMap.voltageSensor.iterator().next();
         WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
-        chassis robot = new chassis(FL, FR, BL, BR, IMU, "IMU", 0, 0, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
+        chassis robot = new chassis(FL, FR, BL, BR, IMU, "IMU", 0, 0, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0}, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
 
 
         telemetry.addData("Status", "Initialized");

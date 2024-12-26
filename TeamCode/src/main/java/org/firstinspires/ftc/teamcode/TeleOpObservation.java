@@ -31,17 +31,20 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import java.util.ArrayList;
 
@@ -89,10 +92,10 @@ public class TeleOpObservation extends LinearOpMode {
         WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
 
         //Define DriveBase: new chassis(motor1, motor2, motor3, motor4, IMU, angleMode, startingX, startingY, startingTheta, voltmeter, webcam, camera offset array)
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 15, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 15, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0}, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
 
         //Define TaskManipulator: new claw(wrist servo, beak servo, left lifter, right lifter, elbow);
-        actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"));
+        actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class, "lifterHeightSensor"));
 
         //Define Previous Var (stores the previous velocity command sig. to motors)
         double[] previous = {0, 0};
@@ -106,14 +109,17 @@ public class TeleOpObservation extends LinearOpMode {
         //Until the Match-End:
         while (opModeIsActive()) {
 
+            telemetry.addData("Height", "CM: " + hardwareMap.get(DistanceSensor.class, "lifterHeightSensor").getDistance(DistanceUnit.CM));
+            telemetry.addData("FrontDist", "CM: " + hardwareMap.get(DistanceSensor.class, "frontDistanceSensor").getDistance(DistanceUnit.CM));
+
             //If Left Trigger is pressed on the task controller, lower the lift
             if(gamepad2.left_trigger == 1){
 
-                //Set lift to moving downward
-                gripper.lift(-1);
-
                 //Allow DriveBase movement while lift is moving (until the left trigger is released)
                 while(gamepad2.left_trigger == 1){
+                    //Set lift to moving downward
+                    gripper.lift(-1);
+
                     previous = driveBase(robot, previous[0], previous[1]);
                 }
 
@@ -124,11 +130,12 @@ public class TeleOpObservation extends LinearOpMode {
             //If Left Bumper is pressed on the task controller, raise the lift
             else if(gamepad2.left_bumper){
 
-                //Set lift to moving upward
-                gripper.lift(1);
-
                 //Allow DriveBase movement while lift is moving (until the left bumper is released)
                 while(gamepad2.left_bumper){
+
+                    //Set lift to moving upward
+                    gripper.lift(1);
+
                     previous = driveBase(robot, previous[0], previous[1]);
                 }
 

@@ -1,9 +1,13 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class actuators {
     private Servo wrist;
@@ -11,11 +15,13 @@ public class actuators {
     private DcMotor leftSlide;
     private DcMotor rightSlide;
     private Servo beak;
+    private Rev2mDistanceSensor lifterHeightSensor;
     private boolean closeState;
 
 
 
-    public actuators(Servo wrist, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow){
+
+    public actuators(Servo wrist, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor){
         this.wrist = wrist;
         this.elbow = elbow;
         this.beak = beakServo;
@@ -39,6 +45,8 @@ public class actuators {
 
         wrist.setDirection(Servo.Direction.FORWARD);
         closeState = true;
+
+        this.lifterHeightSensor = (Rev2mDistanceSensor) lifterHeightSensor;
     }
 
     public boolean state(){
@@ -64,9 +72,9 @@ public class actuators {
     }
 
     public void resetLifters(){
-        while(leftSlide.getCurrentPosition() != 0 || rightSlide.getCurrentPosition() !=0){/*wait*/}
         leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        while(lifterHeightSensor.getDistance(DistanceUnit.MM) > 40){leftSlide.setPower(-1); rightSlide.setPower(-1);}
         leftSlide.setPower(0);
         rightSlide.setPower(0);
         leftSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -96,15 +104,25 @@ public class actuators {
     }
 
     public void lift(double liftPwr){
-        leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        if ((int) (Math.random() * 2) == 0) {
-            leftSlide.setPower(liftPwr);
-            rightSlide.setPower(liftPwr);
-        } else {
-            rightSlide.setPower(liftPwr);
-            leftSlide.setPower(liftPwr);
+        if(!(lifterHeightSensor.getDistance(DistanceUnit.CM) >= 70 && liftPwr > 0) && !(lifterHeightSensor.getDistance(DistanceUnit.CM) <= 4 && liftPwr < 0)) {
+
+            leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+            if ((int) (Math.random() * 2) == 0) {
+                leftSlide.setPower(liftPwr);
+                rightSlide.setPower(liftPwr);
+            } else {
+                rightSlide.setPower(liftPwr);
+                leftSlide.setPower(liftPwr);
+            }
+        }
+        else if(lifterHeightSensor.getDistance(DistanceUnit.CM) >= 70 && liftPwr > 0){
+            hold();
+        }
+        else{
+            resetLifters();
         }
     }
 
@@ -153,7 +171,6 @@ public class actuators {
     public void moveToInsertPosition() throws InterruptedException {
         wristRotateTo(0.12);
         elbowTo(-2600, 1);
-        liftTo(0);
         resetLifters();
     }
 
@@ -162,7 +179,6 @@ public class actuators {
         wristRotateTo(0.12);
         elbowTo(-2600, 1);
         wristRotateTo(0.66);
-        liftTo(0);
         resetLifters();
     }
 
@@ -170,7 +186,6 @@ public class actuators {
         beakRotateTo(0.6);
         wristRotateTo(0.12);
         elbowTo(0, 1);
-        liftTo(0);
         resetLifters();
         wristRotateTo(0.66);
 
@@ -191,7 +206,6 @@ public class actuators {
     }
 
     public void moveToSpecimenExtractPos() throws InterruptedException{
-        liftTo(0);
         resetLifters();
         elbowTo(0, 1);
         if(closeState){changeClawState();}

@@ -36,6 +36,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -89,10 +90,10 @@ public class TeleOpSubmersible extends LinearOpMode {
         WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
 
         //Define DriveBase: new chassis(motor1, motor2, motor3, motor4, IMU, angleMode, startingX, startingY, startingTheta, voltmeter, webcam, camera offset array)
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 15, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 15, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0}, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
 
         //Define TaskManipulator: new claw(wrist servo, beak servo, left lifter, right lifter, elbow);
-        actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"));
+        actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class, "lifterHeightSensor"));
 
         //Define Previous Var (stores the previous velocity command sig. to motors)
         double[] previous = {0, 0};
