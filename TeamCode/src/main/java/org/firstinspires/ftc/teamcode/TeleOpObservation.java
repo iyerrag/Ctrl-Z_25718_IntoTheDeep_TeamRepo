@@ -226,7 +226,7 @@ public class TeleOpObservation extends LinearOpMode {
                         .15, .15, .4);
 
                 //Movement
-                gripper.moveToTransportPosition();
+                //gripper.moveToTransportPosition();
                 robot.toWaypoint(300, 45, 0, 2.5);
                 gripper.moveToSpecimenExtractPos();
 
@@ -246,7 +246,7 @@ public class TeleOpObservation extends LinearOpMode {
                 //Movement
                 robot.toWaypoint(180, 45, 0, 1.75);
                 gripper.moveToHangInsertPosition();
-                robot.toWaypoint(180, 90, 0, 0.5);
+                robot.toWaypoint(180, 75, 0, 0.5);
 
             }
 
@@ -261,13 +261,15 @@ public class TeleOpObservation extends LinearOpMode {
 
             //If button "b" on the task controller is pressed, hang the specimen and back away from the bar
             else if(gamepad2.b){
-                fL.setPower(-.05);
-                fR.setPower(-.05);
-                bL.setPower(-.05);
-                bR.setPower(-.05);
+                fL.setPower(0);
+                fR.setPower(0);
+                bL.setPower(0);
+                bR.setPower(0);
                 gripper.hang();
                 Thread.sleep(1250);
+
                 gripper.changeClawState();
+
                 robot.waypointSettings(1, 1, 1,
                         .01575, .020125, .0025, 0,
                         .012, .006025, 0.0025, 0,
@@ -280,7 +282,7 @@ public class TeleOpObservation extends LinearOpMode {
 
             //If button "x" on the task controller is pressed, grab the specimen from its position (it was put there by the human player)
             else if(gamepad2.x){
-                gripper.moveToSpecimenExtractPos();
+                //gripper.moveToSpecimenExtractPos();
                 if(!gripper.getCloseState()){gripper.changeClawState();}
                 gripper.liftTo(1000);
             }
@@ -318,6 +320,11 @@ public class TeleOpObservation extends LinearOpMode {
         double[] position;
         double gyroAngle;
 
+        //Define Fine-Control Scale
+        double fineScale;
+        if(gamepad1.left_stick_y != 0){fineScale = 0.4;}
+        else{fineScale = 1;}
+
         //Responsive Control: Local Vectors w/o Rate Limiters
         if(gamepad1.left_bumper){
             double powX;
@@ -348,10 +355,10 @@ public class TeleOpObservation extends LinearOpMode {
             // Send calculated power to wheels
             double a = (powX + powY) * (Math.pow(2, -0.5));
             double b = (-powX + powY) * (Math.pow(2, -0.5));
-            fL.setPower((a + addLeft) * frontLeftBias);
-            fR.setPower((b + addRight) * frontRightBias);
-            bL.setPower((b + addLeft) * backLeftBias);
-            bR.setPower((a + addRight) * backRightBias);
+            fL.setPower((a + addLeft) * frontLeftBias * fineScale);
+            fR.setPower((b + addRight) * frontRightBias * fineScale);
+            bL.setPower((b + addLeft) * backLeftBias * fineScale);
+            bR.setPower((a + addRight) * backRightBias * fineScale);
 
             robot.updateOdometry();
             position = robot.getPosition();
@@ -431,10 +438,10 @@ public class TeleOpObservation extends LinearOpMode {
             // Send calculated power to wheels
             double a = (powX + powY) * (Math.pow(2, -0.5));
             double b = (-powX + powY) * (Math.pow(2, -0.5));
-            fL.setPower((a + addLeft) * frontLeftBias);
-            fR.setPower((b + addRight) * frontRightBias);
-            bL.setPower((b + addLeft) * backLeftBias);
-            bR.setPower((a + addRight) * backRightBias);
+            fL.setPower((a + addLeft) * frontLeftBias * fineScale);
+            fR.setPower((b + addRight) * frontRightBias * fineScale);
+            bL.setPower((b + addLeft) * backLeftBias * fineScale);
+            bR.setPower((a + addRight) * backRightBias * fineScale);
 
             robot.updateOdometry();
             position = robot.getPosition();
@@ -459,10 +466,10 @@ public class TeleOpObservation extends LinearOpMode {
             // Send calculated power to wheels
             double a = (powX + powY) * (Math.pow(2, -0.5));
             double b = (-powX + powY) * (Math.pow(2, -0.5));
-            fL.setPower((a + addLeft) * frontLeftBias);
-            fR.setPower((b + addRight) * frontRightBias);
-            bL.setPower((b + addLeft) * backLeftBias);
-            bR.setPower((a + addRight) * backRightBias);
+            fL.setPower((a + addLeft) * frontLeftBias * fineScale);
+            fR.setPower((b + addRight) * frontRightBias * fineScale);
+            bL.setPower((b + addLeft) * backLeftBias * fineScale);
+            bR.setPower((a + addRight) * backRightBias * fineScale);
 
             robot.updateOdometry();
             position = robot.getPosition();
@@ -487,10 +494,10 @@ public class TeleOpObservation extends LinearOpMode {
             // Send calculated power to wheels
             double a = (powX + powY) * (Math.pow(2, -0.5));
             double b = (-powX + powY) * (Math.pow(2, -0.5));
-            fL.setPower((a + addLeft) * frontLeftBias);
-            fR.setPower((b + addRight) * frontRightBias);
-            bL.setPower((b + addLeft) * backLeftBias);
-            bR.setPower((a + addRight) * backRightBias);
+            fL.setPower((a + addLeft) * frontLeftBias * fineScale);
+            fR.setPower((b + addRight) * frontRightBias * fineScale);
+            bL.setPower((b + addLeft) * backLeftBias * fineScale);
+            bR.setPower((a + addRight) * backRightBias * fineScale);
 
             robot.updateOdometry();
             position = robot.getPosition();
@@ -561,10 +568,10 @@ public class TeleOpObservation extends LinearOpMode {
             // Send calculated power to wheels
             double a = (powX + powY) * (Math.pow(2, -0.5));
             double b = (-powX + powY) * (Math.pow(2, -0.5));
-            fL.setPower((a + addLeft) * frontLeftBias);
-            fR.setPower((b + addRight) * frontRightBias);
-            bL.setPower((b + addLeft) * backLeftBias);
-            bR.setPower((a + addRight) * backRightBias);
+            fL.setPower((a + addLeft) * frontLeftBias * fineScale);
+            fR.setPower((b + addRight) * frontRightBias * fineScale);
+            bL.setPower((b + addLeft) * backLeftBias * fineScale);
+            bR.setPower((a + addRight) * backRightBias * fineScale);
 
             robot.updateOdometry();
             position = robot.getPosition();

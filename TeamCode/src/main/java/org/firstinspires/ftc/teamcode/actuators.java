@@ -38,7 +38,7 @@ public class actuators {
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        elbow.setDirection(DcMotor.Direction.REVERSE);
+        elbow.setDirection(DcMotor.Direction.FORWARD);
         elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         elbow.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -164,51 +164,55 @@ public class actuators {
     public void moveToHighBucketPosition() throws InterruptedException {
         liftTo(5000);
         Thread.sleep(2000);
-        elbowTo(-450, 1);
+        elbowTo(-650, 1);
         wristRotateTo(0);
     }
 
     public void moveToInsertPosition() throws InterruptedException {
         wristRotateTo(0.12);
-        elbowTo(-2600, 1);
+        elbowTo(-2700, 1);
         resetLifters();
     }
 
     public void moveToPickupPosition() throws InterruptedException {
         if(closeState){changeClawState();}
         wristRotateTo(0.12);
-        elbowTo(-2600, 1);
-        wristRotateTo(0.66);
+        elbowTo(-2700, 1);
+        wristRotateTo(0.47);
         resetLifters();
     }
 
     public void moveToTransportPosition() throws InterruptedException {
-        beakRotateTo(0.6);
         wristRotateTo(0.12);
         elbowTo(0, 1);
         resetLifters();
-        wristRotateTo(0.66);
+        wristRotateTo(0.47);
 
     }
 
     public void moveToHangInsertPosition() throws InterruptedException {
         liftTo(450);
-        elbowTo(-1200, 1);
-        wristRotateTo(0.66);
+        elbowTo(-1300, 1);
+        wristRotateTo(0.47);
     }
 
     public void hang() throws InterruptedException {
-        elbowTo(-1200, 1);
-        wristRotateTo(0.66);
+        elbowTo(-1300, 1);
+        wristRotateTo(0.47);
         liftTo(1300);
-        elbowTo(-1000, 1);
-        wristRotateTo(0.4);
+        elbowTo(-1300, 1);
     }
 
     public void moveToSpecimenExtractPos() throws InterruptedException{
         resetLifters();
         elbowTo(0, 1);
         if(closeState){changeClawState();}
+        wristRotateTo(.12);
+    }
+
+    public void moveToObservationDropOffPos() throws InterruptedException{
+        resetLifters();
+        elbowTo(0, 1);
         wristRotateTo(.12);
     }
 

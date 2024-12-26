@@ -38,17 +38,121 @@ public class AutoStartRight extends LinearOpMode {
                 "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
                 "lifterHeightSensor"));
         waitForStart();
+        gripper.beakRotateTo(0.65);
         robot.waypointSettings(1, 1, 1,
                 .01575, .020125, .0025, 0,
                 .012, .006025, 0.0025, 0,
                 .35, .035, .0035, 0,
                 .024, .03, 10,
                 .15, .15, .4);
-        robot.toWaypoint(180, 72,0, 2);
-        robot.toWaypoint(300, 42,0, 3);
-        robot.toWaypoint(180, 72,0, 3);
-        robot.toWaypoint(300, 42,0, 3);
-        robot.toWaypoint(180, 72,0, 3);
+
+        robot.toWaypoint(180, 45, 0, 1);
+        gripper.moveToHangInsertPosition();
+        robot.toWaypoint(180, 80, 0, 1.2);
+
+        fL.setPower(0);
+        fR.setPower(0);
+        bL.setPower(0);
+        bR.setPower(0);
+        gripper.hang();
+        Thread.sleep(500);
+        gripper.changeClawState();
+        robot.toWaypoint(180, 45, 0, .75);
+
+        gripper.moveToSpecimenExtractPos();
+        ArrayList<double[]> secondExtraction = new ArrayList<double[]>();
+        secondExtraction.add(new double[]{330, 90, 0});
+        secondExtraction.add(new double[]{300, 20, 0});
+        robot.toWaypointBezier(secondExtraction, 2, 3);
+        gripper.changeClawState();
+        gripper.liftTo(1000);
+
+        robot.toWaypoint(200, 45, 0, 3);
+        gripper.moveToHangInsertPosition();
+        robot.toWaypoint(200, 80, 0, 1);
+
+        fL.setPower(0);
+        fR.setPower(0);
+        bL.setPower(0);
+        bR.setPower(0);
+        gripper.hang();
+        Thread.sleep(1250);
+        gripper.changeClawState();
+
+        robot.toWaypoint(180, 45, 0, 1);
+
+        gripper.moveToTransportPosition();
+        robot.toWaypoint(303, 55, 0, 3);
+        gripper.moveToPickupPosition();
+        Thread.sleep(500);
+        gripper.changeClawState();
+        gripper.moveToObservationDropOffPos();
+        robot.toWaypoint(330, 43, 0, 1);
+        gripper.changeClawState();
+
+        robot.toWaypoint(330, 55, 0, 1.5);
+        gripper.moveToPickupPosition();
+        Thread.sleep(1000);
+        gripper.changeClawState();
+        gripper.moveToObservationDropOffPos();
+        robot.toWaypoint(330, 43, 0, 1);
+        gripper.changeClawState();
+
+        robot.toWaypoint(300, 30, 0, 1);
+
+        /*robot.toWaypoint(180, 45, 0, 1);
+        gripper.moveToHangInsertPosition();
+        robot.toWaypoint(180, 80, 0, 1.2);
+
+        fL.setPower(0);
+        fR.setPower(0);
+        bL.setPower(0);
+        bR.setPower(0);
+        gripper.hang();
+        Thread.sleep(500);
+        gripper.changeClawState();
+        robot.toWaypoint(180, 45, 0, .75);
+
+        gripper.moveToTransportPosition();
+        robot.toWaypoint(303, 55, 0, 3);
+        gripper.moveToPickupPosition();
+        Thread.sleep(500);
+        gripper.changeClawState();
+        gripper.moveToObservationDropOffPos();
+        robot.toWaypoint(330, 43, 0, 1);
+        gripper.changeClawState();
+
+        robot.toWaypoint(330, 55, 0, 1.5);
+        gripper.moveToPickupPosition();
+        Thread.sleep(1000);
+        gripper.changeClawState();
+        gripper.moveToObservationDropOffPos();
+        robot.toWaypoint(330, 43, 0, 1);
+        gripper.changeClawState();
+
+        ArrayList<double[]> secondExtraction = new ArrayList<double[]>();
+        secondExtraction.add(new double[]{315, 134, 0});
+        secondExtraction.add(new double[]{300, 20, 0});
+        robot.toWaypointBezier(secondExtraction, 2, 3);
+        gripper.changeClawState();
+        gripper.liftTo(1000);
+
+        robot.toWaypoint(200, 45, 0, 3);
+        gripper.moveToHangInsertPosition();
+        robot.toWaypoint(200, 80, 0, 1);
+
+        fL.setPower(0);
+        fR.setPower(0);
+        bL.setPower(0);
+        bR.setPower(0);
+        gripper.hang();
+        Thread.sleep(1250);
+        gripper.changeClawState();
+
+        robot.toWaypoint(180, 45, 0, 1);
+        gripper.moveToTransportPosition();
+        robot.toWaypoint(300, 30, 0, 2);*/
+
 
        /* gripper.moveToTransportPosition();
         gripper.liftTo(3700);
@@ -76,5 +180,8 @@ public class AutoStartRight extends LinearOpMode {
         collectionMov1.add(new double[]{310, 150, 0});
         collectionMov1.add(new double[]{300, 30, 0});
         robot.toWaypointBezier(collectionMov1,1.0, 2.25);*/
+
+
+
     }
 }
