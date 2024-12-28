@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
+import java.util.Arrays;
+
 public class actuators {
     private Servo wrist;
     private DcMotor elbow;
@@ -17,6 +19,7 @@ public class actuators {
     private Servo beak;
     private Rev2mDistanceSensor lifterHeightSensor;
     private boolean closeState;
+    private boolean holdState;
 
 
 
@@ -45,6 +48,8 @@ public class actuators {
 
         wrist.setDirection(Servo.Direction.FORWARD);
         closeState = true;
+
+        holdState = false;
 
         this.lifterHeightSensor = (Rev2mDistanceSensor) lifterHeightSensor;
     }
@@ -103,26 +108,50 @@ public class actuators {
         elbow.setPower(1);
     }
 
-    public void lift(double liftPwr){
+    public double getHeight(DistanceUnit unit) throws InterruptedException {
+        double[] samples = new double[5];
+        for(int i = 0; i < 5; i++){
+            samples[i] = lifterHeightSensor.getDistance(unit);
+            Thread.sleep(5);
+        }
 
-        if(!(lifterHeightSensor.getDistance(DistanceUnit.CM) >= 70 && liftPwr > 0) && !(lifterHeightSensor.getDistance(DistanceUnit.CM) <= 4 && liftPwr < 0)) {
-
-            leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-            if ((int) (Math.random() * 2) == 0) {
-                leftSlide.setPower(liftPwr);
-                rightSlide.setPower(liftPwr);
-            } else {
-                rightSlide.setPower(liftPwr);
-                leftSlide.setPower(liftPwr);
+        /*for(int i = 0; i < 5; i++){
+            for(int j = i + 1; j < 5; j++){
+                if(samples[i] > samples[j]){
+                    double temp = samples[i];
+                    samples[i] = samples[j];
+                    samples[j] = temp;
+                }
             }
-        }
-        else if(lifterHeightSensor.getDistance(DistanceUnit.CM) >= 70 && liftPwr > 0){
-            hold();
-        }
-        else{
-            resetLifters();
+        }*/
+
+        Arrays.sort(samples);
+        return samples[2];
+    }
+
+    public void lift(double liftPwr) throws InterruptedException {
+        if(!(holdState && liftPwr > 0)) {
+
+            if (!(getHeight(DistanceUnit.CM) >= 65 && liftPwr > 0) && !(getHeight(DistanceUnit.CM) <= 4 && liftPwr < 0)) {
+
+                leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+                if ((int) (Math.random() * 2) == 0) {
+                    leftSlide.setPower(liftPwr);
+                    rightSlide.setPower(liftPwr);
+                } else {
+                    rightSlide.setPower(liftPwr);
+                    leftSlide.setPower(liftPwr);
+                }
+                holdState = false;
+            } else if (getHeight(DistanceUnit.CM) >= 65 && liftPwr > 0) {
+                hold();
+                holdState = true;
+            } else {
+                resetLifters();
+                holdState = false;
+            }
         }
     }
 
@@ -169,36 +198,36 @@ public class actuators {
     }
 
     public void moveToInsertPosition() throws InterruptedException {
-        wristRotateTo(0.12);
-        elbowTo(-2700, 1);
+        wristRotateTo(0.16);
+        elbowTo(-2675, 1);
         resetLifters();
     }
 
     public void moveToPickupPosition() throws InterruptedException {
         if(closeState){changeClawState();}
-        wristRotateTo(0.12);
-        elbowTo(-2700, 1);
-        wristRotateTo(0.47);
+        wristRotateTo(0.16);
+        elbowTo(-2675, 1);
+        wristRotateTo(0.49);
         resetLifters();
     }
 
     public void moveToTransportPosition() throws InterruptedException {
-        wristRotateTo(0.12);
+        wristRotateTo(0.16);
         elbowTo(0, 1);
         resetLifters();
-        wristRotateTo(0.47);
+        wristRotateTo(0.49);
 
     }
 
     public void moveToHangInsertPosition() throws InterruptedException {
         liftTo(450);
         elbowTo(-1300, 1);
-        wristRotateTo(0.47);
+        wristRotateTo(0.49);
     }
 
     public void hang() throws InterruptedException {
         elbowTo(-1300, 1);
-        wristRotateTo(0.47);
+        wristRotateTo(0.49);
         liftTo(1300);
         elbowTo(-1300, 1);
     }
@@ -207,13 +236,13 @@ public class actuators {
         resetLifters();
         elbowTo(0, 1);
         if(closeState){changeClawState();}
-        wristRotateTo(.12);
+        wristRotateTo(.16);
     }
 
     public void moveToObservationDropOffPos() throws InterruptedException{
         resetLifters();
         elbowTo(0, 1);
-        wristRotateTo(.12);
+        wristRotateTo(.16);
     }
 
     // Add Extend & Rotate Functionality

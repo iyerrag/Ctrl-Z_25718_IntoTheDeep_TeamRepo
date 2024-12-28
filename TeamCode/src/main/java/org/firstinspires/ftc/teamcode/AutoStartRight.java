@@ -61,28 +61,27 @@ public class AutoStartRight extends LinearOpMode {
 
         gripper.moveToSpecimenExtractPos();
         ArrayList<double[]> secondExtraction = new ArrayList<double[]>();
-        secondExtraction.add(new double[]{330, 90, 0});
-        secondExtraction.add(new double[]{300, 20, 0});
-        robot.toWaypointBezier(secondExtraction, 2, 3);
+        secondExtraction.add(new double[]{315, 90, 0});
+        secondExtraction.add(new double[]{298, 20, 0});
+        robot.toWaypointBezier(secondExtraction, 2.25, 3);
         gripper.changeClawState();
-        gripper.liftTo(1000);
+        gripper.liftTo(1250);
 
-        robot.toWaypoint(200, 45, 0, 3);
+        robot.toWaypoint(210, 45, 0, 1.75);
         gripper.moveToHangInsertPosition();
-        robot.toWaypoint(200, 80, 0, 1);
+        robot.toWaypoint(190, 80, 0, 1);
 
         fL.setPower(0);
         fR.setPower(0);
         bL.setPower(0);
         bR.setPower(0);
         gripper.hang();
-        Thread.sleep(1250);
+        Thread.sleep(500);
         gripper.changeClawState();
 
-        robot.toWaypoint(180, 45, 0, 1);
-
-        gripper.moveToTransportPosition();
-        robot.toWaypoint(303, 55, 0, 3);
+        robot.toWaypoint(210, 65, 0, 0.5);
+        gripper.liftTo(0);
+        robot.toWaypoint(303.5, 57, 0, 3);
         gripper.moveToPickupPosition();
         Thread.sleep(500);
         gripper.changeClawState();
@@ -90,15 +89,13 @@ public class AutoStartRight extends LinearOpMode {
         robot.toWaypoint(330, 43, 0, 1);
         gripper.changeClawState();
 
-        robot.toWaypoint(330, 55, 0, 1.5);
+        robot.toWaypoint(330, 57, 0, 1.5);
         gripper.moveToPickupPosition();
         Thread.sleep(1000);
         gripper.changeClawState();
         gripper.moveToObservationDropOffPos();
-        robot.toWaypoint(330, 43, 0, 1);
-        gripper.changeClawState();
-
         robot.toWaypoint(300, 30, 0, 1);
+        gripper.changeClawState();
 
         /*robot.toWaypoint(180, 45, 0, 1);
         gripper.moveToHangInsertPosition();
