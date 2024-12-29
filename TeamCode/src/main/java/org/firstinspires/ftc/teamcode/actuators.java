@@ -67,12 +67,12 @@ public class actuators {
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         if((int) (Math.random() * 2) == 0){
-            leftSlide.setPower(1);
-            rightSlide.setPower(1);
+            leftSlide.setPower(0.80);
+            rightSlide.setPower(0.80);
         }
         else {
-            rightSlide.setPower(1);
-            leftSlide.setPower(1);
+            rightSlide.setPower(0.80);
+            leftSlide.setPower(0.80);
         }
     }
 
@@ -241,7 +241,7 @@ public class actuators {
     }
 
     public void moveToSpecimenExtractPos() throws InterruptedException{
-        resetLifters();
+        liftTo(350);
         elbowTo(0, 1);
         if(closeState){changeClawState();}
         wristRotateTo(.16);
