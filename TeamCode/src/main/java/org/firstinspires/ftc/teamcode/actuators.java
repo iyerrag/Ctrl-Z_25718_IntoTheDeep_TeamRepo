@@ -191,7 +191,7 @@ public class actuators {
     }
 
     public void moveToHighBucketPosition() throws InterruptedException {
-        liftTo(5000);
+        liftTo(4800);
         Thread.sleep(2000);
         elbowTo(-650, 1);
         wristRotateTo(0);
@@ -199,11 +199,19 @@ public class actuators {
 
     public void moveToInsertPosition() throws InterruptedException {
         wristRotateTo(0.16);
-        elbowTo(-2675, 1);
+        elbowTo(-2600, 1);
         resetLifters();
     }
 
     public void moveToPickupPosition() throws InterruptedException {
+        if(closeState){changeClawState();}
+        wristRotateTo(0.16);
+        elbowTo(-2600, 1);
+        wristRotateTo(0.49);
+        resetLifters();
+    }
+
+    public void moveToPickupPositionAuto() throws InterruptedException {
         if(closeState){changeClawState();}
         wristRotateTo(0.16);
         elbowTo(-2675, 1);

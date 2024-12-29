@@ -22,7 +22,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import java.util.ArrayList;
 
 @Autonomous
-public class AutoStartRight extends LinearOpMode {
+public class AutoStartLeft extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         DcMotor fL = hardwareMap.get(DcMotor.class, "FrontLeft");
         DcMotor fR = hardwareMap.get(DcMotor.class, "FrontRight");
@@ -79,23 +79,37 @@ public class AutoStartRight extends LinearOpMode {
         Thread.sleep(500);
         gripper.changeClawState();
 
-        robot.toWaypoint(210, 65, 0, 0.5);
+        robot.toWaypoint(170, 65, 0, 0.5);
         gripper.liftTo(0);
-        robot.toWaypoint(303.5, 57, 0, 3);
+        robot.toWaypoint(57, 57, 0, 3);
         gripper.moveToPickupPositionAuto();
         Thread.sleep(500);
         gripper.changeClawState();
-        gripper.moveToObservationDropOffPos();
-        robot.toWaypoint(330, 43, 0, 1);
-        gripper.changeClawState();
 
-        robot.toWaypoint(330, 57, 0, 1.5);
+        gripper.moveToTransportPosition();
+        robot.toWaypoint(50, 50, -45, 2);
+        gripper.moveToHighBucketPosition();
+        Thread.sleep(2500);
+        robot.toWaypoint(25, 25, -45, 0.75);
+        gripper.changeClawState();
+        robot.toWaypoint(50, 50, -45, 1);
+        gripper.moveToTransportPosition();
+
+        robot.toWaypoint(30, 57, 0, 1.5);
         gripper.moveToPickupPositionAuto();
         Thread.sleep(1000);
         gripper.changeClawState();
-        gripper.moveToObservationDropOffPos();
-        robot.toWaypoint(300, 30, 0, 1);
+
+        gripper.moveToTransportPosition();
+        robot.toWaypoint(50, 50, -45, 2);
+        gripper.moveToHighBucketPosition();
+        Thread.sleep(2500);
+        robot.toWaypoint(25, 25, -45, 0.75);
         gripper.changeClawState();
+        robot.toWaypoint(50, 50, -45, 1);
+        gripper.moveToTransportPosition();
+
+        robot.toWaypoint(300, 30, 0,4);
 
         /*robot.toWaypoint(180, 45, 0, 1);
         gripper.moveToHangInsertPosition();

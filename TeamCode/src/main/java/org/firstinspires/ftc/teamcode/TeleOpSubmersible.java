@@ -297,7 +297,7 @@ public class TeleOpSubmersible extends LinearOpMode {
                 robot.toWaypoint(50, 50, -45, 2);
                 gripper.moveToHighBucketPosition();
                 Thread.sleep(2500);
-                robot.toWaypoint(25, 25, -45, 0.75);
+                robot.toWaypoint(19, 19, -45, 0.75);
                 gripper.changeClawState();
                 robot.toWaypoint(50, 50, -45, 1);
                 gripper.moveToTransportPosition();
