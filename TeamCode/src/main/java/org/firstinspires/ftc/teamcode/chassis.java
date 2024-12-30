@@ -16,9 +16,10 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import com.qualcomm.robotcore.hardware.*;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+//import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -50,7 +51,7 @@ public class chassis{
     static private VoltageSensor sensor;
     static final double nominalVoltage = 12.15;
 
-    static private WebcamName camera;
+    //static private WebcamName camera;
     static private double[] cameraOffsetPose;
 
     /**
@@ -63,7 +64,7 @@ public class chassis{
      */
     private VisionPortal visionPortal;
 
-    public chassis(DcMotor FL, DcMotor FR, DcMotor BL, DcMotor BR, BHI260IMU IMU, String thetaMode, double startingX, double startingY, double startingTheta, VoltageSensor voltmeter, WebcamName cameraName, double[] cameraNameOffset, DistanceSensor frontDistanceSensor) {
+    public chassis(DcMotor FL, DcMotor FR, DcMotor BL, DcMotor BR, BHI260IMU IMU, String thetaMode, double startingX, double startingY, double startingTheta, VoltageSensor voltmeter, DistanceSensor frontDistanceSensor) {
         // Define Timer Objects:
         timer = new ElapsedTime();
         imu = new robotIMU(IMU);
@@ -100,16 +101,16 @@ public class chassis{
 
         sensor = voltmeter;
 
-        camera = cameraName;
-        cameraOffsetPose = cameraNameOffset;
-        cameraOffsetPose[2] *= Math.PI / 180;
+        //camera = cameraName;
+        //cameraOffsetPose = cameraNameOffset;
+        //cameraOffsetPose[2] *= Math.PI / 180;
 
-        initAprilTag();
+        //initAprilTag();
 
         this.frontDistanceSensor = (Rev2mDistanceSensor) frontDistanceSensor;
     }
 
-    private void initAprilTag() {
+    /*private void initAprilTag() {
 
         // Create the AprilTag processor.
         aprilTag = new AprilTagProcessor.Builder()
@@ -170,7 +171,7 @@ public class chassis{
         // Disable or re-enable the aprilTag processor at any time.
         //visionPortal.setProcessorEnabled(aprilTag, true);
 
-    }   // end method initAprilTag()
+    }   // end method initAprilTag()*/
 
     public boolean eqWT(double val1, double val2, double e){
         return Math.abs(val1 - val2) <= e;
@@ -322,6 +323,7 @@ public class chassis{
         double currentY = currentPos[1];
         double currentTheta = currentPos[2];
 
+        RobotLog.dd("chassis", "Starting drive to waypoint");
         // PID control to waypoint
         while((!eqWT(currentX, waypointTargetX, waypointToleranceDistX) || !eqWT(currentY, waypointTargetY, waypointToleranceDistY) || !eqWT(currentTheta, waypointTargetTheta, waypointToleranceAng)) && ((timer.seconds() - startTime) < timeout)){
             // Read current odometry position
@@ -502,6 +504,8 @@ public class chassis{
 
             //return new double[]{localCorrectionX, localCorrectionY, globalCorrectionX, globalCorrectionY, a, b};
         }
+
+        RobotLog.dd("chassis", "Drive to waypoint completed");
         fL.setPower(0);
         fR.setPower(0);
         bL.setPower(0);
@@ -899,7 +903,7 @@ public class chassis{
         fR.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
     }*/
 
-    public void visualLocalization(double[] aprilTagPosition, int aprilTagID, int filterSize){
+    /*public void visualLocalization(double[] aprilTagPosition, int aprilTagID, int filterSize){
 
         aprilTagPosition[2] *= Math.PI / 180;
 
@@ -946,7 +950,7 @@ public class chassis{
 
         localize(xPos, yPos, thetaPos * 180 / Math.PI);
 
-    }
+    }*/
 
     public void ultrasonicLocalization(double[] objectPos){
         double Xobj = objectPos[0];

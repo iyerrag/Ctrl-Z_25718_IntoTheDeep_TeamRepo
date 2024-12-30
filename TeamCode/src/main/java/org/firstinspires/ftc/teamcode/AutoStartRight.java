@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+//import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
 import java.util.ArrayList;
 
@@ -35,15 +35,15 @@ public class AutoStartRight extends LinearOpMode {
             DcMotor bR = hardwareMap.get(DcMotor.class, "BackRight");
             BHI260IMU IMU = hardwareMap.get(BHI260IMU.class, "imu");
             VoltageSensor voltmeter = hardwareMap.voltageSensor.iterator().next();
-            WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
+            //WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
 
-            chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 12, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0}, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
+            chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 12, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
             //chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 240, 12, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
-            actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class,
+            actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "rotationServo"), hardwareMap.get(Servo.class,
                     "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
                     "lifterHeightSensor"));
             waitForStart();
-            gripper.beakRotateTo(0.65);
+            gripper.initializePosition();
             robot.waypointSettings(1, 1, 1,
                     .01575, .020125, .0025, 0,
                     .012, .006025, 0.0025, 0,
@@ -53,21 +53,19 @@ public class AutoStartRight extends LinearOpMode {
 
             robot.toWaypoint(180, 45, 0, 1);
             gripper.moveToHangInsertPosition();
-            robot.toWaypoint(180, 80, 0, 1.2);
+            robot.toWaypoint(180, 93, 0, 1.2);
 
             fL.setPower(0);
             fR.setPower(0);
             bL.setPower(0);
             bR.setPower(0);
             gripper.hang();
-            Thread.sleep(800);
-            gripper.changeClawState();
             robot.toWaypoint(180, 45, 0, .75);
 
             gripper.moveToSpecimenExtractPos();
             ArrayList<double[]> secondExtraction = new ArrayList<double[]>();
             secondExtraction.add(new double[]{315, 90, 0});
-            secondExtraction.add(new double[]{298, 20, 0});
+            secondExtraction.add(new double[]{298, 15, 0});
             robot.toWaypointBezier(secondExtraction, 2.5, 3);
             gripper.changeClawState();
             gripper.liftTo(1250);
@@ -75,15 +73,13 @@ public class AutoStartRight extends LinearOpMode {
 
             robot.toWaypoint(210, 45, 0, 1.75);
             gripper.moveToHangInsertPosition();
-            robot.toWaypoint(190, 80, 0, 1);
+            robot.toWaypoint(181, 93, 0, 1);
 
             fL.setPower(0);
             fR.setPower(0);
             bL.setPower(0);
             bR.setPower(0);
             gripper.hang();
-            Thread.sleep(800);
-            gripper.changeClawState();
 
             robot.toWaypoint(210, 50, 0, 0.5);
             gripper.moveToTransportPosition();

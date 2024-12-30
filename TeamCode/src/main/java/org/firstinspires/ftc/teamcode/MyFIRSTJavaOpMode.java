@@ -29,8 +29,8 @@ public class MyFIRSTJavaOpMode extends LinearOpMode {
         DcMotor BR = hardwareMap.get(DcMotor.class, "BackRight");
         BHI260IMU IMU = hardwareMap.get(BHI260IMU.class, "imu");
         VoltageSensor voltmeter = hardwareMap.voltageSensor.iterator().next();
-        WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
-        chassis robot = new chassis(FL, FR, BL, BR, IMU, "IMU", 0, 0, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0}, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
+        //WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
+        chassis robot = new chassis(FL, FR, BL, BR, IMU, "IMU", 0, 0, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
 
 
         telemetry.addData("Status", "Initialized");

@@ -32,9 +32,9 @@ public class AutoStartLeft extends LinearOpMode {
         VoltageSensor voltmeter = hardwareMap.voltageSensor.iterator().next();
         WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
 
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 12, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0}, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 12, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
         //chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 240, 12, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
-        actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class,
+        actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "rotationServo"), hardwareMap.get(Servo.class,
                 "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
                 "lifterHeightSensor"));
         waitForStart();
@@ -82,7 +82,7 @@ public class AutoStartLeft extends LinearOpMode {
         robot.toWaypoint(170, 65, 0, 0.5);
         gripper.liftTo(0);
         robot.toWaypoint(57, 57, 0, 3);
-        gripper.moveToPickupPositionAuto();
+        //gripper.moveToPickupPositionAuto();
         Thread.sleep(500);
         gripper.changeClawState();
 
@@ -96,7 +96,7 @@ public class AutoStartLeft extends LinearOpMode {
         gripper.moveToTransportPosition();
 
         robot.toWaypoint(30, 57, 0, 1.5);
-        gripper.moveToPickupPositionAuto();
+        //gripper.moveToPickupPositionAuto();
         Thread.sleep(1000);
         gripper.changeClawState();
 

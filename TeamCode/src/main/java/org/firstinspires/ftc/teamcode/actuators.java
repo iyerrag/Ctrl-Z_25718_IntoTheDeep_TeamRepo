@@ -17,17 +17,20 @@ public class actuators {
     private DcMotor leftSlide;
     private DcMotor rightSlide;
     private Servo beak;
+    private Servo rotationServo;
     private Rev2mDistanceSensor lifterHeightSensor;
     private boolean closeState;
     private boolean holdState;
+    private boolean highBasketState;
 
 
 
 
-    public actuators(Servo wrist, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor){
+    public actuators(Servo wrist, Servo rotationServo, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor){
         this.wrist = wrist;
         this.elbow = elbow;
         this.beak = beakServo;
+        this.rotationServo = rotationServo;
         leftSlide = lifterLeft;
         rightSlide = lifterRight;
 
@@ -48,7 +51,7 @@ public class actuators {
 
         wrist.setDirection(Servo.Direction.FORWARD);
         closeState = true;
-
+        highBasketState = false;
         holdState = false;
 
         this.lifterHeightSensor = (Rev2mDistanceSensor) lifterHeightSensor;
@@ -58,7 +61,9 @@ public class actuators {
         return closeState;
     }
 
-    public void liftTo(int targetPos){
+    public void liftTo(double targetHeight){
+
+        int targetPos = (int) (65.045045 * targetHeight);
 
         leftSlide.setTargetPosition(targetPos);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -79,7 +84,7 @@ public class actuators {
     public void resetLifters(){
         leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        while(lifterHeightSensor.getDistance(DistanceUnit.MM) > 40){leftSlide.setPower(-1); rightSlide.setPower(-1);}
+        while(lifterHeightSensor.getDistance(DistanceUnit.MM) > 60){leftSlide.setPower(-1); rightSlide.setPower(-1);}
         leftSlide.setPower(0);
         rightSlide.setPower(0);
         leftSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -155,107 +160,9 @@ public class actuators {
         }
     }
 
-    public void rotateElbow(double rotatePwr){
-        elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        elbow.setPower(rotatePwr);
-    }
-
-    public void wristRotateTo(double targetAngle) throws InterruptedException {
-        // Insert Conversion Formula
-        double targetPos = targetAngle;
-        wrist.setPosition(targetPos);
-        Thread.sleep(500);
-    }
-
-    public void beakRotateTo(double targetAngle) throws InterruptedException {
-        // Insert Conversion Formula
-        double targetPos = targetAngle;
-        beak.setPosition(targetPos);
-    }
-
-    public void changeClawState() throws InterruptedException {
-        if(closeState){
-            beakRotateTo(0.3);
-            closeState = false;
-        }
-
-        else{
-            beakRotateTo(0.65);
-            closeState = true;
-        }
-        Thread.sleep(500);
-    }
-
-    public boolean getCloseState(){
-        return closeState;
-    }
-
-    public void moveToHighBucketPosition() throws InterruptedException {
-        liftTo(4800);
-        Thread.sleep(2000);
-        elbowTo(-650, 1);
-        wristRotateTo(0);
-    }
-
-    public void moveToInsertPosition() throws InterruptedException {
-        wristRotateTo(0.16);
-        elbowTo(-2600, 1);
-        resetLifters();
-    }
-
-    public void moveToPickupPosition() throws InterruptedException {
-        if(closeState){changeClawState();}
-        wristRotateTo(0.16);
-        elbowTo(-2600, 1);
-        wristRotateTo(0.49);
-        resetLifters();
-    }
-
-    public void moveToPickupPositionAuto() throws InterruptedException {
-        if(closeState){changeClawState();}
-        wristRotateTo(0.16);
-        elbowTo(-2675, 1);
-        wristRotateTo(0.49);
-        resetLifters();
-    }
-
-    public void moveToTransportPosition() throws InterruptedException {
-        wristRotateTo(0.16);
-        elbowTo(0, 1);
-        resetLifters();
-        wristRotateTo(0.49);
-
-    }
-
-    public void moveToHangInsertPosition() throws InterruptedException {
-        liftTo(450);
-        elbowTo(-1300, 1);
-        wristRotateTo(0.49);
-    }
-
-    public void hang() throws InterruptedException {
-        elbowTo(-1300, 1);
-        wristRotateTo(0.49);
-        liftTo(1300);
-        elbowTo(-1300, 1);
-    }
-
-    public void moveToSpecimenExtractPos() throws InterruptedException{
-        liftTo(350);
-        elbowTo(0, 1);
-        if(closeState){changeClawState();}
-        wristRotateTo(.16);
-    }
-
-    public void moveToObservationDropOffPos() throws InterruptedException{
-        resetLifters();
-        elbowTo(0, 1);
-        wristRotateTo(.16);
-    }
-
-    // Add Extend & Rotate Functionality
-    public void elbowTo(int targetPos, double maxPow){
-        elbow.setTargetPosition(targetPos);
+    public void elbowRotateTo(double targetAngle, double maxPow){
+        double targetPos = -2586 + 14.3 * targetAngle;
+        elbow.setTargetPosition((int) targetPos);
         elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         elbow.setPower(maxPow);
     }
@@ -276,12 +183,228 @@ public class actuators {
         else{};
     }
 
+    public void elbowRotate(double rotatePwr){
+        elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        elbow.setPower(rotatePwr);
+    }
+
+    public void wristRotateTo(double targetAngle){
+        double targetPos = (targetAngle * .0039) - 0.05178;
+        wrist.setPosition(targetPos);
+    }
+
+    public void wristRotate(double rate){
+        if(rate > 0){
+            if(getWristPosition() + rate <= 1){
+                wrist.setPosition(getWristPosition() + rate);
+            }
+        }
+        else if(rate < 0){
+            if(getWristPosition() + rate >= 0){
+                wrist.setPosition(getWristPosition() + rate);
+            }
+        }
+    }
+
+    public void rotateTo(double targetAngle){
+       double targetPos = 0.9 + (targetAngle * 0.00384);
+       rotationServo.setPosition(targetPos);
+    }
+
+    public void rotate(double rate){
+        if(rate > 0){
+            if(getRotationServoPosition() + rate <= 1){
+                rotationServo.setPosition(getRotationServoPosition() + rate);
+            }
+        }
+        else if(rate < 0){
+            if(getRotationServoPosition() + rate >= 0){
+                rotationServo.setPosition(getRotationServoPosition() + rate);
+            }
+        }
+    }
+
+    public void beakRotateTo(double targetPos) {
+        beak.setPosition(targetPos);
+    }
+
+    public void openBeak(){
+        beakRotateTo(0.3);
+        closeState = false;
+    }
+
+    public void closeBeak(){
+        beakRotateTo(0.65);
+        closeState = true;
+    }
+
+    public void changeClawState() throws InterruptedException {
+        if(closeState){
+            openBeak();
+        }
+
+        else{
+            closeBeak();
+        }
+
+        Thread.sleep(200);
+    }
+
+    public boolean getCloseState(){
+        return closeState;
+    }
+
+    public double getBeakPosition(){
+        return beak.getPosition();
+    }
+
+    public double getWristPosition(){
+        return wrist.getPosition();
+    }
+
+    public double getWristAngle(){
+        return (getWristPosition() * 266.4) + 13.793;
+    }
+
+    public double getRotationServoPosition(){
+        return rotationServo.getPosition();
+    }
+
     public double getLiftPos(){
         return (leftSlide.getCurrentPosition() + rightSlide.getCurrentPosition()) / 2.0;
     }
 
+    public double getLiftHeight(){
+        return getLiftPos() * 0.015374;
+    }
+
     public double getElbowPos(){
         return (elbow.getCurrentPosition());
+    }
+
+    public double getElbowAngle(){
+        return getElbowPos() * 0.0696 + 180;
+    }
+
+    public boolean eqWT(double val1, double val2, double e){
+        return Math.abs(val1 - val2) <= e;
+    }
+
+    public void moveToHighBucketPosition(){
+        closeBeak();
+        wristRotateTo(90);
+        while(!eqWT(getWristAngle(), 90, 5));
+        elbowRotateTo(90, 1);
+        while(!eqWT(getElbowAngle(), 90, 5)){}
+        liftTo(75);
+        while(!eqWT(getLiftHeight(), 75, 1));
+        elbowRotateTo(180, 1);
+        wristRotateTo(150);
+        rotateTo(-180);
+        highBasketState = true;
+    }
+
+    public void moveToInsertPosition(){
+        liftTo(0);
+        elbowRotateTo(-20, 1);
+        wristRotateTo(200);
+        rotateTo(-180);
+        openBeak();
+        resetLifters();
+        highBasketState = false;
+    }
+
+    public void moveToPickupPosition(){
+        moveToInsertPosition();
+        wristRotateTo(110);
+        highBasketState = false;
+    }
+
+    /*public void moveToPickupPositionAuto() throws InterruptedException {
+        if(closeState){changeClawState();}
+        if(getRotationServoPosition() != 0.84){rotateTo(0.84);}
+        wristRotateTo(0.16);
+        elbowTo(-2775, 0.8);
+        wristRotateTo(0.45);
+        resetLifters();
+    }*/
+
+    public void moveToTransportPosition() throws InterruptedException {
+
+        if(highBasketState){
+            openBeak();
+            Thread.sleep(200);
+            elbowRotateTo(90, 1);
+            wristRotateTo(90);
+            while(!eqWT(getElbowAngle(), 90, 5)){}
+            while(!eqWT(getWristAngle(), 90, 5)){}
+            closeBeak();
+            liftTo(0);
+            resetLifters();
+        }
+
+        closeBeak();
+        liftTo(0);
+        elbowRotateTo(180, 1);
+        wristRotateTo(90);
+        rotateTo(-180);
+        resetLifters();
+
+        highBasketState = false;
+    }
+    public void moveToStartingPosition(){
+        liftTo(0);
+        elbowRotateTo(180, 1);
+        wristRotateTo(20);
+        rotateTo(0);
+        closeBeak();
+        resetLifters();
+        highBasketState = false;
+    }
+    public void moveToHangInsertPosition(){
+        closeBeak();
+        liftTo(0);
+        elbowRotateTo(90, 1);
+        wristRotateTo(90);
+        rotateTo(-180);
+        resetLifters();
+        highBasketState = false;
+    }
+
+    public void hang(){
+        moveToHangInsertPosition();
+        liftTo(10);
+        while(getLiftHeight() < 10){}
+        openBeak();
+        highBasketState = false;
+    }
+
+    public void moveToSpecimenExtractPos(){
+        liftTo(0);
+        elbowRotateTo(180, 1);
+        wristRotateTo(180);
+        rotateTo(-180);
+        openBeak();
+        highBasketState = false;
+    }
+
+    public void initializePosition(){
+        closeBeak();
+        wristRotateTo(150);
+        while(getWristAngle() < 150){}
+        rotateTo(-180);
+        wristRotateTo(45);
+        highBasketState = false;
+    }
+
+    public void moveToObservationDropOffPos(){
+        closeBeak();
+        liftTo(0);
+        elbowRotateTo(180, 1);
+        wristRotateTo(180);
+        rotateTo(-180);
+        resetLifters();
+        highBasketState = false;
     }
 
 }

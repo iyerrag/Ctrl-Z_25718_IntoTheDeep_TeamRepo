@@ -42,8 +42,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+//import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import java.util.ArrayList;
@@ -52,15 +53,15 @@ import java.util.ArrayList;
 public class TeleOpObservation extends LinearOpMode {
 
     //Define Rate Limiter Constants (Rate Limiters = Limits Robot Acceleration)
-    private static final double tolX = .03;
-    private static final double tolY = .03;
+    private static final double tolX = .05;
+    private static final double tolY = .05;
     private static final double tolTheta = 1;
     private static final double deccelScale = 3.0;
 
     //Define Wheel Biases to Manage Robot Drift
-    static final double frontLeftBias = 0.97;
+    static final double frontLeftBias = 0.96;
     static final double frontRightBias = 0.92;
-    static final double backLeftBias = .93;
+    static final double backLeftBias = .92;
     static final double backRightBias = 0.96;
 
     //Define Timer Object
@@ -89,13 +90,13 @@ public class TeleOpObservation extends LinearOpMode {
         //Define Sensors (IMU, battery voltmeter, webcam)
         BHI260IMU IMU = hardwareMap.get(BHI260IMU.class, "imu");
         VoltageSensor voltmeter = hardwareMap.voltageSensor.iterator().next();
-        WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
+        //WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
 
         //Define DriveBase: new chassis(motor1, motor2, motor3, motor4, IMU, angleMode, startingX, startingY, startingTheta, voltmeter, webcam, camera offset array)
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 15, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0}, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 15, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
 
         //Define TaskManipulator: new claw(wrist servo, beak servo, left lifter, right lifter, elbow);
-        actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class, "lifterHeightSensor"));
+        actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "rotationServo"), hardwareMap.get(Servo.class, "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class, "lifterHeightSensor"));
 
         //Define Previous Var (stores the previous velocity command sig. to motors)
         double[] previous = {0, 0};
@@ -108,6 +109,9 @@ public class TeleOpObservation extends LinearOpMode {
 
         //Until the Match-End:
         while (opModeIsActive()) {
+
+
+            RobotLog.dd("teleop", "Loop Start");
 
             telemetry.addData("Height", "CM: " + hardwareMap.get(DistanceSensor.class, "lifterHeightSensor").getDistance(DistanceUnit.CM));
             telemetry.addData("FrontDist", "CM: " + hardwareMap.get(DistanceSensor.class, "frontDistanceSensor").getDistance(DistanceUnit.CM));
@@ -147,7 +151,7 @@ public class TeleOpObservation extends LinearOpMode {
             else if(gamepad2.right_trigger == 1){
 
                 //Set elbow to forward rotation
-                gripper.rotateElbow(-0.50);
+                gripper.elbowRotate(-0.50);
 
                 //Allow DriveBase movement while elbow is moving (until the right trigger is released)
                 while(gamepad2.right_trigger == 1){
@@ -162,7 +166,7 @@ public class TeleOpObservation extends LinearOpMode {
             else if(gamepad2.right_bumper){
 
                 //Set the elbow to backward rotation
-                gripper.rotateElbow(0.50);
+                gripper.elbowRotate(0.50);
 
                 //Allow DriveBase movement while elbow is moving (until the right bumper is released)
                 while(gamepad2.right_bumper){
@@ -185,14 +189,21 @@ public class TeleOpObservation extends LinearOpMode {
                         .15, .15, .4);
 
                 //Movement
+                RobotLog.dd("teleOp", "First Movement to (60, 60, -90)");
                 robot.toWaypoint(60, 60, -90, 2.5);
+                RobotLog.dd("teleOp", "Reconfig Claw to Transport Pos.");
                 gripper.moveToTransportPosition();
+                RobotLog.dd("teleOp", "Second Movement to (60, 180, -90)");
                 robot.toWaypoint(60, 180, -90, 2.5);
+                RobotLog.dd("teleOp", "Reconfig Claw to Insert Pos.");
                 gripper.moveToInsertPosition();
+                RobotLog.dd("teleOp", "Time Out");
                 Thread.sleep(1250);
+                RobotLog.dd("teleOp", "Third Movement to (110, 180, -90)");
                 robot.toWaypoint(110, 180, -90, 1);
+                RobotLog.dd("teleOp", "Reconfig Claw to Pickup Pos.");
                 gripper.moveToPickupPosition();
-
+                RobotLog.dd("teleop", "Gripper moved");
             }
 
             //If the button "b" is pressed on the driver controller, extract the claw from the submersible
@@ -296,12 +307,15 @@ public class TeleOpObservation extends LinearOpMode {
                         .024, .03, 10,
                         .15, .15, .4);
                 gripper.moveToTransportPosition();
-                robot.toWaypoint(50, 50, -45, 2);
+                //robot.toWaypoint(50, 50, -45, 2);
                 gripper.moveToHighBucketPosition();
-                Thread.sleep(2500);
-                robot.toWaypoint(19, 19, -45, 0.75);
-                gripper.changeClawState();
-                robot.toWaypoint(50, 50, -45, 1);
+                //Thread.sleep(2500);
+                //robot.toWaypoint(19, 19, -45, 0.75);
+                //gripper.changeClawState();
+                //robot.toWaypoint(50, 50, -45, 1);
+                //gripper.moveToTransportPosition();
+            }
+            else if(gamepad2.left_stick_y != 0){
                 gripper.moveToTransportPosition();
             }
 
@@ -309,6 +323,9 @@ public class TeleOpObservation extends LinearOpMode {
             else{
                 previous = driveBase(robot, previous[0], previous[1]);
             }
+
+            RobotLog.dd("teleop", "End of loop");
+
 
         }
     }
@@ -322,7 +339,7 @@ public class TeleOpObservation extends LinearOpMode {
 
         //Define Fine-Control Scale
         double fineScale;
-        if(gamepad1.left_stick_y != 0){fineScale = 0.4;}
+        if(Math.abs(gamepad1.left_stick_y) >= 0.7){fineScale = 0.4;}
         else{fineScale = 1;}
 
         //Responsive Control: Local Vectors w/o Rate Limiters

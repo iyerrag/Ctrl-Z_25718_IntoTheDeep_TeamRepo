@@ -61,7 +61,7 @@ public class ControlTest extends LinearOpMode {
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
         WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 0, 0, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0}, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 0, 0, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
 
         double[] data = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
         double[] pos = new double[]{0.0, 0.0, 0.0};
