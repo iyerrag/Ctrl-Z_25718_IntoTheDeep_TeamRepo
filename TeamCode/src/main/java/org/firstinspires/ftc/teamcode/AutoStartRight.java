@@ -25,35 +25,36 @@ import java.util.ArrayList;
 public class AutoStartRight extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
+        DcMotor fL = hardwareMap.get(DcMotor.class, "FrontLeft");
+        DcMotor fR = hardwareMap.get(DcMotor.class, "FrontRight");
+        DcMotor bL = hardwareMap.get(DcMotor.class, "BackLeft");
+        DcMotor bR = hardwareMap.get(DcMotor.class, "BackRight");
+        BHI260IMU IMU = hardwareMap.get(BHI260IMU.class, "imu");
+        VoltageSensor voltmeter = hardwareMap.voltageSensor.iterator().next();
+        //WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
+
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 12, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
+        //chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 240, 12, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
+        actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "rotationServo"), hardwareMap.get(Servo.class,
+                "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
+                "lifterHeightSensor"));
+
+        robot.waypointSettings(1, 1, 1,
+                .01575, .020125, .0025, 0,
+                .012, .006025, 0.0025, 0,
+                .35, .035, .0035, 0,
+                .024, .03, 10,
+                .15, .15, .4);
+
         waitForStart();
 
         if (opModeIsActive()) {
 
-            DcMotor fL = hardwareMap.get(DcMotor.class, "FrontLeft");
-            DcMotor fR = hardwareMap.get(DcMotor.class, "FrontRight");
-            DcMotor bL = hardwareMap.get(DcMotor.class, "BackLeft");
-            DcMotor bR = hardwareMap.get(DcMotor.class, "BackRight");
-            BHI260IMU IMU = hardwareMap.get(BHI260IMU.class, "imu");
-            VoltageSensor voltmeter = hardwareMap.voltageSensor.iterator().next();
-            //WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
-
-            chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 12, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
-            //chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 240, 12, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
-            actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "rotationServo"), hardwareMap.get(Servo.class,
-                    "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
-                    "lifterHeightSensor"));
-            waitForStart();
             gripper.initializePosition();
-            robot.waypointSettings(1, 1, 1,
-                    .01575, .020125, .0025, 0,
-                    .012, .006025, 0.0025, 0,
-                    .35, .035, .0035, 0,
-                    .024, .03, 10,
-                    .15, .15, .4);
 
             robot.toWaypoint(180, 45, 0, 1);
             gripper.moveToHangInsertPosition();
-            robot.toWaypoint(180, 93, 0, 1.2);
+            robot.toWaypoint(170, 100, 0, 1.2);
 
             fL.setPower(0);
             fR.setPower(0);
@@ -64,16 +65,15 @@ public class AutoStartRight extends LinearOpMode {
 
             gripper.moveToSpecimenExtractPos();
             ArrayList<double[]> secondExtraction = new ArrayList<double[]>();
-            secondExtraction.add(new double[]{315, 90, 0});
-            secondExtraction.add(new double[]{298, 15, 0});
-            robot.toWaypointBezier(secondExtraction, 2.5, 3);
-            gripper.changeClawState();
-            gripper.liftTo(1250);
+            secondExtraction.add(new double[]{300, 90, 0});
+            secondExtraction.add(new double[]{300, 26, 0});
+            robot.toWaypointBezier(secondExtraction, 3, 3.25);
+            gripper.extract();
             Thread.sleep(250);
 
-            robot.toWaypoint(210, 45, 0, 1.75);
+            robot.toWaypoint(195, 45, 0, 1.75);
             gripper.moveToHangInsertPosition();
-            robot.toWaypoint(181, 93, 0, 1);
+            robot.toWaypoint(180, 100, 0, 1.5);
 
             fL.setPower(0);
             fR.setPower(0);
@@ -83,27 +83,26 @@ public class AutoStartRight extends LinearOpMode {
 
             robot.toWaypoint(210, 50, 0, 0.5);
             gripper.moveToTransportPosition();
-            gripper.wristRotateTo(0.72);
-            //gripper.liftTo(0);
 
-            robot.toWaypoint(270, 45, 0, 1.5);
-            robot.toWaypoint(270, 150, 0, 2);
+            robot.toWaypoint(275, 45, 0, 1.5);
+            robot.toWaypoint(275, 150, 0, 2);
 
             ArrayList<double[]> sampleExtractMov1 = new ArrayList<double[]>();
             sampleExtractMov1.add(new double[]{340, 130, 0});
             sampleExtractMov1.add(new double[]{285, 30, 0});
 
             ArrayList<double[]> sampleExtractMov2 = new ArrayList<double[]>();
-            sampleExtractMov2.add(new double[]{245, 300, 0});
+            sampleExtractMov2.add(new double[]{200, 300, 0});
             sampleExtractMov2.add(new double[]{400, 130, 0});
             sampleExtractMov2.add(new double[]{285, 30, 0});
-            /*sampleExtractMov.add(new double[]{300, 150, 0});
-            sampleExtractMov.add(new double[]{320, 150, 0});
-            sampleExtractMov.add(new double[]{285, 18, 0});
-            sampleExtractMov.add(new double[]{300, 60, 0});
-            sampleExtractMov.add(new double[]{360, 0, 0});*/
+
+            ArrayList<double[]> sampleExtractMov3 = new ArrayList<double[]>();
+            sampleExtractMov3.add(new double[]{230, 300, 0});
+            sampleExtractMov3.add(new double[]{390, 30, 0});
+
             robot.toWaypointBezier(sampleExtractMov1, 1.25, 2.0);
-            robot.toWaypointBezier(sampleExtractMov2, 2.75, 3.25);
+            robot.toWaypointBezier(sampleExtractMov2, 3.5, 3.75);
+            robot.toWaypointBezier(sampleExtractMov3, 3.5, 3.75);
 
 
             /*robot.toWaypoint(303.5, 57, 0, 3);

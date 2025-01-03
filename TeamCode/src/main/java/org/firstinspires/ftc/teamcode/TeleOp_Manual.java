@@ -214,11 +214,11 @@ public class TeleOp_Manual extends LinearOpMode {
             }
             else if(gamepad2.x){
                 stopDriveBase();
-                if(!gripper.getCloseState()){gripper.changeClawState();}
-                gripper.liftTo(1250);
+                gripper.extract();
             }
             else if(gamepad2.y){
-                // Fill In
+                stopDriveBase();
+                gripper.submersiblePickup();
             }
             else if(gamepad2.left_bumper){
                 stopDriveBase();

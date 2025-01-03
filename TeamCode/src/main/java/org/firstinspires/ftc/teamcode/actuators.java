@@ -161,7 +161,7 @@ public class actuators {
     }
 
     public void elbowRotateTo(double targetAngle, double maxPow){
-        double targetPos = -2586 + 14.3 * targetAngle;
+        double targetPos = -2806 + 14.161 * targetAngle;
         elbow.setTargetPosition((int) targetPos);
         elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         elbow.setPower(maxPow);
@@ -189,7 +189,7 @@ public class actuators {
     }
 
     public void wristRotateTo(double targetAngle){
-        double targetPos = (targetAngle * .0039) - 0.05178;
+        double targetPos = (targetAngle * .003770339) - 0.0382974576;
         wrist.setPosition(targetPos);
     }
 
@@ -229,12 +229,12 @@ public class actuators {
     }
 
     public void openBeak(){
-        beakRotateTo(0.3);
+        beakRotateTo(0.15);
         closeState = false;
     }
 
     public void closeBeak(){
-        beakRotateTo(0.65);
+        beakRotateTo(0.7);
         closeState = true;
     }
 
@@ -263,7 +263,7 @@ public class actuators {
     }
 
     public double getWristAngle(){
-        return (getWristPosition() * 266.4) + 13.793;
+        return (getWristPosition() * 263.9728031) + 10.77211422;
     }
 
     public double getRotationServoPosition(){
@@ -283,12 +283,16 @@ public class actuators {
     }
 
     public double getElbowAngle(){
-        return getElbowPos() * 0.0696 + 180;
+        return getElbowPos() * 0.0706 + 198.16;
     }
 
     public boolean eqWT(double val1, double val2, double e){
         return Math.abs(val1 - val2) <= e;
     }
+
+    public void declareHighBucketStatusTrue(){highBasketState = true;}
+
+    public void declareHighBucketStatusFalse(){highBasketState = false;}
 
     public void moveToHighBucketPosition(){
         closeBeak();
@@ -301,22 +305,34 @@ public class actuators {
         elbowRotateTo(180, 1);
         wristRotateTo(150);
         rotateTo(-180);
+        while(!eqWT(getElbowAngle(), 180, 1)){}
+        while(!eqWT(getWristAngle(), 150, 1)){}
         highBasketState = true;
     }
 
     public void moveToInsertPosition(){
         liftTo(0);
-        elbowRotateTo(-20, 1);
-        wristRotateTo(200);
+        elbowRotateTo(0, 1);
+        wristRotateTo(180);
         rotateTo(-180);
-        openBeak();
         resetLifters();
         highBasketState = false;
     }
 
     public void moveToPickupPosition(){
+        openBeak();
         moveToInsertPosition();
-        wristRotateTo(110);
+        wristRotateTo(90);
+        highBasketState = false;
+    }
+
+    public void submersiblePickup() throws InterruptedException {
+        liftTo(0);
+        elbowRotateTo(-5, 1);
+        wristRotateTo(95);
+        resetLifters();
+        Thread.sleep(200);
+        closeBeak();
         highBasketState = false;
     }
 
@@ -354,8 +370,8 @@ public class actuators {
     }
     public void moveToStartingPosition(){
         liftTo(0);
-        elbowRotateTo(180, 1);
-        wristRotateTo(20);
+        elbowRotateTo(198, 1);
+        wristRotateTo(10);
         rotateTo(0);
         closeBeak();
         resetLifters();
@@ -364,8 +380,8 @@ public class actuators {
     public void moveToHangInsertPosition(){
         closeBeak();
         liftTo(0);
-        elbowRotateTo(90, 1);
-        wristRotateTo(90);
+        elbowRotateTo(135, 1);
+        wristRotateTo(55);
         rotateTo(-180);
         resetLifters();
         highBasketState = false;
@@ -373,25 +389,31 @@ public class actuators {
 
     public void hang(){
         moveToHangInsertPosition();
-        liftTo(10);
-        while(getLiftHeight() < 10){}
+        liftTo(23);
+        while(getLiftHeight() < 23){}
         openBeak();
         highBasketState = false;
     }
 
     public void moveToSpecimenExtractPos(){
         liftTo(0);
-        elbowRotateTo(180, 1);
-        wristRotateTo(180);
+        elbowRotateTo(198, 1);
+        wristRotateTo(162);
         rotateTo(-180);
         openBeak();
+        resetLifters();
         highBasketState = false;
     }
 
-    public void initializePosition(){
+    public void extract() throws InterruptedException {
+        if(!getCloseState()){changeClawState();}
+        liftTo(10);
+    }
+
+    public void initializePosition() throws InterruptedException {
         closeBeak();
         wristRotateTo(150);
-        while(getWristAngle() < 150){}
+        Thread.sleep(200);
         rotateTo(-180);
         wristRotateTo(45);
         highBasketState = false;
