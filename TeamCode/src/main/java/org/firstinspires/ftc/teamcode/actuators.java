@@ -407,7 +407,7 @@ public class actuators {
 
     public void extract() throws InterruptedException {
         if(!getCloseState()){changeClawState();}
-        liftTo(10);
+        liftTo(13);
     }
 
     public void initializePosition() throws InterruptedException {

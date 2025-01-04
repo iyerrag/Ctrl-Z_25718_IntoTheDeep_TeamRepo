@@ -134,21 +134,17 @@ public class TeleOp_Manual extends LinearOpMode {
                 stopDriveBase();
                 gripper.moveToHighBucketPosition();
             }
-            else if(gamepad1.left_bumper){
+            else if(gamepad1.left_trigger==1){
                 stopDriveBase();
                 gripper.moveToTransportPosition();
             }
-            else if(gamepad1.left_trigger == 1){
+            else if(gamepad1.right_trigger == 1){
                 stopDriveBase();
                 gripper.moveToStartingPosition();
             }
             else if(gamepad1.right_bumper){
                 stopDriveBase();
                 gripper.moveToHangInsertPosition();
-            }
-            else if(gamepad1.right_trigger == 1){
-                stopDriveBase();
-                gripper.initializePosition();
             }
             else if(Math.abs(gamepad2.left_stick_y) == 1){
                 if(gamepad2.left_stick_y == 1){
@@ -247,7 +243,7 @@ public class TeleOp_Manual extends LinearOpMode {
 
         //Define Fine-Control Scale
         double fineScale;
-        if(Math.abs(gamepad1.left_stick_y) >= 0.7){fineScale = 0.4;}
+        if(gamepad1.left_bumper){fineScale = 0.4;}
         else{fineScale = 1;}
 
         double powX;
