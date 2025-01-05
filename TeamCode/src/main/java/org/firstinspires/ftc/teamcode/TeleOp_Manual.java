@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -72,8 +73,8 @@ public class TeleOp_Manual extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         //Initialize Telemetry Print:
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+        //telemetry.addData("Status", "Initialized");
+        //telemetry.update();
 
         //Assign Motors
         fL = hardwareMap.get(DcMotor.class, "FrontLeft");
@@ -111,12 +112,12 @@ public class TeleOp_Manual extends LinearOpMode {
 
         //Until the Match-End:
         while (opModeIsActive()) {
-            telemetry.addData("WristPos:", gripper.getWristPosition());
+           /* telemetry.addData("WristPos:", gripper.getWristPosition());
             telemetry.addData("RotPos:", gripper.getRotationServoPosition());
             telemetry.addData("ElbowPos:", gripper.getElbowPos());
             telemetry.addData("LifterPos:", gripper.getLiftPos());
             telemetry.addData("Height", "CM: " + hardwareMap.get(DistanceSensor.class, "lifterHeightSensor").getDistance(DistanceUnit.CM));
-            telemetry.addData("FrontDist", "CM: " + hardwareMap.get(DistanceSensor.class, "frontDistanceSensor").getDistance(DistanceUnit.CM));
+            telemetry.addData("FrontDist", "CM: " + hardwareMap.get(DistanceSensor.class, "frontDistanceSensor").getDistance(DistanceUnit.CM)); */
 
             if(gamepad1.a){
                 stopDriveBase();
@@ -243,7 +244,7 @@ public class TeleOp_Manual extends LinearOpMode {
 
         //Define Fine-Control Scale
         double fineScale;
-        if(gamepad1.left_bumper){fineScale = 0.4;}
+        if(gamepad1.left_bumper){fineScale = 0.2;}
         else{fineScale = 1;}
 
         double powX;
@@ -280,8 +281,8 @@ public class TeleOp_Manual extends LinearOpMode {
         bR.setPower((a + addRight) * backRightBias * fineScale);
 
         // DriveBase Data Update (Via Telemetry)
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.update();
+        //telemetry.addData("Status", "Run Time: " + runtime.toString());
+        //telemetry.update();
     }
 
     public void stopDriveBase(){

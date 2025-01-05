@@ -63,7 +63,7 @@ public class actuators {
 
     public void liftTo(double targetHeight){
 
-        int targetPos = (int) (65.045045 * targetHeight);
+        int targetPos = (int) (65.045045 * 0.72 * targetHeight);
 
         leftSlide.setTargetPosition(targetPos);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -84,7 +84,7 @@ public class actuators {
     public void resetLifters(){
         leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        while(lifterHeightSensor.getDistance(DistanceUnit.MM) > 60){leftSlide.setPower(-1); rightSlide.setPower(-1);}
+        while(lifterHeightSensor.getDistance(DistanceUnit.MM) > 60){leftSlide.setPower(-.25); rightSlide.setPower(-25);}
         leftSlide.setPower(0);
         rightSlide.setPower(0);
         leftSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -275,7 +275,7 @@ public class actuators {
     }
 
     public double getLiftHeight(){
-        return getLiftPos() * 0.015374;
+        return getLiftPos() * 0.015374/.72;
     }
 
     public double getElbowPos(){

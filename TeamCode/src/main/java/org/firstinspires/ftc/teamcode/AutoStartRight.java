@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.RobotLog;
 
 //import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
@@ -33,37 +34,62 @@ public class AutoStartRight extends LinearOpMode {
         VoltageSensor voltmeter = hardwareMap.voltageSensor.iterator().next();
         //WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
 
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 12, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 0, 0, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
         //chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 240, 12, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
         actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "rotationServo"), hardwareMap.get(Servo.class,
                 "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
                 "lifterHeightSensor"));
 
-        robot.waypointSettings(1, 1, 1,
-                .01575, .020125, .0025, 0,
-                .012, .006025, 0.0025, 0,
-                .35, .035, .0035, 0,
-                .024, .03, 10,
-                .15, .15, .4);
+        robot.waypointSettings(1, 1, 1.5,
+                                20, 20, 5,
+                                .1425529672, -0.5733673083,
+                                0,0,
+                                0,0,
+                                0,0,
+                                .117312536, -.5899072879,
+                                1.093174e-21,7.057233538,
+                                0,0,
+                                0.0,0,
+                                6.776897504, -0.5022314966,
+                                0,0,
+                                0,0,
+                                0,0,
+                                .024, .03, 10,
+                                1, 1, .288 );
+
 
         waitForStart();
 
         if (opModeIsActive()) {
 
-            gripper.initializePosition();
-
-            robot.toWaypoint(180, 45, 0, 1);
-            gripper.moveToHangInsertPosition();
-            robot.toWaypoint(170, 100, 0, 1.2);
-
+            robot.toWaypoint(0, 240, 30, 6);
+            telemetry.addData("X:", robot.getPosition()[0]);
+            telemetry.addData("Y:", robot.getPosition()[1]);
+            telemetry.addData("Theta:", robot.getPosition()[2] * 180 / Math.PI);
+            telemetry.update();
+           // robot.toWaypoint(0, 30, 0, 3);
             fL.setPower(0);
             fR.setPower(0);
             bL.setPower(0);
             bR.setPower(0);
-            gripper.hang();
-            robot.toWaypoint(180, 45, 0, .75);
+            Thread.sleep(10000);
 
-            gripper.moveToSpecimenExtractPos();
+
+
+            //gripper.initializePosition();
+
+            //robot.toWaypoint(180, 45, 0, 3);
+
+            //gripper.moveToHangInsertPosition();
+            //robot.toWaypoint(170, 100, 0, 3);
+
+            //fL.setPower(0); fR.setPower(0); bL.setPower(0); bR.setPower(0);
+
+            //gripper.hang();
+
+            //robot.toWaypoint(180, 45, 0, 3);
+
+            /*gripper.moveToSpecimenExtractPos();
             ArrayList<double[]> secondExtraction = new ArrayList<double[]>();
             secondExtraction.add(new double[]{300, 90, 0});
             secondExtraction.add(new double[]{300, 26, 0});
@@ -103,7 +129,7 @@ public class AutoStartRight extends LinearOpMode {
             robot.toWaypointBezier(sampleExtractMov1, 1.25, 2.0);
             robot.toWaypointBezier(sampleExtractMov2, 3.5, 3.75);
             robot.toWaypointBezier(sampleExtractMov3, 3.5, 3.75);
-
+            ----
 
             /*robot.toWaypoint(303.5, 57, 0, 3);
             gripper.moveToPickupPositionAuto();

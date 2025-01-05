@@ -35,12 +35,30 @@ public class AutoStartLeft extends LinearOpMode {
         actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "rotationServo"), hardwareMap.get(Servo.class,
                 "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
                 "lifterHeightSensor"));
-        robot.waypointSettings(1, 1, 1,
+        /*robot.waypointSettings(1, 1, 1,
                 .01575, .020125, .0025, 0,
                 .012, .006025, 0.0025, 0,
                 .35, .035, .0035, 0,
                 .012, .015, 5,
-                .15, .15, .4);
+                .15, .15, .4);*/
+
+        robot.waypointSettings(1, 1, 1.5,
+                20, 20, 20,
+                .117312536, -.5899072879,
+                0,0,
+                0,0,
+                0,0,
+                .117312536, -.5899072879,
+                0,0,
+                0,0,
+                0,0,
+                .0000035, 0,
+                0,0,
+                0,0,
+                0,0,
+                .024, .03, 10,
+                .108, .108, .288 );
+
         //start
         waitForStart();
         gripper.initializePosition();
@@ -152,12 +170,12 @@ public class AutoStartLeft extends LinearOpMode {
         gripper.resetLifters();
         gripper.declareHighBucketStatusFalse();*/
 
-        robot.waypointSettings(1, 1, 1,
+        /*robot.waypointSettings(1, 1, 1,
                 .01575, .020125, .0025, 0,
                 .012, .006025, 0.0025, 0,
                 .35, .035, .0035, 0,
                 .024, .03, 10,
-                .15, .15, .4);
+                .15, .15, .4);*/
 
     }
 }

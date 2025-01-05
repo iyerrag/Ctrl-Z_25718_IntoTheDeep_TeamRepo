@@ -45,7 +45,7 @@ public class chassis{
     static final double leftBias = 1.0;
     static private String angleMode;
 
-    private double waypointToleranceDistX, waypointToleranceDistY, waypointToleranceAng, waypointKpx, waypointKix, waypointKdx, waypointKcx, waypointKpy, waypointKiy, waypointKdy, waypointKcy, waypointKptheta, waypointKitheta, waypointKdtheta, waypointKctheta, waypointAccelLimX, waypointAccelLimY, waypointAccelLimTheta, waypointClampingX, waypointClampingY, waypointClampingTheta;
+    private double waypointToleranceDistX, waypointToleranceDistY, waypointToleranceAng, minGainThresholdX, minGainThresholdY, minGainThresholdTheta, AKpx, BKpx, AKix, BKix, AKdx, BKdx, AKcx, BKcx, AKpy, BKpy, AKiy, BKiy, AKdy, BKdy, AKcy, BKcy, AKpTheta, BKpTheta, AKiTheta, BKiTheta, AKdTheta, BKdTheta, AKcTheta, BKcTheta, waypointAccelLimX, waypointAccelLimY, waypointAccelLimTheta, waypointClampingX, waypointClampingY, waypointClampingTheta;
     static final double maxA = 0.3;
 
     static private VoltageSensor sensor;
@@ -88,9 +88,11 @@ public class chassis{
         bL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         bR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         bL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         bR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         fL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         bL.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
         bR.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
         fL.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
@@ -251,22 +253,42 @@ public class chassis{
         localizer = new NonEulerianOdometry(x, y, theta, bL, bR, fL, imu, angleMode);
     }
 
-    public void waypointSettings(double toleranceDistX, double toleranceDistY, double toleranceAng, double Kpx, double Kix, double Kdx, double Kcx, double Kpy, double Kiy, double Kdy, double Kcy, double Kptheta, double Kitheta, double Kdtheta, double Kctheta, double accelLimX, double accelLimY, double accelLimTheta, double clampingX, double clampingY, double clampingTheta){
+    public void waypointSettings(double toleranceDistX, double toleranceDistY, double toleranceAng, double minGainThresholdX, double minGainThresholdY, double minGainThresholdTheta, double AKpx, double BKpx, double AKix, double BKix, double AKdx, double BKdx, double AKcx, double BKcx, double AKpy, double BKpy, double AKiy, double BKiy, double AKdy, double BKdy, double AKcy, double BKcy, double AKpTheta, double BKpTheta, double AKiTheta, double BKiTheta, double AKdTheta, double BKdTheta, double AKcTheta, double BKcTheta, double accelLimX, double accelLimY, double accelLimTheta, double clampingX, double clampingY, double clampingTheta){
         waypointToleranceDistX = toleranceDistX;
         waypointToleranceDistY = toleranceDistY;
         waypointToleranceAng = toleranceAng * Math.PI / 180;
-        waypointKpx = Kpx;
-        waypointKix = Kix;
-        waypointKdx = Kdx;
-        waypointKcx = Kcx;
-        waypointKpy = Kpy;
-        waypointKiy = Kiy;
-        waypointKdy = Kdy;
-        waypointKcy = Kcy;
-        waypointKptheta = Kptheta;
-        waypointKitheta = Kitheta;
-        waypointKdtheta = Kdtheta;
-        waypointKctheta = Kctheta;
+
+        this.AKpx = AKpx;
+        this.BKpx = BKpx;
+        this.AKix = AKix;
+        this.BKix = BKix;
+        this.AKdx = AKdx;
+        this.BKdx = BKdx;
+        this.AKcx = AKcx;
+        this.BKcx = BKcx;
+
+        this.AKpy = AKpy;
+        this.BKpy = BKpy;
+        this.AKiy = AKiy;
+        this.BKiy = BKiy;
+        this.AKdy = AKdy;
+        this.BKdy = BKdy;
+        this.AKcy = AKcy;
+        this.BKcy = BKcy;
+
+        this.AKpTheta = AKpTheta;
+        this.BKpTheta = BKpTheta;
+        this.AKiTheta = AKiTheta;
+        this.BKiTheta = BKiTheta;
+        this.AKdTheta = AKdTheta;
+        this.BKdTheta = BKdTheta;
+        this.AKcTheta = AKcTheta;
+        this.BKcTheta = BKcTheta;
+
+        this.minGainThresholdX = minGainThresholdX;
+        this.minGainThresholdY = minGainThresholdY;
+        this.minGainThresholdTheta = minGainThresholdTheta;
+
         waypointAccelLimX = accelLimX;
         waypointAccelLimY = accelLimY;
         waypointAccelLimTheta = accelLimTheta;
@@ -304,9 +326,62 @@ public class chassis{
         double previousErrX;
         double previousErrY;
         double previousErrTheta;
+
+        double deltaX = waypointTargetX - getPosition()[0];
+        double deltaY = waypointTargetY - getPosition()[1];
+        double deltaTheta = waypointTargetTheta - getPosition()[2];
+
+        RobotLog.dd("MinGainThresholdXValue:", minGainThresholdX + "");
+
+        if(Math.abs(deltaX) < Math.abs(minGainThresholdX)){
+            deltaX = minGainThresholdX;
+            RobotLog.dd("MinGainThresholdXState:", "true");
+        }
+
+        RobotLog.dd("DeltaXValue:", deltaX + "");
+
+        if(Math.abs(deltaY) < Math.abs(minGainThresholdY)){
+            deltaY = minGainThresholdY;
+        }
+
+        if(Math.abs(deltaTheta) < Math.abs(minGainThresholdTheta)){
+            deltaTheta = minGainThresholdTheta;
+        }
+
+        double waypointKpx = AKpx * Math.pow(Math.abs(deltaX), BKpx);
+        double waypointKix = AKix * Math.pow(Math.abs(deltaX), BKix);
+        double waypointKdx = AKdx * Math.pow(Math.abs(deltaX), BKdx);
+        double waypointKcx = AKcx * Math.pow(Math.abs(deltaX), BKcx);
+
+        double waypointKpy = AKpy * Math.pow(Math.abs(deltaY), BKpy);
+        double waypointKiy = AKiy * Math.pow(Math.abs(deltaY), BKiy);
+        double waypointKdy = AKdy * Math.pow(Math.abs(deltaY), BKdy);
+        double waypointKcy = AKcy * Math.pow(Math.abs(deltaY), BKcy);
+
+        double waypointKpTheta = AKpTheta * Math.pow(Math.abs(deltaTheta), BKpTheta);
+        double waypointKiTheta = AKiTheta * Math.pow(Math.abs(deltaTheta), BKiTheta);
+        double waypointKdTheta = AKdTheta * Math.pow(Math.abs(deltaTheta), BKdTheta);
+        double waypointKcTheta = AKcTheta * Math.pow(Math.abs(deltaTheta), BKcTheta);
+
         double Kcx = waypointKcx;
         double Kcy = waypointKcy;
-        double Kctheta = waypointKctheta;
+        double Kctheta = waypointKcTheta;
+
+        RobotLog.dd("Kpx:", waypointKpx + "");
+        RobotLog.dd("Kix:", waypointKix + "");
+        RobotLog.dd("Kdx:", waypointKdx + "");
+        RobotLog.dd("Kcx:", waypointKcx + "");
+
+        RobotLog.dd("Kpy:", waypointKpy + "");
+        RobotLog.dd("Kiy:", waypointKiy + "");
+        RobotLog.dd("Kdy:", waypointKdy + "");
+        RobotLog.dd("Kcy:", waypointKcy + "");
+
+        RobotLog.dd("KpTheta:", waypointKpTheta + "");
+        RobotLog.dd("KiTheta:", waypointKiTheta + "");
+        RobotLog.dd("KdTheta:", waypointKdTheta + "");
+        RobotLog.dd("KcTheta:", waypointKcTheta + "");
+
         double errX = 0;
         double errY = 0;
         double errTheta = 0;
@@ -370,13 +445,13 @@ public class chassis{
             }
 
             if(Ptheta > 0){
-                Kctheta = Math.abs(waypointKctheta);
+                Kctheta = Math.abs(waypointKcTheta);
             }
             else if(Ptheta == 0){
                 Kctheta = 0;
             }
             else{
-                Kctheta = -Math.abs(waypointKctheta);
+                Kctheta = -Math.abs(waypointKcTheta);
             }
 
             Ix += dt * (errX + previousErrX) / 2.0;
@@ -397,11 +472,11 @@ public class chassis{
                 Iy = -1 * Math.abs(waypointClampingY) / waypointKiy;
             }
 
-            if(Itheta * waypointKitheta > Math.abs(waypointClampingTheta)){
-                Itheta = Math.abs(waypointClampingTheta) / (waypointKitheta);
+            if(Itheta * waypointKiTheta > Math.abs(waypointClampingTheta)){
+                Itheta = Math.abs(waypointClampingTheta) / (waypointKiTheta);
             }
-            else if(Itheta * waypointKitheta < - Math.abs(waypointClampingTheta)){
-                Itheta = -1 * Math.abs(waypointClampingTheta) / (waypointKitheta);
+            else if(Itheta * waypointKiTheta < - Math.abs(waypointClampingTheta)){
+                Itheta = -1 * Math.abs(waypointClampingTheta) / (waypointKiTheta);
             }
 
             Dx = (errX - previousErrX) / dt;
@@ -412,7 +487,7 @@ public class chassis{
 
             globalCorrectionX = (waypointKpx * Px + waypointKix * Ix + waypointKdx * Dx + Kcx);
             globalCorrectionY = (waypointKpy * Py + waypointKiy * Iy + waypointKdy * Dy + Kcy);
-            globalCorrectionTheta = (waypointKptheta * Ptheta + waypointKitheta * Itheta + waypointKdtheta * Dtheta + Kctheta);
+            globalCorrectionTheta = (waypointKpTheta * Ptheta + waypointKiTheta * Itheta + waypointKdTheta * Dtheta + Kctheta);
 
             localCorrectionY = globalCorrectionY * Math.cos(currentTheta) - globalCorrectionX * Math.sin(currentTheta);
             localCorrectionX = globalCorrectionY * Math.sin(currentTheta) + globalCorrectionX * Math.cos(currentTheta);
@@ -497,6 +572,10 @@ public class chassis{
                 bR.setPower((a * rightBias + globalCorrectionTheta) / denominator);
             }
 
+            RobotLog.dd("X:", getPosition()[0] + "");
+            RobotLog.dd("Y:", getPosition()[1] + "");
+            RobotLog.dd("Theta:", getPosition()[2] + "");
+
 
             previousLocalCorrectionX = localCorrectionX;
             previousLocalCorrectionY = localCorrectionY;
@@ -505,7 +584,6 @@ public class chassis{
             //return new double[]{localCorrectionX, localCorrectionY, globalCorrectionX, globalCorrectionY, a, b};
         }
 
-        RobotLog.dd("chassis", "Drive to waypoint completed");
         fL.setPower(0);
         fR.setPower(0);
         bL.setPower(0);
@@ -590,6 +668,7 @@ public class chassis{
     }
 
     public double[] getPosition(){
+        localizer.updateOdometry();
         return localizer.getPosition();
     }
 
@@ -621,6 +700,7 @@ public class chassis{
 
     // NOTE: High Chance for Computational Failure With More Than 10 Bezier Points; Guarenteed Failure With 14 or More Bezier Points;
     public double[] toWaypointBezier(ArrayList<double[]> targetPoints, double runtime, double timeout){
+
         for(int i = 0; i < targetPoints.size(); i++){
             double[] point = targetPoints.get(i);
             point[2] *= Math.PI / 180.0;
@@ -634,6 +714,39 @@ public class chassis{
             xPoints.add(point[0]);
             yPoints.add(point[1]);
             thetaPoints.add(point[2]);
+        }
+
+        double deltaX = 0;
+        for(double targetX : xPoints){
+            if(Math.abs(targetX - getPosition()[0]) > deltaX){
+                deltaX = Math.abs(targetX - getPosition()[0]);
+            }
+        }
+
+        double deltaY = 0;
+        for(double targetY : yPoints){
+            if(Math.abs(targetY - getPosition()[1]) > deltaY){
+                deltaY = Math.abs(targetY - getPosition()[1]);
+            }
+        }
+
+        double deltaTheta = 0;
+        for(double targetTheta : thetaPoints){
+            if(Math.abs(targetTheta - getPosition()[2]) > deltaTheta){
+                deltaTheta = Math.abs(targetTheta - getPosition()[2]);
+            }
+        }
+
+        if(Math.abs(deltaX) < Math.abs(minGainThresholdX)){
+            deltaX = minGainThresholdX;
+        }
+
+        if(Math.abs(deltaY) < Math.abs(minGainThresholdY)){
+            deltaY = minGainThresholdY;
+        }
+
+        if(Math.abs(deltaTheta) < Math.abs(minGainThresholdTheta)){
+            deltaTheta = minGainThresholdTheta;
         }
 
         double Px = 0;
@@ -658,9 +771,26 @@ public class chassis{
         double previousErrX;
         double previousErrY;
         double previousErrTheta;
+
+        double waypointKpx = AKpx * Math.pow(Math.abs(deltaX), BKpx);
+        double waypointKix = AKix * Math.pow(Math.abs(deltaX), BKix);
+        double waypointKdx = AKdx * Math.pow(Math.abs(deltaX), BKdx);
+        double waypointKcx = AKcx * Math.pow(Math.abs(deltaX), BKcx);
+
+        double waypointKpy = AKpy * Math.pow(Math.abs(deltaY), BKpy);
+        double waypointKiy = AKiy * Math.pow(Math.abs(deltaY), BKiy);
+        double waypointKdy = AKdy * Math.pow(Math.abs(deltaY), BKdy);
+        double waypointKcy = AKcy * Math.pow(Math.abs(deltaY), BKcy);
+
+        double waypointKpTheta = AKpTheta * Math.pow(Math.abs(deltaTheta), BKpTheta);
+        double waypointKiTheta = AKiTheta * Math.pow(Math.abs(deltaTheta), BKiTheta);
+        double waypointKdTheta = AKdTheta * Math.pow(Math.abs(deltaTheta), BKdTheta);
+        double waypointKcTheta = AKcTheta * Math.pow(Math.abs(deltaTheta), BKcTheta);
+
         double Kcx = waypointKcx;
         double Kcy = waypointKcy;
-        double Kctheta = waypointKctheta;
+        double Kctheta = waypointKcTheta;
+
         double errX = 0;
         double errY = 0;
         double errTheta = 0;
@@ -736,13 +866,13 @@ public class chassis{
             }
 
             if(Ptheta > 0){
-                Kctheta = Math.abs(waypointKctheta);
+                Kctheta = Math.abs(waypointKcTheta);
             }
             else if(Ptheta == 0){
                 Kctheta = 0;
             }
             else{
-                Kctheta = -Math.abs(waypointKctheta);
+                Kctheta = -Math.abs(waypointKcTheta);
             }
 
             Ix += dt * (errX + previousErrX) / 2.0;
@@ -763,11 +893,11 @@ public class chassis{
                 Iy = -1 * Math.abs(waypointClampingY) / waypointKiy;
             }
 
-            if(Itheta * waypointKitheta > Math.abs(waypointClampingTheta)){
-                Itheta = Math.abs(waypointClampingTheta) / (waypointKitheta);
+            if(Itheta * waypointKiTheta > Math.abs(waypointClampingTheta)){
+                Itheta = Math.abs(waypointClampingTheta) / (waypointKiTheta);
             }
-            else if(Itheta * waypointKitheta < - Math.abs(waypointClampingTheta)){
-                Itheta = -1 * Math.abs(waypointClampingTheta) / (waypointKitheta);
+            else if(Itheta * waypointKiTheta < - Math.abs(waypointClampingTheta)){
+                Itheta = -1 * Math.abs(waypointClampingTheta) / (waypointKiTheta);
             }
 
             Dx = (errX - previousErrX) / dt;
@@ -778,7 +908,7 @@ public class chassis{
 
             globalCorrectionX = (waypointKpx * Px + waypointKix * Ix + waypointKdx * Dx + Kcx);
             globalCorrectionY = (waypointKpy * Py + waypointKiy * Iy + waypointKdy * Dy + Kcy);
-            globalCorrectionTheta = (waypointKptheta * Ptheta + waypointKitheta * Itheta + waypointKdtheta * Dtheta + Kctheta);
+            globalCorrectionTheta = (waypointKpTheta * Ptheta + waypointKiTheta * Itheta + waypointKdTheta * Dtheta + Kctheta);
 
             localCorrectionY = globalCorrectionY * Math.cos(currentTheta) - globalCorrectionX * Math.sin(currentTheta);
             localCorrectionX = globalCorrectionY * Math.sin(currentTheta) + globalCorrectionX * Math.cos(currentTheta);
