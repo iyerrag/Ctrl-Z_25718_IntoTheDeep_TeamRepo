@@ -84,7 +84,11 @@ public class actuators {
     public void resetLifters(){
         leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        while(lifterHeightSensor.getDistance(DistanceUnit.MM) > 60){leftSlide.setPower(-.25); rightSlide.setPower(-25);}
+        if(lifterHeightSensor.getDistance(DistanceUnit.MM) > 60) {
+            leftSlide.setPower(-1);
+            rightSlide.setPower(-1);
+            while (lifterHeightSensor.getDistance(DistanceUnit.MM) > 60) {}
+        }
         leftSlide.setPower(0);
         rightSlide.setPower(0);
         leftSlide.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -297,22 +301,22 @@ public class actuators {
     public void moveToHighBucketPosition(){
         closeBeak();
         wristRotateTo(90);
-        while(!eqWT(getWristAngle(), 90, 5));
+        while(!eqWT(getWristAngle(), 90, 5)){}
         elbowRotateTo(90, 1);
         while(!eqWT(getElbowAngle(), 90, 5)){}
-        liftTo(75);
-        while(!eqWT(getLiftHeight(), 75, 1));
-        elbowRotateTo(180, 1);
-        wristRotateTo(150);
+        liftTo(70);
+        while(!eqWT(getLiftHeight(), 70, 1)){}
+        elbowRotateTo(160, 1);
+        wristRotateTo(170);
         rotateTo(-180);
-        while(!eqWT(getElbowAngle(), 180, 1)){}
-        while(!eqWT(getWristAngle(), 150, 1)){}
+        while(!eqWT(getElbowAngle(), 160, 1)){}
+        while(!eqWT(getWristAngle(), 170, 1)){}
         highBasketState = true;
     }
 
     public void moveToInsertPosition(){
         liftTo(0);
-        elbowRotateTo(0, 1);
+        elbowRotateTo(-4, 1);
         wristRotateTo(180);
         rotateTo(-180);
         resetLifters();
@@ -322,6 +326,7 @@ public class actuators {
     public void moveToPickupPosition(){
         openBeak();
         moveToInsertPosition();
+        elbowRotateTo(0, 1);
         wristRotateTo(90);
         highBasketState = false;
     }
@@ -333,6 +338,8 @@ public class actuators {
         resetLifters();
         Thread.sleep(200);
         closeBeak();
+        Thread.sleep(200);
+        elbowRotateTo(0, 1);
         highBasketState = false;
     }
 
@@ -397,7 +404,7 @@ public class actuators {
 
     public void moveToSpecimenExtractPos(){
         liftTo(0);
-        elbowRotateTo(198, 1);
+        elbowRotateTo(193, 1);
         wristRotateTo(162);
         rotateTo(-180);
         openBeak();
@@ -408,6 +415,7 @@ public class actuators {
     public void extract() throws InterruptedException {
         if(!getCloseState()){changeClawState();}
         liftTo(13);
+        while ((getHeight(DistanceUnit.CM) <= 13)) {}
     }
 
     public void initializePosition() throws InterruptedException {

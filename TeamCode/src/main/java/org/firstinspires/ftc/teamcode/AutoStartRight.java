@@ -42,27 +42,29 @@ public class AutoStartRight extends LinearOpMode {
 
         robot.waypointSettings(1, 1, 1.5,
                                 20, 20, 5,
-                                .1425529672, -0.5733673083,
-                                0,0,
-                                0,0,
+                                /*.1425529672, -0.5733673083,*/
+                                 .01775,0,
+                                0.0,0,
+                                0.000,0,
                                 0,0,
                                 .117312536, -.5899072879,
                                 1.093174e-21,7.057233538,
-                                0,0,
+                                .002,0,
                                 0.0,0,
-                                6.776897504, -0.5022314966,
-                                0,0,
-                                0,0,
-                                0,0,
-                                .024, .03, 10,
-                                1, 1, .288 );
+                                2.147257771, -0.3554874788,
+                                11.49861303, -1.283011678,
+                                .00,0,
+                                0.0,0,
+                                .024, .03, 0.0375,
+                                1, 1, 1 );
 
 
         waitForStart();
 
         if (opModeIsActive()) {
 
-            robot.toWaypoint(0, 240, 30, 6);
+            //robot.toWaypoint(0,0,90,2);
+            robot.toWaypoint(30, 0, 0, 6);
             telemetry.addData("X:", robot.getPosition()[0]);
             telemetry.addData("Y:", robot.getPosition()[1]);
             telemetry.addData("Theta:", robot.getPosition()[2] * 180 / Math.PI);

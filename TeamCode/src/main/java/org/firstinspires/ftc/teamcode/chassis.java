@@ -331,6 +331,19 @@ public class chassis{
         double deltaY = waypointTargetY - getPosition()[1];
         double deltaTheta = waypointTargetTheta - getPosition()[2];
 
+        RobotLog.dd("Global deltaX: ", deltaX + "");
+        RobotLog.dd("Global deltaY: ", deltaY + "");
+
+        //For cases where  deltaTheta is not 0, assume the robot is moving in the final angle to the target destination.
+        //Practically, this means using a "local" deltaX and deltaY
+        double localDeltaX = deltaX * Math.cos(-waypointTargetTheta) - deltaY * Math.sin(-waypointTargetTheta);
+        double localDeltaY = deltaX * Math.sin(-waypointTargetTheta) + deltaY * Math.cos(-waypointTargetTheta);
+        deltaX = localDeltaX;
+        deltaY = localDeltaY;
+
+        RobotLog.dd("Local deltaX: ", deltaX + "");
+        RobotLog.dd("Local deltaY: ", deltaY + "");
+
         RobotLog.dd("MinGainThresholdXValue:", minGainThresholdX + "");
 
         if(Math.abs(deltaX) < Math.abs(minGainThresholdX)){
@@ -344,8 +357,8 @@ public class chassis{
             deltaY = minGainThresholdY;
         }
 
-        if(Math.abs(deltaTheta) < Math.abs(minGainThresholdTheta)){
-            deltaTheta = minGainThresholdTheta;
+        if(Math.abs(deltaTheta) < Math.abs(minGainThresholdTheta * Math.PI / 180)){
+            deltaTheta = minGainThresholdTheta * Math.PI / 180;
         }
 
         double waypointKpx = AKpx * Math.pow(Math.abs(deltaX), BKpx);
@@ -358,14 +371,26 @@ public class chassis{
         double waypointKdy = AKdy * Math.pow(Math.abs(deltaY), BKdy);
         double waypointKcy = AKcy * Math.pow(Math.abs(deltaY), BKcy);
 
-        double waypointKpTheta = AKpTheta * Math.pow(Math.abs(deltaTheta), BKpTheta);
-        double waypointKiTheta = AKiTheta * Math.pow(Math.abs(deltaTheta), BKiTheta);
-        double waypointKdTheta = AKdTheta * Math.pow(Math.abs(deltaTheta), BKdTheta);
-        double waypointKcTheta = AKcTheta * Math.pow(Math.abs(deltaTheta), BKcTheta);
+        double waypointKpTheta = AKpTheta * Math.pow(Math.abs(deltaTheta * 180 / Math.PI), BKpTheta);
+
+        RobotLog.dd("InitialKpTheta:", waypointKpTheta + "");
+        RobotLog.dd("deltaTheta:", deltaTheta + "");
+
+        double waypointKiTheta = AKiTheta * Math.pow(Math.abs(deltaTheta * 180 / Math.PI), BKiTheta);
+        double waypointKdTheta = AKdTheta * Math.pow(Math.abs(deltaTheta * 180 / Math.PI), BKdTheta);
+        double waypointKcTheta = AKcTheta * Math.pow(Math.abs(deltaTheta * 180 / Math.PI), BKcTheta);
+
+        //If Turning, Overwrite Translational Feed-Forwards:
+        if(deltaTheta != 0){
+            waypointKcx = 0.0775;
+            waypointKcy = 0.0775;
+        }
 
         double Kcx = waypointKcx;
         double Kcy = waypointKcy;
         double Kctheta = waypointKcTheta;
+
+        double globalKpx, globalKix, globalKdx, globalKcx, globalKpy, globalKiy, globalKdy, globalKcy, globalKpTheta, globalKiTheta, globalKdTheta, globalKcTheta;
 
         RobotLog.dd("Kpx:", waypointKpx + "");
         RobotLog.dd("Kix:", waypointKix + "");
@@ -382,14 +407,17 @@ public class chassis{
         RobotLog.dd("KdTheta:", waypointKdTheta + "");
         RobotLog.dd("KcTheta:", waypointKcTheta + "");
 
+        // Note: Error Here Is Not Exactly the Error, But the Correction Signal (Target - Actual)
         double errX = 0;
         double errY = 0;
         double errTheta = 0;
         double localCorrectionX = 0.0;
         double localCorrectionY = 0.0;
 
-        double Imax = 0;
+        double localErrX;
+        double localErrY;
 
+        double Imax = 0;
 
         // Read current odometry position
         localizer.updateOdometry();
@@ -416,9 +444,20 @@ public class chassis{
             previousErrY = errY;
             previousErrTheta = errTheta;
 
+            // Calculate Global Error:
             errX = waypointTargetX - currentX;
             errY = waypointTargetY - currentY;
             errTheta = waypointTargetTheta - currentTheta;
+
+            // Convert to Local Error:
+            localErrX = - errY * Math.sin(- currentTheta) + errX * Math.cos(- currentTheta);
+            localErrY = errY * Math.cos( - currentTheta) + errX * Math.sin(- currentTheta);
+            errX = localErrX;
+            errY = localErrY;
+
+            RobotLog.dd("LocalErrX: ", localErrX + "");
+            RobotLog.dd("LocalErrY: ", localErrY + "");
+
 
             Px = errX;
             Py = errY;
@@ -483,9 +522,9 @@ public class chassis{
             Dy = (errY - previousErrY) / dt;
             Dtheta = (errTheta - previousErrTheta) / dt;
 
-            // Calculate correction (multiply components by -1):
+            // Calculate correction:
 
-            globalCorrectionX = (waypointKpx * Px + waypointKix * Ix + waypointKdx * Dx + Kcx);
+            /*globalCorrectionX = (waypointKpx * Px + waypointKix * Ix + waypointKdx * Dx + Kcx);
             globalCorrectionY = (waypointKpy * Py + waypointKiy * Iy + waypointKdy * Dy + Kcy);
             globalCorrectionTheta = (waypointKpTheta * Ptheta + waypointKiTheta * Itheta + waypointKdTheta * Dtheta + Kctheta);
 
@@ -493,7 +532,12 @@ public class chassis{
             localCorrectionX = globalCorrectionY * Math.sin(currentTheta) + globalCorrectionX * Math.cos(currentTheta);
 
             localCorrectionX *= 1;
-            localCorrectionY *= 1;
+            localCorrectionY *= 1;*/
+
+            localCorrectionX = (waypointKpx * Px + waypointKix * Ix + waypointKdx * Dx + Kcx);
+            localCorrectionY = (waypointKpy * Py + waypointKiy * Iy + waypointKdy * Dy + Kcy);
+            globalCorrectionTheta = (waypointKpTheta * Ptheta + waypointKiTheta * Itheta + waypointKdTheta * Dtheta + Kctheta);
+
 
             // Rate Limiter: Check if correction is within accelLim of previous correction to avoid slip
             if(!eqWT(localCorrectionX, previousLocalCorrectionX, waypointAccelLimX)){
@@ -574,7 +618,7 @@ public class chassis{
 
             RobotLog.dd("X:", getPosition()[0] + "");
             RobotLog.dd("Y:", getPosition()[1] + "");
-            RobotLog.dd("Theta:", getPosition()[2] + "");
+            RobotLog.dd("Theta:", getPosition()[2] * 180 / Math.PI + "");
 
 
             previousLocalCorrectionX = localCorrectionX;

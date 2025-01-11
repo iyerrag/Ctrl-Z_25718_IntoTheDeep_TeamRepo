@@ -54,10 +54,10 @@ import java.util.ArrayList;
 public class TeleOp_Manual extends LinearOpMode {
 
     //Define Wheel Biases to Manage Robot Drift
-    static final double frontLeftBias = 0.96;
-    static final double frontRightBias = 0.92;
-    static final double backLeftBias = .92;
-    static final double backRightBias = 0.96;
+    static final double frontLeftBias = 0.98; //0.96;
+    static final double frontRightBias = 1.0; //0.92;
+    static final double backLeftBias = 1.0; //.92;
+    static final double backRightBias = 1.0;//0.96;
 
     //Define Timer Object
     private ElapsedTime runtime = new ElapsedTime();
@@ -208,10 +208,12 @@ public class TeleOp_Manual extends LinearOpMode {
             else if(gamepad2.b){
                 stopDriveBase();
                 gripper.hang();
+                gripper.moveToSpecimenExtractPos();
             }
             else if(gamepad2.x){
                 stopDriveBase();
                 gripper.extract();
+                gripper.moveToHangInsertPosition();
             }
             else if(gamepad2.y){
                 stopDriveBase();
@@ -244,7 +246,7 @@ public class TeleOp_Manual extends LinearOpMode {
 
         //Define Fine-Control Scale
         double fineScale;
-        if(gamepad1.left_bumper){fineScale = 0.2;}
+        if(gamepad1.left_bumper){fineScale = 0.4;}
         else{fineScale = 1;}
 
         double powX;

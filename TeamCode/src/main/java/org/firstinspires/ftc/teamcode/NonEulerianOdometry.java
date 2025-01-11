@@ -47,12 +47,16 @@ public class NonEulerianOdometry {
     private static double imuGlobalAngle;
     private static double imuDeltaAngle;
 
+    private static double startingTheta;
+
 
     // Constructor for Setting up Odometry in chassis class
     public NonEulerianOdometry(double startingX, double startingY, double startingTheta, DcMotor left, DcMotor right, DcMotor front, robotIMU IMU, String thetaMode){
         x = startingX;
         y = startingY;
         theta = startingTheta * Math.PI / 180;
+        this.startingTheta = startingTheta * Math.PI / 180;
+
         leftEncoder = left;
         rightEncoder = right;
         frontEncoder = front;
@@ -65,7 +69,7 @@ public class NonEulerianOdometry {
 
         imu = IMU;
         angleMode = thetaMode;
-        imuGlobalAngle = 0.0;
+        imuGlobalAngle = this.startingTheta;
         imuDeltaAngle = 0.0;
 
         // Note: All other instance variables default to 0.0
@@ -147,7 +151,7 @@ public class NonEulerianOdometry {
         double dF = measureFrontEncoderChange();
         dtheta = (dR - dL) / c;
         double[] gyroReading = imu.updateAngle();
-        imuGlobalAngle = gyroReading[0];
+        imuGlobalAngle = gyroReading[0] + startingTheta;
         imuDeltaAngle = gyroReading[1];
         if(angleMode.equals("Encoder")){
             if (eqWT(dtheta, 0, .015)){
