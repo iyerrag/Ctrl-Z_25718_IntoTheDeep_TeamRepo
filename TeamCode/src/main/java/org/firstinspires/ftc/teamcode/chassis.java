@@ -13,6 +13,7 @@ import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import com.qualcomm.robotcore.hardware.*;
@@ -45,7 +46,7 @@ public class chassis{
     static final double leftBias = 1.0;
     static private String angleMode;
 
-    private double waypointToleranceDistX, waypointToleranceDistY, waypointToleranceAng, minGainThresholdX, minGainThresholdY, minGainThresholdTheta, AKpx, BKpx, AKix, BKix, AKdx, BKdx, AKcx, BKcx, AKpy, BKpy, AKiy, BKiy, AKdy, BKdy, AKcy, BKcy, AKpTheta, BKpTheta, AKiTheta, BKiTheta, AKdTheta, BKdTheta, AKcTheta, BKcTheta, waypointAccelLimX, waypointAccelLimY, waypointAccelLimTheta, waypointClampingX, waypointClampingY, waypointClampingTheta;
+    private double waypointToleranceDistX, waypointToleranceDistY, waypointToleranceAng, minGainThresholdX, minGainThresholdY, minGainThresholdTheta, AKpx, BKpx, AKix, BKix, AKdx, BKdx, AKcx, BKcx, AKpy, BKpy, AKiy, BKiy, AKdy, BKdy, AKcy, BKcy, AKpTheta, BKpTheta, AKiTheta, BKiTheta, AKdTheta, BKdTheta, AKcTheta, BKcTheta, waypointAccelLimX, waypointAccelLimY, waypointAccelLimTheta, waypointClampingX, waypointClampingY, waypointClampingTheta, feedForwardThetaBias;
     static final double maxA = 0.3;
 
     static private VoltageSensor sensor;
@@ -253,7 +254,7 @@ public class chassis{
         localizer = new NonEulerianOdometry(x, y, theta, bL, bR, fL, imu, angleMode);
     }
 
-    public void waypointSettings(double toleranceDistX, double toleranceDistY, double toleranceAng, double minGainThresholdX, double minGainThresholdY, double minGainThresholdTheta, double AKpx, double BKpx, double AKix, double BKix, double AKdx, double BKdx, double AKcx, double BKcx, double AKpy, double BKpy, double AKiy, double BKiy, double AKdy, double BKdy, double AKcy, double BKcy, double AKpTheta, double BKpTheta, double AKiTheta, double BKiTheta, double AKdTheta, double BKdTheta, double AKcTheta, double BKcTheta, double accelLimX, double accelLimY, double accelLimTheta, double clampingX, double clampingY, double clampingTheta){
+    public void waypointSettings(double toleranceDistX, double toleranceDistY, double toleranceAng, double minGainThresholdX, double minGainThresholdY, double minGainThresholdTheta, double AKpx, double BKpx, double AKix, double BKix, double AKdx, double BKdx, double AKcx, double BKcx, double AKpy, double BKpy, double AKiy, double BKiy, double AKdy, double BKdy, double AKcy, double BKcy, double AKpTheta, double BKpTheta, double AKiTheta, double BKiTheta, double AKdTheta, double BKdTheta, double AKcTheta, double BKcTheta, double accelLimX, double accelLimY, double accelLimTheta, double clampingX, double clampingY, double clampingTheta, double feedForwardThetaBias){
         waypointToleranceDistX = toleranceDistX;
         waypointToleranceDistY = toleranceDistY;
         waypointToleranceAng = toleranceAng * Math.PI / 180;
@@ -295,6 +296,8 @@ public class chassis{
         waypointClampingX = clampingX;
         waypointClampingY = clampingY;
         waypointClampingTheta = clampingTheta;
+
+        this.feedForwardThetaBias = feedForwardThetaBias;
     }
 
     private double getBatteryVoltage(){
@@ -382,15 +385,13 @@ public class chassis{
 
         //If Turning, Overwrite Translational Feed-Forwards:
         if(deltaTheta != 0){
-            waypointKcx = 0.0775;
-            waypointKcy = 0.0775;
+            waypointKcx = feedForwardThetaBias;
+            waypointKcy = feedForwardThetaBias;
         }
 
         double Kcx = waypointKcx;
         double Kcy = waypointKcy;
         double Kctheta = waypointKcTheta;
-
-        double globalKpx, globalKix, globalKdx, globalKcx, globalKpy, globalKiy, globalKdy, globalKcy, globalKpTheta, globalKiTheta, globalKdTheta, globalKcTheta;
 
         RobotLog.dd("Kpx:", waypointKpx + "");
         RobotLog.dd("Kix:", waypointKix + "");
@@ -760,8 +761,105 @@ public class chassis{
             thetaPoints.add(point[2]);
         }
 
+        //Riemann Sum w/ Trapazoidal Rule and Left-Endpoints to Approximate X, Y, and Theta Path Lengths
         double deltaX = 0;
-        for(double targetX : xPoints){
+        double deltaY = 0;
+        double deltaTheta = 0;
+        double Global_dX = 0;
+        double Global_dY = 0;
+        double Global_dTheta = 0;
+        double Local_dX = 0;
+        double Local_dY = 0;
+        ArrayList<Double> deltaXofT = new ArrayList<Double>();
+        ArrayList<Double> deltaYofT = new ArrayList<Double>();
+        ArrayList<Double> deltaThetaofT = new ArrayList<Double>();
+
+        for(double t = 0; t < runtime; t += 0.01){
+
+            //Global_dX = (Brez(xPoints, t + 0.01) -  Brez(xPoints, t));
+            //Global_dY = (Brez(yPoints, t + 0.01) -  Brez(yPoints, t));
+
+            Local_dX = (Brez(xPoints, t + 0.01) -  Brez(xPoints, t));
+            Local_dY = (Brez(yPoints, t + 0.01) -  Brez(yPoints, t));
+            Global_dTheta = (Brez(thetaPoints, t + 0.01) - Brez(thetaPoints, t));
+
+            /*//For cases where  deltaTheta is not 0, assume the robot is moving in the final angle to the target destination.
+            //Practically, this means using a "local" deltaX and deltaY
+            Local_dX = Global_dX * Math.cos(-Global_dTheta) - Global_dY * Math.sin(-Global_dTheta);
+            Local_dY = Global_dX * Math.sin(-Global_dTheta) + Global_dY * Math.cos(-Global_dTheta);*/
+
+            deltaX += Local_dX;
+            deltaY += Local_dY;
+            deltaTheta += Global_dTheta;
+
+            deltaXofT.add(deltaX);
+            deltaYofT.add(deltaY);
+            deltaThetaofT.add(deltaTheta);
+        }
+
+
+        // Identify extrema for integrals:
+        double minDeltaX = 0;
+        double maxDeltaX = 0;
+
+        double minDeltaY = 0;
+        double maxDeltaY = 0;
+
+        double minDeltaTheta = 0;
+        double maxDeltaTheta = 0;
+
+
+        for(int i = 0; i < deltaXofT.size(); i++){
+
+            if(deltaXofT.get(i) < minDeltaX) {
+                minDeltaX = deltaXofT.get(i);
+            }
+            if(deltaXofT.get(i) > maxDeltaX){
+                maxDeltaX = deltaXofT.get(i);
+            }
+
+            if(deltaYofT.get(i) < minDeltaY){
+                minDeltaY = deltaYofT.get(i);
+            }
+            if(deltaYofT.get(i) > maxDeltaY){
+                maxDeltaY = deltaYofT.get(i);
+            }
+
+            if(deltaThetaofT.get(i) < minDeltaTheta){
+                minDeltaTheta = deltaThetaofT.get(i);
+            }
+            if(deltaThetaofT.get(i) > maxDeltaTheta){
+                maxDeltaTheta = deltaThetaofT.get(i);
+            }
+        }
+
+        RobotLog.dd("minX: ", minDeltaX + "");
+        RobotLog.dd("maxX: ", maxDeltaX + "");
+
+        // Use the maximum extrema of the integral of x, y, and theta (local frame of reference) to compute gains:
+        if(Math.abs(minDeltaX) >= Math.abs(maxDeltaX)){
+            deltaX =  Math.abs(minDeltaX);
+        }
+        else{
+            deltaX = Math.abs(maxDeltaX);
+        }
+        if(Math.abs(minDeltaY) >= Math.abs(maxDeltaY)){
+            deltaY = Math.abs(minDeltaY);
+        }
+        else{
+            deltaY = Math.abs(maxDeltaY);
+        }
+        if(Math.abs(minDeltaTheta) >= Math.abs(maxDeltaTheta)){
+            deltaTheta = Math.abs(minDeltaTheta);
+        }
+        else{
+            deltaTheta = Math.abs(maxDeltaTheta);
+        }
+
+        RobotLog.dd("Brez. Integral DeltaX: ", deltaX + "");
+        RobotLog.dd("Brez. Integral DeltaY: ", deltaY + "");
+        RobotLog.dd("Brez. Integral DeltaTheta: ", deltaTheta + "");
+        /*for(double targetX : xPoints){
             if(Math.abs(targetX - getPosition()[0]) > deltaX){
                 deltaX = Math.abs(targetX - getPosition()[0]);
             }
@@ -778,8 +876,10 @@ public class chassis{
         for(double targetTheta : thetaPoints){
             if(Math.abs(targetTheta - getPosition()[2]) > deltaTheta){
                 deltaTheta = Math.abs(targetTheta - getPosition()[2]);
+
+
             }
-        }
+        }*/
 
         if(Math.abs(deltaX) < Math.abs(minGainThresholdX)){
             deltaX = minGainThresholdX;
@@ -806,8 +906,6 @@ public class chassis{
         double currentTime = timer.seconds();
         double startTime = timer.seconds();
         double dt;
-        double globalCorrectionX = 0;
-        double globalCorrectionY = 0;
         double globalCorrectionTheta = 0;
         double previousLocalCorrectionX = 0;
         double previousLocalCorrectionY = 0;
@@ -815,6 +913,18 @@ public class chassis{
         double previousErrX;
         double previousErrY;
         double previousErrTheta;
+
+        RobotLog.dd("AKpx", AKpx + " ");
+        RobotLog.dd("AKix", AKix + " ");
+        RobotLog.dd("AKdx", AKdx + " ");
+        RobotLog.dd("AKpy", AKpy + " ");
+        RobotLog.dd("AKiy", AKiy + " ");
+        RobotLog.dd("AKdy", AKdy + " ");
+        RobotLog.dd("AKpTheta", AKpTheta + " ");
+        RobotLog.dd("AKiTheta", AKiTheta + " ");
+        RobotLog.dd("AKdTheta", AKdTheta + " ");
+
+
 
         double waypointKpx = AKpx * Math.pow(Math.abs(deltaX), BKpx);
         double waypointKix = AKix * Math.pow(Math.abs(deltaX), BKix);
@@ -826,20 +936,38 @@ public class chassis{
         double waypointKdy = AKdy * Math.pow(Math.abs(deltaY), BKdy);
         double waypointKcy = AKcy * Math.pow(Math.abs(deltaY), BKcy);
 
-        double waypointKpTheta = AKpTheta * Math.pow(Math.abs(deltaTheta), BKpTheta);
-        double waypointKiTheta = AKiTheta * Math.pow(Math.abs(deltaTheta), BKiTheta);
-        double waypointKdTheta = AKdTheta * Math.pow(Math.abs(deltaTheta), BKdTheta);
-        double waypointKcTheta = AKcTheta * Math.pow(Math.abs(deltaTheta), BKcTheta);
+        double waypointKpTheta = AKpTheta * Math.pow(Math.abs(deltaTheta * 180 / Math.PI), BKpTheta);
+
+        RobotLog.dd("InitialKpTheta:", waypointKpTheta + "");
+        RobotLog.dd("deltaTheta:", deltaTheta + "");
+
+        double waypointKiTheta = AKiTheta * Math.pow(Math.abs(deltaTheta * 180 / Math.PI), BKiTheta);
+        double waypointKdTheta = AKdTheta * Math.pow(Math.abs(deltaTheta * 180 / Math.PI), BKdTheta);
+        double waypointKcTheta = AKcTheta * Math.pow(Math.abs(deltaTheta * 180 / Math.PI), BKcTheta);
+
+        RobotLog.dd("waypointKpx", waypointKpx + " ");
+        RobotLog.dd("waypointKix", waypointKix + " ");
+        RobotLog.dd("waypointKdx", waypointKdx + " ");
+        RobotLog.dd("waypointKpy", waypointKpy + " ");
+        RobotLog.dd("waypointKiy", waypointKiy + " ");
+        RobotLog.dd("waypointKdy", waypointKdy + " ");
+        RobotLog.dd("waypointKpTheta", waypointKpTheta + " ");
+        RobotLog.dd("waypointKiTheta", waypointKiTheta + " ");
+        RobotLog.dd("waypointKdTheta", waypointKdTheta + " ");
 
         double Kcx = waypointKcx;
         double Kcy = waypointKcy;
         double Kctheta = waypointKcTheta;
 
+        // Note: Error Here Is Not Exactly the Error, But the Correction Signal (Target - Actual)
         double errX = 0;
         double errY = 0;
         double errTheta = 0;
         double localCorrectionX = 0.0;
         double localCorrectionY = 0.0;
+
+        double localErrX;
+        double localErrY;
 
         double Imax = 0;
 
@@ -879,9 +1007,16 @@ public class chassis{
             double waypointTargetY = Brez(yPoints, t);
             double waypointTargetTheta = Brez(thetaPoints, t);
 
+            // Calculate Global Error:
             errX = waypointTargetX - currentX;
             errY = waypointTargetY - currentY;
             errTheta = waypointTargetTheta - currentTheta;
+
+            // Convert to Local Error:
+            localErrX = - errY * Math.sin(- currentTheta) + errX * Math.cos(- currentTheta);
+            localErrY = errY * Math.cos( - currentTheta) + errX * Math.sin(- currentTheta);
+            errX = localErrX;
+            errY = localErrY;
 
             Px = errX;
             Py = errY;
@@ -948,17 +1083,11 @@ public class chassis{
             Dy = (errY - previousErrY) / dt;
             Dtheta = (errTheta - previousErrTheta) / dt;
 
-            // Calculate correction (multiply components by -1):
+            // Calculate correction:
 
-            globalCorrectionX = (waypointKpx * Px + waypointKix * Ix + waypointKdx * Dx + Kcx);
-            globalCorrectionY = (waypointKpy * Py + waypointKiy * Iy + waypointKdy * Dy + Kcy);
+            localCorrectionX = (waypointKpx * Px + waypointKix * Ix + waypointKdx * Dx + Kcx);
+            localCorrectionY = (waypointKpy * Py + waypointKiy * Iy + waypointKdy * Dy + Kcy);
             globalCorrectionTheta = (waypointKpTheta * Ptheta + waypointKiTheta * Itheta + waypointKdTheta * Dtheta + Kctheta);
-
-            localCorrectionY = globalCorrectionY * Math.cos(currentTheta) - globalCorrectionX * Math.sin(currentTheta);
-            localCorrectionX = globalCorrectionY * Math.sin(currentTheta) + globalCorrectionX * Math.cos(currentTheta);
-
-            localCorrectionX *= 1;
-            localCorrectionY *= 1;
 
             // Rate Limiter: Check if correction is within accelLim of previous correction to avoid slip
             if(!eqWT(localCorrectionX, previousLocalCorrectionX, waypointAccelLimX)){

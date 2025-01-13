@@ -35,15 +35,15 @@ public class AutoStartRight extends LinearOpMode {
         VoltageSensor voltmeter = hardwareMap.voltageSensor.iterator().next();
         //WebcamName myCamera = hardwareMap.get(WebcamName.class, "Webcam 1");
 
-        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 0, 0, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
+        chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 180, 12, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
         //chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 240, 12, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
         actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "rotationServo"), hardwareMap.get(Servo.class,
                 "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
                 "lifterHeightSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"));
 
-        robot.waypointSettings(1, 1, 1.5,
+        /*robot.waypointSettings(1, 1, 1.5,
                                 20, 20, 5,
-                                /*.1425529672, -0.5733673083,*/
+                                /*.1425529672, -0.5733673083,
                                  .01775,0,
                                 0.0,0,
                                 0.000,0,
@@ -57,20 +57,65 @@ public class AutoStartRight extends LinearOpMode {
                                 .00,0,
                                 0.0,0,
                                 .024, .03, 0.0375,
-                                1, 1, 1 );
+                                1, 1, 1 );*/
+
+        // Controller Settings for Gain Scheduled WayPoint
+        robot.waypointSettings(1, 1, 1.5,
+                30, 30, 5,
+                0.0872169527,-0.4891123746,
+                4.060598e-5,0,
+                0.0002125,0,
+                0,0,
+                .117312536, -.5899072879,
+                4.060598e-23,7.598320549,
+                0.002,0,
+                0.0,0,
+                2.147257771, -0.3554874788,
+                11.49861303, -1.283011678,
+                .00,0,
+                0.0,0,
+                .024, .03, 0.0375,
+                1, 1, 1,
+                .1);
+
+        // Controller Settings for Bezier (no Gain Schedule)
+
+        robot.waypointSettings(1, 1, 1.5,
+                30, 30, 5,
+                0.01575,0,
+                .030691 ,0,
+                .0025,0,
+                0,0,
+                .012, 0,
+                .007049,0,
+                .0025,0,
+                0.0,0,
+                .35, 0,
+                .035, 0,
+                .004375,0,
+                0.0,0,
+                .024*3, .15, 0.028125,
+                .15, .3, .3,
+                .1);
 
 
         waitForStart();
 
         if (opModeIsActive()) {
 
-            //robot.toWaypoint(0,0,90,2);
-            robot.toWaypoint(30, 0, 0, 6);
+            /*ArrayList<double[]> firstHighBucketDropMov = new ArrayList<double[]>();
+            firstHighBucketDropMov.add(new double[]{180, 120, -45});
+            firstHighBucketDropMov.add(new double[]{120, 60, -45});
+            firstHighBucketDropMov.add(new double[]{60, 60, -45});
+            firstHighBucketDropMov.add(new double[]{60, 30, -45});
+
+            robot.toWaypointBezier(firstHighBucketDropMov, 2.25, 5);*/
+            robot.toWaypoint(30, 30, -45, 3.5);
             telemetry.addData("X:", robot.getPosition()[0]);
             telemetry.addData("Y:", robot.getPosition()[1]);
             telemetry.addData("Theta:", robot.getPosition()[2] * 180 / Math.PI);
             telemetry.update();
-           // robot.toWaypoint(0, 30, 0, 3);
+
             fL.setPower(0);
             fR.setPower(0);
             bL.setPower(0);
