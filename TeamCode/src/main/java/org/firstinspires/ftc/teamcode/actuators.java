@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
+import com.qualcomm.hardware.rev.RevTouchSensor;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -19,6 +22,7 @@ public class actuators {
     private Servo beak;
     private Servo rotationServo;
     private Rev2mDistanceSensor lifterHeightSensor;
+    private RevTouchSensor lifterTouchSensor;
     private boolean closeState;
     private boolean holdState;
     private boolean highBasketState;
@@ -26,7 +30,7 @@ public class actuators {
 
 
 
-    public actuators(Servo wrist, Servo rotationServo, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor){
+    public actuators(Servo wrist, Servo rotationServo, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor, TouchSensor lifterTouchSensor){
         this.wrist = wrist;
         this.elbow = elbow;
         this.beak = beakServo;
@@ -55,6 +59,7 @@ public class actuators {
         holdState = false;
 
         this.lifterHeightSensor = (Rev2mDistanceSensor) lifterHeightSensor;
+        this.lifterTouchSensor = (RevTouchSensor) lifterTouchSensor;
     }
 
     public boolean state(){
@@ -84,10 +89,12 @@ public class actuators {
     public void resetLifters(){
         leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        if(lifterHeightSensor.getDistance(DistanceUnit.MM) > 60) {
+        //if(lifterHeightSensor.getDistance(DistanceUnit.MM) > 60) {
+        if(!lifterTouchSensor.isPressed()) {
             leftSlide.setPower(-1);
             rightSlide.setPower(-1);
-            while (lifterHeightSensor.getDistance(DistanceUnit.MM) > 60) {}
+            //while (lifterHeightSensor.getDistance(DistanceUnit.MM) > 60) {}
+            while(!lifterTouchSensor.isPressed()){}
         }
         leftSlide.setPower(0);
         rightSlide.setPower(0);
