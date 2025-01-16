@@ -306,6 +306,9 @@ public class chassis{
 
 
     public double[] toWaypoint(double waypointTargetX, double waypointTargetY, double waypointTargetTheta, double timeout){
+
+        setWaypointController();
+
         waypointTargetTheta *= Math.PI / 180.0;
         double Px = 0;
         double Ix = 0;
@@ -745,6 +748,8 @@ public class chassis{
 
     // NOTE: High Chance for Computational Failure With More Than 10 Bezier Points; Guarenteed Failure With 14 or More Bezier Points;
     public double[] toWaypointBezier(ArrayList<double[]> targetPoints, double runtime, double timeout){
+
+        setBezierWaypointController();
 
         for(int i = 0; i < targetPoints.size(); i++){
             double[] point = targetPoints.get(i);
@@ -1273,6 +1278,51 @@ public class chassis{
         Yupdated = xPrime * Math.sin(ThetaR) + yPrime * Math.cos(ThetaR);
 
         localize(Xupdated, Yupdated, ThetaR);
+    }
+
+    public void setWaypointController(){
+        waypointSettings(1, 1, 1.5,
+                30, 30, 5,
+                0.0872169527,-0.4891123746,
+                4.060598e-5,0,
+                0.0002125,0,
+                0,0,
+                .117312536, -.5899072879,
+                4.060598e-23,7.598320549,
+                0.002,0,
+                0.0,0,
+                2.147257771, -0.3554874788,
+                11.49861303, -1.283011678,
+                .00,0,
+                0.0,0,
+                .024, .03, 0.0375,
+                1, 1, 1,
+                .1);
+    }
+
+    public void setBezierWaypointController(){
+        waypointSettings(1, 1, 1.5,
+                30, 30, 5,
+                0.01575,0,
+                .030691 ,0,
+                .0025,0,
+                0,0,
+                .012, 0,
+                .007049,0,
+                .0025,0,
+                0.0,0,
+                .35, 0,
+                .035, 0,
+                .004375,0,
+                0.0,0,
+                .024*3, .15, 0.028125,
+                .15, .3, .3,
+                .1);
+    }
+
+    public void stopChaassis(){
+        //Stop all motors
+        fL.setPower(0); fR.setPower(0); bL.setPower(0); bR.setPower(0);
     }
 
 }

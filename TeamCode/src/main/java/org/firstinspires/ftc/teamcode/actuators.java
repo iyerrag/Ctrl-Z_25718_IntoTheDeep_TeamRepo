@@ -412,7 +412,7 @@ public class actuators {
     public void moveToSpecimenExtractPos(){
         liftTo(0);
         elbowRotateTo(193, 1);
-        wristRotateTo(162);
+        wristRotateTo(160);
         rotateTo(-180);
         openBeak();
         resetLifters();
@@ -431,6 +431,12 @@ public class actuators {
         Thread.sleep(200);
         rotateTo(-180);
         wristRotateTo(45);
+        highBasketState = false;
+    }
+
+    public void resetMotors() throws InterruptedException {
+        liftTo(0);
+        elbowRotateTo(193, 1);
         highBasketState = false;
     }
 
