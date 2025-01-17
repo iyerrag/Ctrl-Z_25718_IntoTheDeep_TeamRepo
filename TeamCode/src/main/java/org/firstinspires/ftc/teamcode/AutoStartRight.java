@@ -84,25 +84,26 @@ public class AutoStartRight extends LinearOpMode {
 
 
 
-            gripper.initializePosition();
-            robot.toWaypoint(180, 45, 0, 1);
+            //gripper.initializePosition();
+            robot.toWaypoint(180, 45, 0, 1, 1);
             gripper.moveToHangInsertPosition();
-            robot.toWaypoint(175, 95, 0, 2);
+            robot.toWaypoint(175, 95, 0, 1, 2);
             robot.stopChaassis();
             gripper.hang();
             gripper.moveToSpecimenExtractPos();
 
             ArrayList<double[]> firstCollectionAndExtraction = new ArrayList<double[]>();
-            firstCollectionAndExtraction.add(new double[]{240, -200, 0});
-            firstCollectionAndExtraction.add(new double[]{340, 450, 0});
+            firstCollectionAndExtraction.add(new double[]{240, -300, 0});
+            firstCollectionAndExtraction.add(new double[]{320,450,0});
+            //firstCollectionAndExtraction.add(new double[]{300, 120, 0});
             firstCollectionAndExtraction.add(new double[]{300, 45, 0});
-            robot.toWaypointBezier(firstCollectionAndExtraction, 3.5, 3.75);
-            robot.toWaypoint(300, 25, 0, 1.5);
+            robot.toWaypointBezier(firstCollectionAndExtraction, 1, 3.5, 3.75);
+            robot.toWaypoint(300, 25, 0, 1, 1.5);
             gripper.extract();
 
-            robot.toWaypoint(180, 45, 0, 2);
+            robot.toWaypoint(180, 45, 0, 1, 2);
             gripper.moveToHangInsertPosition();
-            robot.toWaypoint(180, 100, 0, 1.5);
+            robot.toWaypoint(180, 100, 0, 1, 1.5);
             robot.stopChaassis();
             gripper.hang();
             gripper.moveToSpecimenExtractPos();
@@ -112,16 +113,16 @@ public class AutoStartRight extends LinearOpMode {
             secondExtraction.add(new double[]{180, 45, 0});
             secondExtraction.add(new double[]{330, 120, 0});
             secondExtraction.add(new double[]{300, 45, 0});
-            robot.toWaypointBezier(secondExtraction, 2, 2.25);
-            robot.toWaypoint(300, 25, 0, 1);
+            robot.toWaypointBezier(secondExtraction, 1, 2, 2.25);
+            robot.toWaypoint(300, 25, 0, 1,1);
             gripper.extract();
 
-            robot.toWaypoint(180, 45, 0, 2);
+            robot.toWaypoint(180, 45, 0, 1, 2);
             gripper.moveToHangInsertPosition();
-            robot.toWaypoint(190, 100, 0, 1.5);
+            robot.toWaypoint(190, 100, 0, 1, 1.5);
             gripper.hang();
 
-            robot.toWaypoint(300, 25, 0, 2.5);
+            robot.toWaypoint(300, 25, 0, 1, 2.5);
             gripper.resetMotors();
 
 

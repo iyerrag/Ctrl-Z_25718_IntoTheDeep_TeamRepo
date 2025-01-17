@@ -76,13 +76,24 @@ public class actuators {
         rightSlide.setTargetPosition(targetPos);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        if((int) (Math.random() * 2) == 0){
-            leftSlide.setPower(0.80);
-            rightSlide.setPower(0.80);
+        if(highBasketState == true){
+            if((int) (Math.random() * 2) == 0){
+                leftSlide.setPower(1);
+                rightSlide.setPower(1);
+            }
+            else {
+                rightSlide.setPower(1);
+                leftSlide.setPower(1);
+            }
         }
         else {
-            rightSlide.setPower(0.80);
-            leftSlide.setPower(0.80);
+            if ((int) (Math.random() * 2) == 0) {
+                leftSlide.setPower(0.80);
+                rightSlide.setPower(0.80);
+            } else {
+                rightSlide.setPower(0.80);
+                leftSlide.setPower(0.80);
+            }
         }
     }
 
@@ -311,8 +322,8 @@ public class actuators {
         while(!eqWT(getWristAngle(), 90, 5)){}
         elbowRotateTo(90, 1);
         while(!eqWT(getElbowAngle(), 90, 5)){}
-        liftTo(70);
-        while(!eqWT(getLiftHeight(), 70, 1)){}
+        liftTo(72);
+        while(!eqWT(getLiftHeight(), 72, 1)){}
         elbowRotateTo(160, 1);
         wristRotateTo(170);
         rotateTo(-180);
