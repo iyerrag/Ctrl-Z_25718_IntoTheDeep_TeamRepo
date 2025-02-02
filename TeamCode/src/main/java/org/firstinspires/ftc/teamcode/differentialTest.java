@@ -42,19 +42,25 @@ public class differentialTest extends LinearOpMode {
        double leftPos = 0;
 
        while(opModeIsActive()){
-           if(gamepad1.right_bumper){
-               gripper.setAngularPosition(90, 0);
+           if(gamepad1.left_bumper){
+               gripper.setAngularPosition(gripper.getAngularPosition_Pitch() + 0.5, gripper.getAngularPosition_Roll());
+               Thread.sleep(10);
            }
-           else if(gamepad1.right_trigger == 1){
-               gripper.setAngularPosition(-90, 0);
+           else if (gamepad1.left_trigger == 1) {
+               gripper.setAngularPosition(gripper.getAngularPosition_Pitch() - 0.5, gripper.getAngularPosition_Roll());
+               Thread.sleep(10);
            }
-           else if(gamepad1.left_bumper){
-               gripper.setAngularPosition(-90, 90);
+           else if (gamepad1.right_bumper){
+               gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), gripper.getAngularPosition_Roll() + 0.5);
+               Thread.sleep(10);
            }
-           else if(gamepad1.left_trigger == 1){
-               gripper.setAngularPosition(-90, -45);
+           else if (gamepad1.right_trigger == 1){
+               gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), gripper.getAngularPosition_Roll() - 0.5);
+               Thread.sleep(10);
            }
-
+           else if(gamepad1.a){
+               gripper.setAngularPosition(0, 0);
+           }
            telemetry.addData("rollPos", gripper.getAngularPosition_Roll());
            telemetry.addData("pitchPos", gripper.getAngularPosition_Pitch());
            telemetry.update();
