@@ -29,7 +29,7 @@ public class actuators extends armDifferential{
 
     public actuators(Servo differential_left, Servo differential_right, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor, TouchSensor lifterTouchSensor){
 
-        super(differential_left, differential_right, 0,0, 1);
+        super(differential_left, differential_right, 0.4533,0.4533, 1);
 
         this.differential_left = differential_left;
         this.differential_right = differential_right;

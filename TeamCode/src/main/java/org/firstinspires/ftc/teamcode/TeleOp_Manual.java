@@ -118,8 +118,8 @@ public class TeleOp_Manual extends LinearOpMode {
             telemetry.addData("ElbowPos:", gripper.getElbowPos());
             telemetry.addData("LifterPos:", gripper.getLiftPos());
             telemetry.addData("Height", "CM: " + hardwareMap.get(DistanceSensor.class, "lifterHeightSensor").getDistance(DistanceUnit.CM));
-            telemetry.addData("FrontDist", "CM: " + hardwareMap.get(DistanceSensor.class, "frontDistanceSensor").getDistance(DistanceUnit.CM)); */
-
+            telemetry.addData("FrontDist", "CM: " + hardwareMap.get(DistanceSensor.class, "frontDistanceSensor").getDistance(DistanceUnit.CM));
+            */
             if(gamepad1.a){
                 stopDriveBase();
                 gripper.moveToInsertPosition();
@@ -186,6 +186,7 @@ public class TeleOp_Manual extends LinearOpMode {
                     gripper.wristRotate(0.03);
                 }
             }*/
+
             else if(Math.abs(gamepad2.right_stick_x) == 1){
                 if(gamepad2.right_stick_x == 1){
                     while(gamepad2.right_stick_x == 1){
@@ -222,15 +223,15 @@ public class TeleOp_Manual extends LinearOpMode {
             }
             else if(gamepad2.left_bumper){
                 stopDriveBase();
-                gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), -225);
+                gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), 45);
             }
             else if(gamepad2.left_trigger == 1){
                 stopDriveBase();
-                gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), -180);
+                gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), 0);
             }
             else if(gamepad2.right_bumper){
                 stopDriveBase();
-                gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), -135);
+                gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), -45);
             }
             else if(gamepad2.right_trigger == 1){
                 stopDriveBase();

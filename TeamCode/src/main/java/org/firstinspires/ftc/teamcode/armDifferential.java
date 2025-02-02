@@ -33,10 +33,12 @@ public class armDifferential {
     }
 
     public double getLeftServoPos(){
+        RobotLog.dd("leftServo", leftServo.getPosition() + "");
         return leftServo.getPosition();
     }
 
     public double getRightServoPos(){
+        RobotLog.dd("rightServo", rightServo.getPosition() + "");
         return rightServo.getPosition();
     }
 
@@ -121,6 +123,8 @@ public class armDifferential {
             double theta_left = -1.0 * (pitchPosition + rollPosition);
             double theta_right = pitchPosition - rollPosition;
         }*/
+        RobotLog.dd("leftServo", leftServo.getPosition() + "");
+        RobotLog.dd("rightServo", rightServo.getPosition() + "");
 
         double theta_left = rollPosition - pitchPosition;
         double theta_right = rollPosition + pitchPosition;
