@@ -29,40 +29,47 @@ public class differentialTest extends LinearOpMode {
 
     public void runOpMode() throws InterruptedException {
 
-       actuators gripper = new actuators(hardwareMap.get(Servo.class, "differential_left"), hardwareMap.get(Servo.class, "differential_right"), hardwareMap.get(Servo.class,
-               "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
-               "lifterHeightSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"));
+        actuators gripper = new actuators(hardwareMap.get(Servo.class, "lwServo"), hardwareMap.get(Servo.class, "rwServo"), hardwareMap.get(Servo.class, "wrollServo"), hardwareMap.get(Servo.class,
+                "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
+                "lifterHeightSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"));
 
+        Servo lwServo = hardwareMap.get(Servo.class, "lwServo");
+        Servo rwServo = hardwareMap.get(Servo.class, "rwServo");
+        Servo wrollServo = hardwareMap.get(Servo.class, "wrollServo");
+        waitForStart();
 
-       waitForStart();
-
-
+        lwServo.setPosition(0.5);
+        rwServo.setPosition(0.5);
+        wrollServo.setPosition(0.94);
 
        double rightPos = 0;
        double leftPos = 0;
 
        while(opModeIsActive()){
            if(gamepad1.left_bumper){
-               gripper.setAngularPosition(gripper.getAngularPosition_Pitch() + 0.5, gripper.getAngularPosition_Roll());
+               lwServo.setPosition(lwServo.getPosition() + 0.01);
+               rwServo.setPosition(rwServo.getPosition() - 0.01);
                Thread.sleep(10);
            }
            else if (gamepad1.left_trigger == 1) {
-               gripper.setAngularPosition(gripper.getAngularPosition_Pitch() - 0.5, gripper.getAngularPosition_Roll());
+               lwServo.setPosition(lwServo.getPosition() - 0.01);
+               rwServo.setPosition(rwServo.getPosition() + 0.01);
                Thread.sleep(10);
            }
            else if (gamepad1.right_bumper){
-               gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), gripper.getAngularPosition_Roll() + 0.5);
+               wrollServo.setPosition(wrollServo.getPosition() + 0.01);
                Thread.sleep(10);
            }
            else if (gamepad1.right_trigger == 1){
-               gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), gripper.getAngularPosition_Roll() - 0.5);
+               wrollServo.setPosition(wrollServo.getPosition() - 0.01);
                Thread.sleep(10);
            }
            else if(gamepad1.a){
-               gripper.setAngularPosition(0, 0);
+               gripper.wristRotateTo_Pitch(180);
            }
-           telemetry.addData("rollPos", gripper.getAngularPosition_Roll());
-           telemetry.addData("pitchPos", gripper.getAngularPosition_Pitch());
+           telemetry.addData("lwServoPos", lwServo.getPosition());
+           telemetry.addData("rwServoPos", rwServo.getPosition());
+           telemetry.addData("rollPos", wrollServo.getPosition());
            telemetry.update();
 
            //gripper.setAngularPosition(0,0);

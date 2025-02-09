@@ -103,8 +103,9 @@ public class TeleOp_Manual extends LinearOpMode {
         fR.setZeroPowerBehavior((DcMotor.ZeroPowerBehavior.BRAKE));
 
         //Define TaskManipulator: new claw(wrist servo, beak servo, left lifter, right lifter, elbow);
-        actuators gripper = new actuators(hardwareMap.get(Servo.class, "differential_left"), hardwareMap.get(Servo.class, "differential_right"), hardwareMap.get(Servo.class, "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class, "lifterHeightSensor"), hardwareMap.get(TouchSensor.class, "lifterTouchSensor"));
-
+        actuators gripper = new actuators(hardwareMap.get(Servo.class, "lwServo"), hardwareMap.get(Servo.class, "rwServo"), hardwareMap.get(Servo.class, "wrollServo"), hardwareMap.get(Servo.class,
+                "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
+                "lifterHeightSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"));
         //Wait for Driver to Start
         waitForStart();
 
@@ -164,15 +165,15 @@ public class TeleOp_Manual extends LinearOpMode {
                     gripper.hold();
                 }
             }
-            /*else if(Math.abs(gamepad2.left_stick_x) == 1){
+            else if(Math.abs(gamepad2.left_stick_x) == 1){
 
                 stopDriveBase();
 
                 if(gamepad2.left_stick_x == 1){
-                    gripper.rotate(-0.03);
+                    gripper.wristRotateTo_Roll(gripper.getWristAngle_Roll() - 3);
                 }
                 else{
-                    gripper.rotate(0.03);
+                    gripper.wristRotateTo_Roll(gripper.getWristAngle_Roll() + 3);
                 }
             }
             else if(Math.abs(gamepad2.right_stick_y) == 1){
@@ -180,12 +181,13 @@ public class TeleOp_Manual extends LinearOpMode {
                 stopDriveBase();
 
                 if(gamepad2.right_stick_y == 1){
-                    gripper.wristRotate(-0.03);
+                    gripper.wristRotateTo_Pitch(gripper.getWristAngle_Pitch() - 3);
                 }
                 else{
-                    gripper.wristRotate(0.03);
+                    gripper.wristRotateTo_Pitch(gripper.getWristAngle_Pitch() - 3);
                 }
-            }*/
+                Thread.sleep(10);
+            }
 
             else if(Math.abs(gamepad2.right_stick_x) == 1){
                 if(gamepad2.right_stick_x == 1){
@@ -209,7 +211,17 @@ public class TeleOp_Manual extends LinearOpMode {
             }
             else if(gamepad2.b){
                 stopDriveBase();
-                gripper.hang();
+                gripper.hangRelease();
+                Thread.sleep(200);
+                fL.setPower(-1);
+                fR.setPower(-1);
+                bL.setPower(-1);
+                bR.setPower(-1);
+                Thread.sleep(300);
+                fL.setPower(0);
+                fR.setPower(0);
+                bL.setPower(0);
+                bR.setPower(0);
                 gripper.moveToSpecimenExtractPos();
             }
             else if(gamepad2.x){
@@ -223,19 +235,19 @@ public class TeleOp_Manual extends LinearOpMode {
             }
             else if(gamepad2.left_bumper){
                 stopDriveBase();
-                gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), 45);
+                gripper.wristRotateTo_Roll(45);
             }
             else if(gamepad2.left_trigger == 1){
                 stopDriveBase();
-                gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), 0);
+                gripper.wristRotateTo_Roll(0);
             }
             else if(gamepad2.right_bumper){
                 stopDriveBase();
-                gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), -45);
+                gripper.wristRotateTo_Roll(-45);
             }
             else if(gamepad2.right_trigger == 1){
                 stopDriveBase();
-                gripper.setAngularPosition(gripper.getAngularPosition_Pitch(), -90);
+                gripper.wristRotateTo_Roll(-90);
             }
             else{
                 driveBase();

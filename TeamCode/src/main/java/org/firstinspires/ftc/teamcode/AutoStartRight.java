@@ -37,7 +37,7 @@ public class AutoStartRight extends LinearOpMode {
 
         chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 203, 12, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
         //chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 240, 12, 0, voltmeter, myCamera, new double[]{14.605, 32.385, 0});
-        actuators gripper = new actuators(hardwareMap.get(Servo.class, "wrist"), hardwareMap.get(Servo.class, "rotationServo"), hardwareMap.get(Servo.class,
+        actuators gripper = new actuators(hardwareMap.get(Servo.class, "lwServo"), hardwareMap.get(Servo.class, "rwServo"), hardwareMap.get(Servo.class, "wrollServo"), hardwareMap.get(Servo.class,
                 "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
                 "lifterHeightSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"));
 
@@ -50,7 +50,7 @@ public class AutoStartRight extends LinearOpMode {
             gripper.moveToHangInsertPosition();
             robot.toWaypoint(175, 95, 0, 1, 2);
             robot.stopChaassis();
-            gripper.hang();
+            gripper.hangRelease();
             gripper.moveToSpecimenExtractPos();
 
             ArrayList<double[]> firstCollectionAndExtraction = new ArrayList<double[]>();
@@ -66,7 +66,7 @@ public class AutoStartRight extends LinearOpMode {
             gripper.moveToHangInsertPosition();
             robot.toWaypoint(180, 100, 0, 1, 1.5);
             robot.stopChaassis();
-            gripper.hang();
+            gripper.hangRelease();
             gripper.moveToSpecimenExtractPos();
 
 
@@ -81,7 +81,7 @@ public class AutoStartRight extends LinearOpMode {
             robot.toWaypoint(180, 45, 0, 1, 2);
             gripper.moveToHangInsertPosition();
             robot.toWaypoint(190, 100, 0, 1, 1.5);
-            gripper.hang();
+            gripper.hangRelease();
 
             robot.toWaypoint(300, 25, 0, 1, 2.5);
             gripper.resetMotors();

@@ -14,9 +14,10 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 import java.util.Arrays;
 
-public class actuators extends armDifferential{
-    private Servo differential_left;
-    private Servo differential_right;
+public class actuators{
+    private Servo lwServo;
+    private Servo rwServo;
+    private Servo wrollServo;
     private DcMotor elbow;
     private DcMotor leftSlide;
     private DcMotor rightSlide;
@@ -27,12 +28,16 @@ public class actuators extends armDifferential{
     private boolean holdState;
     private boolean highBasketState;
 
-    public actuators(Servo differential_left, Servo differential_right, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor, TouchSensor lifterTouchSensor){
+    private static final double lwServo_OriginPos = 1.297;
+    private static final double rwServo_OriginPos = -0.297;
+    private static final double wrollServo_OriginPos = 0.86;
 
-        super(differential_left, differential_right, 0.4533,0.4533, 1);
 
-        this.differential_left = differential_left;
-        this.differential_right = differential_right;
+    public actuators(Servo lwServo, Servo rwServo, Servo wrollServo, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor, TouchSensor lifterTouchSensor){
+
+        this.lwServo = lwServo;
+        this.rwServo = rwServo;
+        this.wrollServo = wrollServo;
 
         this.elbow = elbow;
         this.beak = beakServo;
@@ -208,41 +213,22 @@ public class actuators extends armDifferential{
         elbow.setPower(rotatePwr);
     }
 
-    /*public void wristRotateTo(double targetAngle){
-        double targetPos = (targetAngle * .003770339) - 0.0382974576;
-        wrist.setPosition(targetPos);
-    }
-
-    public void wristRotate(double rate){
-        if(rate > 0){
-            if(getWristPosition() + rate <= 1){
-                wrist.setPosition(getWristPosition() + rate);
-            }
+    public void wristRotateTo_Pitch(double targetAngle){
+        double targetPos = (targetAngle / 268.4);
+        if((int) (Math.random() * 2.0) == 0){
+            lwServo.setPosition(lwServo_OriginPos - targetPos);
+            rwServo.setPosition(rwServo_OriginPos + targetPos);
         }
-        else if(rate < 0){
-            if(getWristPosition() + rate >= 0){
-                wrist.setPosition(getWristPosition() + rate);
-            }
+        else{
+            rwServo.setPosition(rwServo_OriginPos + targetPos);
+            lwServo.setPosition(lwServo_OriginPos - targetPos);
         }
     }
 
-    public void rotateTo(double targetAngle){
-       double targetPos = 0.9 + (targetAngle * 0.00384);
-       rotationServo.setPosition(targetPos);
+    public void wristRotateTo_Roll(double targetAngle){
+       double targetPos = wrollServo_OriginPos + (targetAngle / 270.0);
+       wrollServo.setPosition(targetPos);
     }
-
-    public void rotate(double rate){
-        if(rate > 0){
-            if(getRotationServoPosition() + rate <= 1){
-                rotationServo.setPosition(getRotationServoPosition() + rate);
-            }
-        }
-        else if(rate < 0){
-            if(getRotationServoPosition() + rate >= 0){
-                rotationServo.setPosition(getRotationServoPosition() + rate);
-            }
-        }
-    }*/
 
     public void beakRotateTo(double targetPos) {
         beak.setPosition(targetPos);
@@ -278,17 +264,15 @@ public class actuators extends armDifferential{
         return beak.getPosition();
     }
 
-    /*public double getWristPosition(){
-        return wrist.getPosition();
+    public double getWristAngle_Pitch(){
+        double lwServo_PosEstimate = (lwServo_OriginPos - lwServo.getPosition()) * 268.4;
+        double rwServo_PosEstimate = (rwServo.getPosition() - rwServo_OriginPos) * 268.4;
+        return ((rwServo_PosEstimate + lwServo_PosEstimate) / 2.0);
     }
 
-    public double getWristAngle(){
-        return (getWristPosition() * 263.9728031) + 10.77211422;
+    public double getWristAngle_Roll(){
+        return (wrollServo.getPosition() - wrollServo_OriginPos) * 270.0;
     }
-
-    public double getRotationServoPosition(){
-        return rotationServo.getPosition();
-    }*/
 
     public double getLiftPos(){
         return (leftSlide.getCurrentPosition() + rightSlide.getCurrentPosition()) / 2.0;
@@ -316,25 +300,25 @@ public class actuators extends armDifferential{
 
     public void moveToHighBucketPosition(){
         closeBeak();
-        setAngularPosition(90, getAngularPosition_Roll());
-        while(!eqWT(getAngularPosition_Pitch(), 90, 5)){}
+        wristRotateTo_Pitch(90);
+        while(!eqWT(getWristAngle_Pitch(), 90, 5)){}
         elbowRotateTo(90, 1);
         while(!eqWT(getElbowAngle(), 90, 5)){}
         liftTo(72);
         while(!eqWT(getLiftHeight(), 72, 1)){}
         elbowRotateTo(160, 1);
-        setAngularPosition(170, getAngularPosition_Roll());
-        setAngularPosition(getAngularPosition_Pitch(), -180);
+        wristRotateTo_Pitch(170);
+        wristRotateTo_Roll(0);
         while(!eqWT(getElbowAngle(), 160, 1)){}
-        while(!eqWT(getAngularPosition_Pitch(), 170, 1)){}
+        while(!eqWT(getWristAngle_Pitch(), 170, 1)){}
         highBasketState = true;
     }
 
     public void moveToInsertPosition(){
-        liftTo(0);
-        setAngularPosition(180, getAngularPosition_Roll());
+        liftTo(-12.5);
+        wristRotateTo_Pitch(192.5);
         elbowRotateTo(-4, 1);
-        setAngularPosition(getAngularPosition_Pitch(), -180);
+        wristRotateTo_Roll(0);
         resetLifters();
         highBasketState = false;
     }
@@ -342,20 +326,20 @@ public class actuators extends armDifferential{
     public void moveToPickupPosition(){
         openBeak();
         moveToInsertPosition();
-        elbowRotateTo(2.5, 1);
-        setAngularPosition(87.5, getAngularPosition_Roll());
+        elbowRotateTo(-7.5, 1);
+        wristRotateTo_Pitch(97.5);
         highBasketState = false;
     }
 
     public void submersiblePickup() throws InterruptedException {
         liftTo(0);
-        elbowRotateTo(-5, 1);
-        setAngularPosition(95, getAngularPosition_Roll());
+        elbowRotateTo(-20, 1);
+        wristRotateTo_Pitch(110);
         resetLifters();
         Thread.sleep(200);
         closeBeak();
         Thread.sleep(200);
-        elbowRotateTo(5, 1);
+        elbowRotateTo(-5, 1);
         highBasketState = false;
     }
 
@@ -374,9 +358,9 @@ public class actuators extends armDifferential{
             openBeak();
             Thread.sleep(200);
             elbowRotateTo(90, 1);
-            setAngularPosition(90, getAngularPosition_Roll());
+            wristRotateTo_Pitch(90);
             while(!eqWT(getElbowAngle(), 90, 5)){}
-            while(!eqWT(getAngularPosition_Pitch(), 90, 5)){}
+            while(!eqWT(getWristAngle_Pitch(), 90, 5)){}
             closeBeak();
             liftTo(0);
             resetLifters();
@@ -385,7 +369,8 @@ public class actuators extends armDifferential{
         closeBeak();
         liftTo(0);
         elbowRotateTo(180, 1);
-        setAngularPosition(90, -180);
+        wristRotateTo_Pitch(90);
+        wristRotateTo_Roll(0);
         resetLifters();
 
         highBasketState = false;
@@ -393,7 +378,7 @@ public class actuators extends armDifferential{
     public void moveToStartingPosition(){
         liftTo(0);
         elbowRotateTo(198, 1);
-        setAngularPosition(10, 0);
+        wristRotateTo_Pitch(10);
         closeBeak();
         resetLifters();
         highBasketState = false;
@@ -401,26 +386,31 @@ public class actuators extends armDifferential{
     public void moveToHangInsertPosition(){
         closeBeak();
         liftTo(0);
-        elbowRotateTo(135, 1);
-        setAngularPosition(55, -180);
+        elbowRotateTo(30, 1);
+        wristRotateTo_Pitch(243.33);
+        wristRotateTo_Roll(-180);
         resetLifters();
         highBasketState = false;
     }
 
-    public void hang(){
+    public void hangRelease() throws InterruptedException {
         moveToHangInsertPosition();
-        liftTo(23);
-        while(getLiftHeight() < 23){}
         openBeak();
+        Thread.sleep(200);
+        wristRotateTo_Pitch(135);
+        elbowRotateTo(45, 1);
         highBasketState = false;
     }
 
     public void moveToSpecimenExtractPos(){
         liftTo(0);
-        elbowRotateTo(200, 1);
-        setAngularPosition(160, -180);
-        while(!eqWT(getElbowAngle(), 200, 1)){}
-        while(!eqWT(getAngularPosition_Pitch(), 160, 1)){}
+        elbowRotateTo(190, 1);
+        wristRotateTo_Pitch(170);
+        wristRotateTo_Roll(0);
+        while(!eqWT(getElbowAngle(), 190, 1)){}
+        RobotLog.dd("ExtractPos", "Clearance 1: Elbow Condition Successful");
+        while(!eqWT(getWristAngle_Pitch(), 170, 1)){RobotLog.dd("WristAngle", getWristAngle_Pitch() + "");}
+        RobotLog.dd("ExtractPos", "Clearance 2: Wrist Condition Successful");
         openBeak();
         resetLifters();
         highBasketState = false;
@@ -434,9 +424,10 @@ public class actuators extends armDifferential{
 
     public void initializePosition() throws InterruptedException {
         closeBeak();
-        setAngularPosition(150, getAngularPosition_Roll());
+        wristRotateTo_Pitch(150);
         Thread.sleep(200);
-        setAngularPosition(45, -180);
+        wristRotateTo_Pitch(45);
+        wristRotateTo_Roll(180);
         highBasketState = false;
     }
 
@@ -450,7 +441,8 @@ public class actuators extends armDifferential{
         closeBeak();
         liftTo(0);
         elbowRotateTo(180, 1);
-        setAngularPosition(180, -180);
+        wristRotateTo_Pitch(180);
+        wristRotateTo_Roll(180);
         resetLifters();
         highBasketState = false;
     }
