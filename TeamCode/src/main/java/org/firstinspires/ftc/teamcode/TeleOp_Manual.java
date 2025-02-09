@@ -210,19 +210,21 @@ public class TeleOp_Manual extends LinearOpMode {
                 gripper.changeClawState();
             }
             else if(gamepad2.b){
-                stopDriveBase();
-                gripper.hangRelease();
-                Thread.sleep(200);
-                fL.setPower(-1);
-                fR.setPower(-1);
-                bL.setPower(-1);
-                bR.setPower(-1);
-                Thread.sleep(300);
-                fL.setPower(0);
-                fR.setPower(0);
-                bL.setPower(0);
-                bR.setPower(0);
-                gripper.moveToSpecimenExtractPos();
+                if(gripper.getHangInsertState()){
+                    stopDriveBase();
+                    gripper.hangRelease();
+                    Thread.sleep(200);
+                    fL.setPower(-1);
+                    fR.setPower(-1);
+                    bL.setPower(-1);
+                    bR.setPower(-1);
+                    Thread.sleep(300);
+                    fL.setPower(0);
+                    fR.setPower(0);
+                    bL.setPower(0);
+                    bR.setPower(0);
+                    gripper.moveToSpecimenExtractPos();
+                }
             }
             else if(gamepad2.x){
                 stopDriveBase();

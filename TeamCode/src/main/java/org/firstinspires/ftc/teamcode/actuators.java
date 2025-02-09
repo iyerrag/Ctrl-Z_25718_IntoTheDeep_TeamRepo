@@ -27,9 +27,10 @@ public class actuators{
     private boolean closeState;
     private boolean holdState;
     private boolean highBasketState;
+    private boolean hangInsertState;
 
-    private static final double lwServo_OriginPos = 1.297;
-    private static final double rwServo_OriginPos = -0.297;
+    private static final double lwServo_OriginPos = 1.297 - 0.02;
+    private static final double rwServo_OriginPos = -0.297 + 0.02;
     private static final double wrollServo_OriginPos = 0.86;
 
 
@@ -62,6 +63,7 @@ public class actuators{
         closeState = true;
         highBasketState = false;
         holdState = false;
+        hangInsertState = false;
 
         this.lifterHeightSensor = (Rev2mDistanceSensor) lifterHeightSensor;
         this.lifterTouchSensor = (RevTouchSensor) lifterTouchSensor;
@@ -312,6 +314,7 @@ public class actuators{
         while(!eqWT(getElbowAngle(), 160, 1)){}
         while(!eqWT(getWristAngle_Pitch(), 170, 1)){}
         highBasketState = true;
+        hangInsertState = false;
     }
 
     public void moveToInsertPosition(){
@@ -321,6 +324,7 @@ public class actuators{
         wristRotateTo_Roll(0);
         resetLifters();
         highBasketState = false;
+        hangInsertState = false;
     }
 
     public void moveToPickupPosition(){
@@ -329,6 +333,7 @@ public class actuators{
         elbowRotateTo(-7.5, 1);
         wristRotateTo_Pitch(97.5);
         highBasketState = false;
+        hangInsertState = false;
     }
 
     public void submersiblePickup() throws InterruptedException {
@@ -341,6 +346,7 @@ public class actuators{
         Thread.sleep(200);
         elbowRotateTo(-5, 1);
         highBasketState = false;
+        hangInsertState = false;
     }
 
     /*public void moveToPickupPositionAuto() throws InterruptedException {
@@ -374,6 +380,7 @@ public class actuators{
         resetLifters();
 
         highBasketState = false;
+        hangInsertState = false;
     }
     public void moveToStartingPosition(){
         liftTo(0);
@@ -382,6 +389,7 @@ public class actuators{
         closeBeak();
         resetLifters();
         highBasketState = false;
+        hangInsertState = false;
     }
     public void moveToHangInsertPosition(){
         closeBeak();
@@ -391,35 +399,44 @@ public class actuators{
         wristRotateTo_Roll(-180);
         resetLifters();
         highBasketState = false;
+        hangInsertState = true;
     }
 
+    public boolean getHangInsertState(){return hangInsertState;}
+
     public void hangRelease() throws InterruptedException {
-        moveToHangInsertPosition();
-        openBeak();
-        Thread.sleep(200);
-        wristRotateTo_Pitch(135);
-        elbowRotateTo(45, 1);
+        if(hangInsertState){
+            moveToHangInsertPosition();
+            openBeak();
+            Thread.sleep(200);
+            wristRotateTo_Pitch(135);
+            elbowRotateTo(45, 1);
+        }
         highBasketState = false;
+        hangInsertState = false;
     }
 
     public void moveToSpecimenExtractPos(){
         liftTo(0);
         elbowRotateTo(190, 1);
-        wristRotateTo_Pitch(170);
+        wristRotateTo_Pitch(160);
         wristRotateTo_Roll(0);
         while(!eqWT(getElbowAngle(), 190, 1)){}
         RobotLog.dd("ExtractPos", "Clearance 1: Elbow Condition Successful");
-        while(!eqWT(getWristAngle_Pitch(), 170, 1)){RobotLog.dd("WristAngle", getWristAngle_Pitch() + "");}
+        while(!eqWT(getWristAngle_Pitch(), 160, 1)){RobotLog.dd("WristAngle", getWristAngle_Pitch() + "");}
         RobotLog.dd("ExtractPos", "Clearance 2: Wrist Condition Successful");
         openBeak();
         resetLifters();
         highBasketState = false;
+        hangInsertState = false;
     }
 
     public void extract() throws InterruptedException {
         if(!getCloseState()){changeClawState();}
         liftTo(13);
         while ((getHeight(DistanceUnit.CM) <= 13)) {}
+        highBasketState = false;
+        hangInsertState = false;
     }
 
     public void initializePosition() throws InterruptedException {
@@ -429,12 +446,14 @@ public class actuators{
         wristRotateTo_Pitch(45);
         wristRotateTo_Roll(180);
         highBasketState = false;
+        hangInsertState = false;
     }
 
     public void resetMotors() throws InterruptedException {
         liftTo(0);
         elbowRotateTo(193, 1);
         highBasketState = false;
+        hangInsertState = false;
     }
 
     public void moveToObservationDropOffPos(){
@@ -445,6 +464,7 @@ public class actuators{
         wristRotateTo_Roll(180);
         resetLifters();
         highBasketState = false;
+        hangInsertState = false;
     }
 
 }
