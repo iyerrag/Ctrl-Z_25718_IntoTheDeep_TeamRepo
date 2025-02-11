@@ -411,7 +411,18 @@ public class actuators{
         highBasketState = false;
         hangInsertState = false;
     }
+
     public void moveToHangInsertPosition(){
+        closeBeak();
+        liftTo(0);
+        elbowRotateTo(112, 1);//32
+        wristRotateTo_Pitch(85); //243.33
+        wristRotateTo_Roll(0);
+        resetLifters();
+        highBasketState = false;
+        hangInsertState = true;
+    }
+    public void moveToHangInsertPosition_old(){
         closeBeak();
         liftTo(0);
         elbowRotateTo(33, 1);//32
@@ -425,6 +436,17 @@ public class actuators{
     public boolean getHangInsertState(){return hangInsertState;}
 
     public void hangRelease() throws InterruptedException {
+        if(hangInsertState){
+            moveToHangInsertPosition();
+            liftTo(25);
+            Thread.sleep(800);
+            openBeak();
+        }
+        highBasketState = false;
+        hangInsertState = false;
+    }
+
+    public void hangRelease_old() throws InterruptedException {
         if(hangInsertState){
             moveToHangInsertPosition();
             openBeak();

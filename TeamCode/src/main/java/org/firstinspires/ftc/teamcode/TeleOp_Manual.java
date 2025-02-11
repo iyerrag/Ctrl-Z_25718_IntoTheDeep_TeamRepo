@@ -213,7 +213,7 @@ public class TeleOp_Manual extends LinearOpMode {
                 if(gripper.getHangInsertState()){
                     stopDriveBase();
                     gripper.hangRelease();
-                    Thread.sleep(200);
+                   /* Thread.sleep(200);
                     fL.setPower(-1);
                     fR.setPower(-1);
                     bL.setPower(-1);
@@ -222,7 +222,7 @@ public class TeleOp_Manual extends LinearOpMode {
                     fL.setPower(0);
                     fR.setPower(0);
                     bL.setPower(0);
-                    bR.setPower(0);
+                    bR.setPower(0);*/
                     gripper.moveToSpecimenExtractPos();
                 }
             }

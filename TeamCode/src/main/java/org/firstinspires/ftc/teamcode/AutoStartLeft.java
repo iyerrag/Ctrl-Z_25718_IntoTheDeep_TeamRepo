@@ -46,7 +46,7 @@ public class AutoStartLeft extends LinearOpMode {
         gripper.liftTo(72);
         gripper.elbowRotateTo(160, 1);
         gripper.wristRotateTo_Pitch(170);
-        gripper.wristRotateTo_Roll(-180);
+        gripper.wristRotateTo_Roll(0);//-180
         ArrayList<double[]> firstHighBucketDropMov = new ArrayList<double[]>();
         firstHighBucketDropMov.add(new double[]{120, 60, 0});
         firstHighBucketDropMov.add(new double[]{34, 25, -45});
@@ -61,16 +61,16 @@ public class AutoStartLeft extends LinearOpMode {
         //Second Sample
 
         gripper.liftTo(0);
-        gripper.wristRotateTo_Pitch(95);
-        gripper.wristRotateTo_Roll(-180);
+        gripper.wristRotateTo_Pitch(115);//95
+        gripper.wristRotateTo_Roll(0);//-180
         ArrayList<double[]> sample2Pickup = new ArrayList<double[]>();
         sample2Pickup.add(new double[]{50, 50, 0});
-        sample2Pickup.add(new double[]{58, 54, 0});
+        sample2Pickup.add(new double[]{60, 54, 0});
         robot.toWaypointBezier(sample2Pickup, 1, 1.5, 2.5);
-        gripper.elbowRotateTo(-5, 1);
+        gripper.elbowRotateTo(-15, 1);//-5
         gripper.resetLifters();
-        while(!gripper.eqWT(gripper.getElbowAngle(), -5, 1)){}
-        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 95, 1)){}
+        while(!gripper.eqWT(gripper.getElbowAngle(), -15, 1)){}
+        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)){}
         gripper.declareHighBucketStatusFalse();
 
         Thread.sleep(150);
@@ -83,7 +83,7 @@ public class AutoStartLeft extends LinearOpMode {
         robot.toWaypointBezier(sample2DropOff, 1, 2.25, 2.5);
         gripper.elbowRotateTo(160, 1);
         gripper.wristRotateTo_Pitch(170);
-        gripper.wristRotateTo_Roll(-180);
+        gripper.wristRotateTo_Roll(0);//-180
         while(!gripper.eqWT(gripper.getElbowAngle(), 160, 1)){}
         while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)){}
         gripper.declareHighBucketStatusTrue();
@@ -93,16 +93,16 @@ public class AutoStartLeft extends LinearOpMode {
 
         //Third Sample
         gripper.liftTo(0);
-        gripper.wristRotateTo_Pitch(95);
-        gripper.wristRotateTo_Roll(-180);
+        gripper.wristRotateTo_Pitch(115);//95
+        gripper.wristRotateTo_Roll(0);//-180
         ArrayList<double[]> sample3Pickup = new ArrayList<double[]>();
         sample3Pickup.add(new double[]{36, 50, 0});
         sample3Pickup.add(new double[]{33, 54.6, 0});
         robot.toWaypointBezier(sample3Pickup, 1, 1.5, 2.5);
-        gripper.elbowRotateTo(-5, 1);
+        gripper.elbowRotateTo(-15, 1);//-5
         gripper.resetLifters();
-        while(!gripper.eqWT(gripper.getElbowAngle(), -5, 1)){}
-        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 95, 1)){}
+        while(!gripper.eqWT(gripper.getElbowAngle(), -15, 1)){}
+        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)){}
         gripper.declareHighBucketStatusFalse();
 
         Thread.sleep(150);
@@ -115,7 +115,7 @@ public class AutoStartLeft extends LinearOpMode {
         robot.toWaypointBezier(sample3DropOff, 1, 2.25, 2.5);
         gripper.elbowRotateTo(160, 1);
         gripper.wristRotateTo_Pitch(170);
-        gripper.wristRotateTo_Roll(-180);
+        gripper.wristRotateTo_Roll(0);//-180
         while(!gripper.eqWT(gripper.getElbowAngle(), 160, 1)){}
         while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)){}
         gripper.declareHighBucketStatusTrue();
@@ -126,18 +126,18 @@ public class AutoStartLeft extends LinearOpMode {
         //Fourth Sample
         gripper.liftTo(0);
         gripper.elbowRotateTo(0, 1);
-        gripper.wristRotateTo_Pitch(95);
+        gripper.wristRotateTo_Pitch(115);//95
         gripper.wristRotateTo_Roll(-45);
         ArrayList<double[]> sample4Pickup = new ArrayList<double[]>();
         sample4Pickup.add(new double[]{60, 66, 45});
-        sample4Pickup.add(new double[]{45, 56.5, 45});
+        sample4Pickup.add(new double[]{47, 56.5, 45});//{45, 56.5, 45}
         robot.toWaypointBezier(sample4Pickup, 1, 2.0, 2.25);
         while(!gripper.eqWT(gripper.getElbowAngle(), 0, 1)){}
-        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 95, 1)){}
+        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)){}
         gripper.resetLifters();
         Thread.sleep(150);
-        gripper.elbowRotateTo(-5, 0.6);
-        while(!gripper.eqWT(gripper.getElbowAngle(),-5, 1)){}
+        gripper.elbowRotateTo(-15, 0.6);//-5
+        while(!gripper.eqWT(gripper.getElbowAngle(),-15, 1)){}
         gripper.declareHighBucketStatusFalse();
 
         Thread.sleep(150);
@@ -146,11 +146,11 @@ public class AutoStartLeft extends LinearOpMode {
         gripper.liftTo(72);
         ArrayList<double[]> sample4DropOff = new ArrayList<double[]>();
         sample3DropOff.add(new double[]{45, 45, -15});
-        sample3DropOff.add(new double[]{34, 26, -45});
+        sample3DropOff.add(new double[]{34, 26, -50});
         robot.toWaypointBezier(sample3DropOff, 1, 2.5, 2.75);
         gripper.elbowRotateTo(160, 1);
         gripper.wristRotateTo_Pitch(170);
-        gripper.wristRotateTo_Roll(-180);
+        gripper.wristRotateTo_Roll(0);//-180
         while(!gripper.eqWT(gripper.getElbowAngle(), 160, 1)){}
         while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)){}
         gripper.declareHighBucketStatusTrue();
