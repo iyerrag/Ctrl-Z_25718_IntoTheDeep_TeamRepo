@@ -24,6 +24,7 @@ public class actuators{
     private Servo beak;
     private Rev2mDistanceSensor lifterHeightSensor;
     private RevTouchSensor lifterTouchSensor;
+    private RevTouchSensor elbowTouchSensor;
     private boolean closeState;
     private boolean holdState;
     private boolean highBasketState;
@@ -34,7 +35,7 @@ public class actuators{
     private static final double wrollServo_OriginPos = 0.86;
 
 
-    public actuators(Servo lwServo, Servo rwServo, Servo wrollServo, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor, TouchSensor lifterTouchSensor){
+    public actuators(Servo lwServo, Servo rwServo, Servo wrollServo, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor, TouchSensor lifterTouchSensor, TouchSensor elbowTouchSensor){
 
         this.lwServo = lwServo;
         this.rwServo = rwServo;
@@ -67,6 +68,7 @@ public class actuators{
 
         this.lifterHeightSensor = (Rev2mDistanceSensor) lifterHeightSensor;
         this.lifterTouchSensor = (RevTouchSensor) lifterTouchSensor;
+        this.elbowTouchSensor = (RevTouchSensor) elbowTouchSensor;
     }
 
     public boolean state(){
@@ -337,15 +339,15 @@ public class actuators{
             openBeak();
             Thread.sleep(200);
             liftTo(0);
-            elbowRotateTo(-7.5, 1);
-            wristRotateTo_Pitch(97.5);
+            elbowRotateTo(-3, 1); //-7.5
+            wristRotateTo_Pitch(95); //97.5
             resetLifters();
         }
         else{
             openBeak();
             moveToInsertPosition();
-            elbowRotateTo(-7.5, 1);
-            wristRotateTo_Pitch(97.5);
+            elbowRotateTo(-3, 1); //-7.5
+            wristRotateTo_Pitch(95); //97.5
         }
 
         highBasketState = false;
@@ -354,13 +356,15 @@ public class actuators{
 
     public void submersiblePickup() throws InterruptedException {
         liftTo(0);
+        wristRotateTo_Pitch(115);//110, 112
+        //Thread.sleep(200);
         elbowRotateTo(-20, 1);//-20
-        wristRotateTo_Pitch(110);
         resetLifters();
         Thread.sleep(200);
         closeBeak();
-        Thread.sleep(300); //200
+        Thread.sleep(400); //200
         elbowRotateTo(-2, 1);//-5
+        wristRotateTo_Pitch(130);//125
         highBasketState = false;
         hangInsertState = false;
     }
@@ -410,8 +414,8 @@ public class actuators{
     public void moveToHangInsertPosition(){
         closeBeak();
         liftTo(0);
-        elbowRotateTo(32, 1);//30
-        wristRotateTo_Pitch(243.33);
+        elbowRotateTo(33, 1);//32
+        wristRotateTo_Pitch(235); //243.33
         wristRotateTo_Roll(-180);
         resetLifters();
         highBasketState = false;
