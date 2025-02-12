@@ -21,6 +21,8 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 //import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
 import java.util.ArrayList;
 
 @Autonomous
@@ -45,45 +47,128 @@ public class AutoStartRight extends LinearOpMode {
 
         if (opModeIsActive()) {
 
-           //gripper.initializePosition();
-            robot.toWaypoint(180, 45, 0, 1, 1);
-            gripper.moveToHangInsertPosition();
-            robot.toWaypoint(175, 95, 0, 1, 2);
+            // Move to Hang Insert Position
+            gripper.closeBeak();
+            gripper.liftTo(0);
+            gripper.elbowRotateTo(112, 1);//32
+            gripper.wristRotateTo_Pitch(85); //243.33
+            gripper.wristRotateTo_Roll(0);
+
+            // Go to Hang 1st specimen
+            robot.translateRadDeg(.8,65,.4);
+            Thread.sleep(600);
+
+            // Hang 1st specimen
+            gripper.liftTo(25);
+            Thread.sleep(850);
+            gripper.openBeak();
+
+            // Move to Specimen Extract Position
+            gripper.liftTo(0);
+            gripper.elbowRotateTo(190, 1);
+            gripper.wristRotateTo_Pitch(160);
+            gripper.wristRotateTo_Roll(0);
+            gripper.openBeakWide();
+
+            // First Collection
+            robot.translateRadDeg(1,195,1.5);
+            robot.translateRadDeg(1,90,1);
+            robot.translateRadDeg(1,180,.5);
+            robot.translateRadDeg(1,-90,1.1);
+
+            // Second Collection
+            robot.translateRadDeg(1,90,1.2);
+            robot.translateRadDeg(1,180,.65);
+            robot.translateRadDeg(1,-90,.7);
+
+            robot.toWaypoint(330, 25, 0, 1,1.25);
+
+            //Extract 2nd specimen and move to Hang Insert Position
+            gripper.closeBeak();
+            gripper.liftTo(13);
+            gripper.elbowRotateTo(112, 1);//32
+            gripper.wristRotateTo_Pitch(85); //243.33
+            gripper.wristRotateTo_Roll(0);
+            gripper.liftTo(0);
+
+
+           // Go to Hang 2nd specimen
+            ArrayList<double[]> secondHang = new ArrayList<double[]>();
+            secondHang.add(new double[]{150, 60, 0});
+            secondHang.add(new double[]{150, 75, 0});
+            robot.toWaypointBezier(secondHang, 1, 1.5, 1.75);
+
+            robot.toWaypoint(170, 95, 0, 1, 1.5);
             robot.stopChaassis();
-            gripper.hangRelease();
-            gripper.moveToSpecimenExtractPos();
 
-            ArrayList<double[]> firstCollectionAndExtraction = new ArrayList<double[]>();
-            firstCollectionAndExtraction.add(new double[]{240, -300, 0});
-            firstCollectionAndExtraction.add(new double[]{320,450,0});
-            //firstCollectionAndExtraction.add(new double[]{300, 120, 0});
-            firstCollectionAndExtraction.add(new double[]{300, 45, 0});
-            robot.toWaypointBezier(firstCollectionAndExtraction, 1, 3.5, 3.75);
-            robot.toWaypoint(300, 25, 0, 1, 1.5);
-            gripper.extract();
+            // Hang 2nd specimen
+            gripper.liftTo(25);
+            Thread.sleep(850);
+            gripper.openBeak();
 
-            robot.toWaypoint(180, 45, 0, 1, 2);
-            gripper.moveToHangInsertPosition();
-            robot.toWaypoint(180, 100, 0, 1, 1.5);
-            robot.stopChaassis();
-            gripper.hangRelease();
-            gripper.moveToSpecimenExtractPos();
+            // Move to Specimen Extract Position
+            gripper.liftTo(0);
+            gripper.elbowRotateTo(190, 1);
+            gripper.wristRotateTo_Pitch(160);
+            gripper.wristRotateTo_Roll(0);
+            gripper.openBeakWide();
 
-
-            ArrayList<double[]> secondExtraction = new ArrayList<double[]>();
-            secondExtraction.add(new double[]{180, 45, 0});
-            secondExtraction.add(new double[]{330, 120, 0});
-            secondExtraction.add(new double[]{300, 45, 0});
-            robot.toWaypointBezier(secondExtraction, 1, 2, 2.25);
+            // Extract 3rd Specimen
+            robot.translateRadDeg(1,190,1.85);
             robot.toWaypoint(300, 25, 0, 1,1);
-            gripper.extract();
+            gripper.closeBeak();
+            gripper.liftTo(13);
+            gripper.elbowRotateTo(112, 1);//32
+            gripper.wristRotateTo_Pitch(85); //243.33
+            gripper.wristRotateTo_Roll(0);
+            gripper.liftTo(0);
 
-            robot.toWaypoint(180, 45, 0, 1, 2);
-            gripper.moveToHangInsertPosition();
-            robot.toWaypoint(190, 100, 0, 1, 1.5);
-            gripper.hangRelease();
+            //Go to Hang 3rd specimen
+            ArrayList<double[]> thirdHang = new ArrayList<double[]>();
+            thirdHang.add(new double[]{150, 60, 0});
+            thirdHang.add(new double[]{180, 75, 0});
 
-            robot.toWaypoint(300, 25, 0, 1, 2.5);
+            robot.toWaypointBezier(thirdHang, 1, 1.5, 1.7);
+            robot.toWaypoint(180, 95, 0, 1, 1.5);
+            robot.stopChaassis();
+
+            // Hang 3rd specimen
+            gripper.liftTo(25);
+            Thread.sleep(850);
+            gripper.openBeak();
+
+            // Move to Specimen Extract Position
+            gripper.liftTo(0);
+            gripper.elbowRotateTo(190, 1);
+            gripper.wristRotateTo_Pitch(160);
+            gripper.wristRotateTo_Roll(0);
+            gripper.openBeakWide();
+
+            // Extract 4th Specimen
+            robot.translateRadDeg(1,190,1.85);
+            robot.toWaypoint(300, 25, 0, 1,1);
+            gripper.closeBeak();
+            gripper.liftTo(13);
+            gripper.elbowRotateTo(112, 1);//32
+            gripper.wristRotateTo_Pitch(85); //243.33
+            gripper.wristRotateTo_Roll(0);
+            gripper.liftTo(0);
+
+            //Go to Hang 4th specimen
+            ArrayList<double[]> fourthHang = new ArrayList<double[]>();
+            fourthHang.add(new double[]{150, 60, 0});
+            secondHang.add(new double[]{190, 75, 0});
+            robot.toWaypointBezier(fourthHang, 1, 1.5, 1.6);
+            robot.toWaypoint(190, 95, 0, 1, 1.5);
+            robot.stopChaassis();
+
+            // Hang 4th specimen
+            gripper.liftTo(25);
+            Thread.sleep(850);
+            gripper.openBeak();
+
+            // Park
+            robot.translateRadDeg(1,195,1.6);
             gripper.resetMotors();
 
             telemetry.addData("X:", robot.getPosition()[0]);
@@ -91,7 +176,6 @@ public class AutoStartRight extends LinearOpMode {
             telemetry.addData("Theta:", robot.getPosition()[2] * 180 / Math.PI);
             telemetry.update();
 
-            Thread.sleep(10000);
         }
     }
 }
