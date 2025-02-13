@@ -23,6 +23,7 @@ public class actuators{
     private DcMotor rightSlide;
     private Servo beak;
     private Rev2mDistanceSensor lifterHeightSensor;
+    private Rev2mDistanceSensor frontDistanceSensor;
     private RevTouchSensor lifterTouchSensor;
     private RevTouchSensor elbowTouchSensor;
     private boolean closeState;
@@ -35,7 +36,7 @@ public class actuators{
     private static final double wrollServo_OriginPos = 0.86;
 
 
-    public actuators(Servo lwServo, Servo rwServo, Servo wrollServo, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor, TouchSensor lifterTouchSensor, TouchSensor elbowTouchSensor){
+    public actuators(Servo lwServo, Servo rwServo, Servo wrollServo, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor, DistanceSensor frontDistanceSensor, TouchSensor lifterTouchSensor, TouchSensor elbowTouchSensor){
 
         this.lwServo = lwServo;
         this.rwServo = rwServo;
@@ -67,6 +68,7 @@ public class actuators{
         hangInsertState = false;
 
         this.lifterHeightSensor = (Rev2mDistanceSensor) lifterHeightSensor;
+        this.frontDistanceSensor = (Rev2mDistanceSensor) frontDistanceSensor;
         this.lifterTouchSensor = (RevTouchSensor) lifterTouchSensor;
         this.elbowTouchSensor = (RevTouchSensor) elbowTouchSensor;
     }
@@ -121,6 +123,17 @@ public class actuators{
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
+
+    public void resetElbow(){
+        elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        while(!elbowTouchSensor.isPressed()){
+            elbow.setPower(.25);
+        }
+        elbow.setPower(0);
+        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    }
+
 
     public void hold(){
         leftSlide.setTargetPosition(leftSlide.getCurrentPosition());
@@ -508,6 +521,7 @@ public class actuators{
         highBasketState = false;
         hangInsertState = false;
     }
+
 
 }
 

@@ -199,22 +199,32 @@ public class chassis{
     }
 
 
-    public void translateRadDeg(double radius, double theta, double time) {
+    public void translateRadDeg(double radius, double theta, double time, boolean brake) {
         //theta is in degrees (north is 90 deg and positive degrees are clockwise), radius is in units of powX and powY
         timer.reset();
         theta = theta; theta *= Math.PI/180;
         double powX = - radius * Math.cos(theta);
         double powY = radius * Math.sin(theta);
+
+        //vector of the front right and bottom left wheels: a
+        //vector of the bottom right and front left wheels: b
+        double a = (powX+powY)*(Math.pow(2, -0.5));
+        double b = (-powX+powY)*(Math.pow(2, -0.5));
+        fL.setPower(a * leftBias);
+        fR.setPower(b * rightBias);
+        bL.setPower(b * leftBias);
+        bR.setPower(a * rightBias);
+
         while (timer.seconds() <= time) {
-            //vector of the front right and bottom left wheels: a
-            //vector of the bottom right and front left wheels: b
-            double a = (powX+powY)*(Math.pow(2, -0.5));
-            double b = (-powX+powY)*(Math.pow(2, -0.5));
-            fL.setPower(a * leftBias);
-            fR.setPower(b * rightBias);
-            bL.setPower(b * leftBias);
-            bR.setPower(a * rightBias);
             localizer.updateOdometry();
+        }
+
+        if(brake)
+        {
+            fL.setPower(0);
+            fR.setPower(0);
+            bL.setPower(0);
+            bR.setPower(0);
         }
     }
 
@@ -1182,6 +1192,39 @@ public class chassis{
         bL.setPower(0);
         bR.setPower(0);
         return new double[]{Imax, getBatteryVoltage(), 0.0, 0.0};
+    }
+
+    public void translateRadDeg_Smooth(double radius, ArrayList<Double> ThetaPoints, double time, boolean brake) {
+        //theta is in degrees (north is 90 deg and positive degrees are clockwise), radius is in units of powX and powY
+        timer.reset();
+        for(int i = 0; i < ThetaPoints.size(); i++){
+            ThetaPoints.set(i, ThetaPoints.get(i) * Math.PI / 180.0);
+        }
+
+        while (timer.seconds() <= time) {
+            double theta = Brez(ThetaPoints, (timer.seconds() / time));
+            double powX = - radius * Math.cos(theta);
+            double powY = radius * Math.sin(theta);
+
+            //vector of the front right and bottom left wheels: a
+            //vector of the bottom right and front left wheels: b
+            double a = (powX+powY)*(Math.pow(2, -0.5));
+            double b = (-powX+powY)*(Math.pow(2, -0.5));
+            fL.setPower(a * leftBias);
+            fR.setPower(b * rightBias);
+            bL.setPower(b * leftBias);
+            bR.setPower(a * rightBias);
+
+            localizer.updateOdometry();
+        }
+
+        if(brake)
+        {
+            fL.setPower(0);
+            fR.setPower(0);
+            bL.setPower(0);
+            bR.setPower(0);
+        }
     }
 
     /*public void deflectTo(double deflectionXtarget, double deflectionYtarget, double deflectionThetatarget, double XYTol, double AngTol, double finalXtarget, double finalYtarget, double finalThetatarget, double timeout){
