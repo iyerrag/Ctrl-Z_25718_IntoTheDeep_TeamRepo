@@ -106,6 +106,11 @@ public class TeleOp_Manual extends LinearOpMode {
         actuators gripper = new actuators(hardwareMap.get(Servo.class, "lwServo"), hardwareMap.get(Servo.class, "rwServo"), hardwareMap.get(Servo.class, "wrollServo"), hardwareMap.get(Servo.class,
                 "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
                 "lifterHeightSensor"), hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"), hardwareMap.get(TouchSensor.class,"elbowTouchSensor"));
+
+
+        gripper.resetElbow(); // Safety
+        gripper.resetLifters(); // Safety
+        gripper.closeBeak();
         //Wait for Driver to Start
         waitForStart();
 
@@ -150,43 +155,37 @@ public class TeleOp_Manual extends LinearOpMode {
                 gripper.moveToHangInsertPosition();
             }
             else if(Math.abs(gamepad2.left_stick_y) == 1){
+                stopDriveBase();
                 if(gamepad2.left_stick_y == 1){
                     while(gamepad2.left_stick_y == 1){
                         gripper.lift(-1);
-                        driveBase();
                     }
                     gripper.hold();
                 }
                 else{
                     while(gamepad2.left_stick_y == -1){
                         gripper.lift(1);
-                        driveBase();
                     }
                     gripper.hold();
                 }
             }
             else if(Math.abs(gamepad2.left_stick_x) == 1){
-
                 stopDriveBase();
-
                 if(gamepad2.left_stick_x == 1){
-                    gripper.wristRotateTo_Roll(gripper.getWristAngle_Roll() - 3);
+                    gripper.wristRotateTo_Roll(gripper.getWristAngle_Roll() - 1);
                 }
                 else{
-                    gripper.wristRotateTo_Roll(gripper.getWristAngle_Roll() + 3);
+                    gripper.wristRotateTo_Roll(gripper.getWristAngle_Roll() + 1);
                 }
             }
             else if(Math.abs(gamepad2.right_stick_y) == 1){
-
                 stopDriveBase();
-
                 if(gamepad2.right_stick_y == 1){
-                    gripper.wristRotateTo_Pitch(gripper.getWristAngle_Pitch() - 3);
+                    gripper.wristRotateTo_Pitch(gripper.getWristAngle_Pitch() - 1);
                 }
                 else{
-                    gripper.wristRotateTo_Pitch(gripper.getWristAngle_Pitch() - 3);
+                    gripper.wristRotateTo_Pitch(gripper.getWristAngle_Pitch() + 1);
                 }
-                Thread.sleep(10);
             }
 
             else if(Math.abs(gamepad2.right_stick_x) == 1){
@@ -213,16 +212,6 @@ public class TeleOp_Manual extends LinearOpMode {
                 if(gripper.getHangInsertState()){
                     stopDriveBase();
                     gripper.hangRelease();
-                   /* Thread.sleep(200);
-                    fL.setPower(-1);
-                    fR.setPower(-1);
-                    bL.setPower(-1);
-                    bR.setPower(-1);
-                    Thread.sleep(300);
-                    fL.setPower(0);
-                    fR.setPower(0);
-                    bL.setPower(0);
-                    bR.setPower(0);*/
                     gripper.moveToSpecimenExtractPos();
                 }
             }
@@ -250,6 +239,33 @@ public class TeleOp_Manual extends LinearOpMode {
             else if(gamepad2.right_trigger == 1){
                 stopDriveBase();
                 gripper.wristRotateTo_Roll(-90);
+            }
+            else if(gamepad2.dpad_up) {
+                //Initiate Robot Level2 Hang, go to hang ready position
+                gripper.liftTo(55);
+                Thread.sleep(500);
+                gripper.elbowRotateTo(60,1);
+                gripper.wristRotateTo_Pitch(280);
+                while(gripper.getLiftHeight() <= 50 & gripper.getElbowAngle() <= 200) {
+                    if(gamepad2.guide){ // Safety Interrupt: Exit the while loop immediately
+                        gripper.moveToTransportPosition();
+                        break;
+                    }
+                }
+                Thread.sleep (1500);
+                gripper.liftTo(30);
+                while (gripper.getLiftHeight() <= 30) {
+                    if (gamepad2.guide) {
+                        gripper.liftTo(55);
+                        break; // Safety Interrupt: Exit the while loop immediately once robot is in safer state
+                    }
+                }
+            }
+            else if(gamepad2.guide){
+                // Release Robot from hanging
+                gripper.liftTo(55);
+                Thread.sleep (1000);
+                gripper.elbowRotateTo(100,1);
             }
             else{
                 driveBase();

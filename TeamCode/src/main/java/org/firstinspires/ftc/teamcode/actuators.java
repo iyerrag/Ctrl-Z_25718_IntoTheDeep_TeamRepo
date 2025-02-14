@@ -357,10 +357,11 @@ public class actuators{
             resetLifters();
         }
         else{
-            openBeak();
             moveToInsertPosition();
             elbowRotateTo(-3, 1); //-7.5
             wristRotateTo_Pitch(95); //97.5
+            Thread.sleep(150);
+            openBeak();
         }
 
         highBasketState = false;
@@ -369,8 +370,8 @@ public class actuators{
 
     public void submersiblePickup() throws InterruptedException {
         liftTo(0);
-        wristRotateTo_Pitch(115);//110, 112
-        //Thread.sleep(200);
+        wristRotateTo_Pitch(110);//115, 112
+        Thread.sleep(100);
         elbowRotateTo(-20, 1);//-20
         resetLifters();
         Thread.sleep(200);
@@ -488,8 +489,8 @@ public class actuators{
 
     public void extract() throws InterruptedException {
         if(!getCloseState()){changeClawState();}
-        liftTo(13);
-        while ((getHeight(DistanceUnit.CM) <= 13)) {}
+        liftTo(11);
+        while ((getHeight(DistanceUnit.CM) <= 11)) {}
         highBasketState = false;
         hangInsertState = false;
     }

@@ -38,6 +38,9 @@ public class AutoStartLeft extends LinearOpMode {
                 "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
                 "lifterHeightSensor"), hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"), hardwareMap.get(TouchSensor.class,"elbowTouchSensor"));
 
+        gripper.resetElbow(); // Safety
+        gripper.resetLifters(); // Safety
+        gripper.closeBeak();
         waitForStart();
         gripper.initializePosition();
 
