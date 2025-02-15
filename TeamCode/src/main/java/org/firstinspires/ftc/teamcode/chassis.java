@@ -1407,7 +1407,7 @@ public class chassis{
         }
     }
 
-    public void stopChaassis(){
+    public void stopChassis(){
         //Stop all motors
         fL.setPower(0); fR.setPower(0); bL.setPower(0); bR.setPower(0);
     }
