@@ -22,7 +22,7 @@ public class actuators{
     private DcMotor leftSlide;
     private DcMotor rightSlide;
     private Servo beak;
-    private Rev2mDistanceSensor lifterHeightSensor;
+   // private Rev2mDistanceSensor lifterHeightSensor;
     private Rev2mDistanceSensor frontDistanceSensor;
     private RevTouchSensor lifterTouchSensor;
     private RevTouchSensor elbowTouchSensor;
@@ -36,7 +36,7 @@ public class actuators{
     private static final double wrollServo_OriginPos = 0.86;
 
 
-    public actuators(Servo lwServo, Servo rwServo, Servo wrollServo, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor lifterHeightSensor, DistanceSensor frontDistanceSensor, TouchSensor lifterTouchSensor, TouchSensor elbowTouchSensor){
+    public actuators(Servo lwServo, Servo rwServo, Servo wrollServo, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor frontDistanceSensor, TouchSensor lifterTouchSensor, TouchSensor elbowTouchSensor){
 
         this.lwServo = lwServo;
         this.rwServo = rwServo;
@@ -67,7 +67,7 @@ public class actuators{
         holdState = false;
         hangInsertState = false;
 
-        this.lifterHeightSensor = (Rev2mDistanceSensor) lifterHeightSensor;
+        //this.lifterHeightSensor = (Rev2mDistanceSensor) lifterHeightSensor;
         this.frontDistanceSensor = (Rev2mDistanceSensor) frontDistanceSensor;
         this.lifterTouchSensor = (RevTouchSensor) lifterTouchSensor;
         this.elbowTouchSensor = (RevTouchSensor) elbowTouchSensor;
@@ -99,11 +99,11 @@ public class actuators{
         *///}
        // else {
             if ((int) (Math.random() * 2) == 0) {
-                leftSlide.setPower(0.80);
-                rightSlide.setPower(0.80);
+                leftSlide.setPower(1);
+                rightSlide.setPower(1);
             } else {
-                rightSlide.setPower(0.80);
-                leftSlide.setPower(0.80);
+                rightSlide.setPower(1);
+                leftSlide.setPower(1);
             }
         //}
     }
@@ -155,12 +155,12 @@ public class actuators{
         elbow.setPower(1);
     }
 
-    public double getHeight(DistanceUnit unit) throws InterruptedException {
+   /* public double getHeight(DistanceUnit unit) throws InterruptedException {
         double[] samples = new double[5];
         for(int i = 0; i < 5; i++){
             samples[i] = lifterHeightSensor.getDistance(unit);
             Thread.sleep(5);
-        }
+        }*/
 
         /*for(int i = 0; i < 5; i++){
             for(int j = i + 1; j < 5; j++){
@@ -171,13 +171,26 @@ public class actuators{
                 }
             }
         }*/
-
+    /*
         Arrays.sort(samples);
         return samples[2];
-    }
+    }*/
 
     public void lift(double liftPwr) throws InterruptedException {
-        if(!(holdState && liftPwr > 0)) {
+
+        leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        if ((int) (Math.random() * 2) == 0) {
+            leftSlide.setPower(liftPwr);
+            rightSlide.setPower(liftPwr);
+        } else {
+            rightSlide.setPower(liftPwr);
+            leftSlide.setPower(liftPwr);
+        }
+        holdState = false;
+
+        /*if(!(holdState && liftPwr > 0)) {
 
             if (!(getHeight(DistanceUnit.CM) >= 65 && liftPwr > 0) && !(getHeight(DistanceUnit.CM) <= 4 && liftPwr < 0)) {
 
@@ -199,7 +212,7 @@ public class actuators{
                 resetLifters();
                 holdState = false;
             }
-        }
+        }*/
     }
 
     public void elbowRotateTo(double targetAngle, double maxPow){
@@ -252,17 +265,17 @@ public class actuators{
     }
 
     public void openBeakWide(){
-        beakRotateTo(0.15);
+        beakRotateTo(0.2);
         closeState = false;
     }
 
     public void openBeak(){
-        beakRotateTo(.23);
+        beakRotateTo(.3);
         closeState = false;
     }
 
     public void closeBeak(){
-        beakRotateTo(0.7);
+        beakRotateTo(0.5);
         closeState = true;
     }
 
@@ -351,8 +364,9 @@ public class actuators{
         if(highBasketState){
             openBeak();
             Thread.sleep(200);
-            liftTo(0);
             elbowRotateTo(-3, 1); //-7.5
+            Thread.sleep(300);
+            liftTo(0);
             wristRotateTo_Pitch(95); //97.5
             resetLifters();
         }
@@ -405,23 +419,37 @@ public class actuators{
             liftTo(0);
             resetLifters();
         }
-
-        closeBeak();
-        liftTo(0);
-        elbowRotateTo(180, 1);
-        wristRotateTo_Pitch(90);
-        wristRotateTo_Roll(0);
-        resetLifters();
+        else {
+            closeBeak();
+            liftTo(0);
+            elbowRotateTo(180, 1);
+            wristRotateTo_Pitch(90);
+            wristRotateTo_Roll(0);
+            resetLifters();
+        }
 
         highBasketState = false;
         hangInsertState = false;
     }
-    public void moveToStartingPosition(){
-        liftTo(0);
-        elbowRotateTo(198, 1);
-        wristRotateTo_Pitch(10);
-        closeBeak();
-        resetLifters();
+    public void moveToStartingPosition() throws InterruptedException {
+
+        if(highBasketState){
+            wristRotateTo_Pitch(10);
+            Thread.sleep(300);
+            liftTo(0);
+            elbowRotateTo(198, 1);
+            closeBeak();
+            resetLifters();
+        }
+
+        else {
+            liftTo(0);
+            elbowRotateTo(198, 1);
+            wristRotateTo_Pitch(10);
+            closeBeak();
+            resetLifters();
+        }
+
         highBasketState = false;
         hangInsertState = false;
     }
@@ -474,12 +502,12 @@ public class actuators{
 
     public void moveToSpecimenExtractPos(){
         liftTo(0);
-        elbowRotateTo(190, 1);
-        wristRotateTo_Pitch(160);
+        elbowRotateTo(188, 1);
+        wristRotateTo_Pitch(170);
         wristRotateTo_Roll(0);
-        while(!eqWT(getElbowAngle(), 190, 1)){}
+        while(!eqWT(getElbowAngle(), 188, 1)){}
         RobotLog.dd("ExtractPos", "Clearance 1: Elbow Condition Successful");
-        while(!eqWT(getWristAngle_Pitch(), 160, 1)){RobotLog.dd("WristAngle", getWristAngle_Pitch() + "");}
+        while(!eqWT(getWristAngle_Pitch(), 170, 1)){RobotLog.dd("WristAngle", getWristAngle_Pitch() + "");}
         RobotLog.dd("ExtractPos", "Clearance 2: Wrist Condition Successful");
         openBeakWide();
         resetLifters();
@@ -490,7 +518,7 @@ public class actuators{
     public void extract() throws InterruptedException {
         if(!getCloseState()){changeClawState();}
         liftTo(11);
-        while ((getHeight(DistanceUnit.CM) <= 11)) {}
+        while ((getLiftHeight()  <= 11)) {}
         highBasketState = false;
         hangInsertState = false;
     }
