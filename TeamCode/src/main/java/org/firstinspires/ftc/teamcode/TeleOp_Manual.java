@@ -104,13 +104,12 @@ public class TeleOp_Manual extends LinearOpMode {
 
         //Define TaskManipulator: new claw(wrist servo, beak servo, left lifter, right lifter, elbow);
         actuators gripper = new actuators(hardwareMap.get(Servo.class, "lwServo"), hardwareMap.get(Servo.class, "rwServo"), hardwareMap.get(Servo.class, "wrollServo"), hardwareMap.get(Servo.class,
-                "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
-                "lifterHeightSensor"), hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"), hardwareMap.get(TouchSensor.class,"elbowTouchSensor"));
+                "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"), hardwareMap.get(TouchSensor.class,"elbowTouchSensor"));
 
 
-        gripper.resetElbow(); // Safety
+        //gripper.resetElbow(); // Safety
         gripper.resetLifters(); // Safety
-        gripper.closeBeak();
+        //gripper.closeBeak();
         //Wait for Driver to Start
         waitForStart();
 
