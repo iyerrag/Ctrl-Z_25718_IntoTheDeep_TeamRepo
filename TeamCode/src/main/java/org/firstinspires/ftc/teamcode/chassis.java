@@ -198,6 +198,61 @@ public class chassis{
         }
     }
 
+    public void translateXY_toPos(double targetX, double targetY, double speedScalar, double tolerance, boolean brake) {
+
+        double powX;
+        double powY;
+        double deltaX = targetX - localizer.getPosition()[0];
+        double deltaY = targetY - localizer.getPosition()[1];
+
+        if(Math.abs(deltaX) > Math.abs(deltaY)){
+            powX = 1.0;
+            powY = Math.abs(deltaY) / Math.abs(deltaX);
+        }
+        else{
+            powY = 1.0;
+            powX = Math.abs(deltaX) / Math.abs(deltaY);
+        }
+
+        //Change direction as needed
+        if(powX != 0){
+            powX *= (speedScalar * deltaX / Math.abs(deltaX));
+        }
+        if(powY != 0){
+            powY *= (speedScalar * deltaY / Math.abs(deltaY));
+        }
+
+        //vector of the front right and bottom left wheels: a
+        //vector of the bottom right and front left wheels: b
+        double a = (powX+powY)*(Math.pow(2, -0.5));
+        double b = (-powX+powY)*(Math.pow(2, -0.5));
+
+        RobotLog.dd("a", a + "");
+        RobotLog.dd("b", b + "");
+        RobotLog.dd("deltaX", deltaX + "");
+        RobotLog.dd("deltaY", deltaY + "");
+        RobotLog.dd("powX", powX + "");
+        RobotLog.dd("powY", powY + "");
+
+        fL.setPower(a * leftBias);
+        fR.setPower(b * rightBias);
+        bL.setPower(b * leftBias);
+        bR.setPower(a * rightBias);
+
+        while (!(eqWT(targetX, localizer.getPosition()[0], tolerance) && eqWT(targetY, localizer.getPosition()[1], tolerance))) {
+            localizer.updateOdometry();
+        }
+
+        RobotLog.dd("ExitLoop_translateXY_toPos", true + "");
+
+        if(brake){
+            fL.setPower(0);
+            fR.setPower(0);
+            bL.setPower(0);
+            bR.setPower(0);
+        }
+    }
+
 
     public void translateRadDeg(double radius, double theta, double time, boolean brake) {
         //theta is in degrees (north is 90 deg and positive degrees are clockwise), radius is in units of powX and powY
@@ -228,6 +283,8 @@ public class chassis{
         }
     }
 
+
+
     public void throttleTranslateRadDeg(double radius, double theta, double s, double time) {
         //theta is in degrees (north is 90 deg and positive degrees are clockwise), radius is in units of powX and powY
         timer.reset();
@@ -257,6 +314,37 @@ public class chassis{
             fR.setPower(powRight * rightBias);
             bR.setPower(powRight * rightBias);
             localizer.updateOdometry();
+        }
+    }
+
+    public void tankTurn_Gyro(double leftPowMagnitude, double rightPowMagnitude, double targetAngle, double tolerance, boolean brake){
+        leftPowMagnitude = Math.abs(leftPowMagnitude);
+        rightPowMagnitude = Math.abs(rightPowMagnitude);
+        targetAngle = targetAngle * Math.PI / 180.0;
+
+        double deltaAngle = targetAngle - localizer.getPosition()[2];
+
+        if(deltaAngle >= 0){
+            leftPowMagnitude *= -1.0;
+        }
+        else{
+            rightPowMagnitude *= -1.0;
+        }
+
+        fL.setPower(leftPowMagnitude * leftBias);
+        bL.setPower(leftPowMagnitude * leftBias);
+        fR.setPower(rightPowMagnitude * rightBias);
+        bR.setPower(rightPowMagnitude * rightBias);
+
+        while(!eqWT(targetAngle, localizer.getPosition()[2], tolerance * Math.PI / 180.0)){
+            localizer.updateOdometry();
+        }
+
+        if(brake){
+            fL.setPower(0);
+            bL.setPower(0);
+            fR.setPower(0);
+            bR.setPower(0);
         }
     }
 

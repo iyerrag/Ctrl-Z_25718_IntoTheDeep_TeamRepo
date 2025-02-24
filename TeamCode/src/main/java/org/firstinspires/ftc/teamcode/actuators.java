@@ -22,6 +22,7 @@ public class actuators{
     private DcMotor leftSlide;
     private DcMotor rightSlide;
     private Servo beak;
+    private Servo sweeperServo;
    // private Rev2mDistanceSensor lifterHeightSensor;
     private Rev2mDistanceSensor frontDistanceSensor;
     private RevTouchSensor lifterTouchSensor;
@@ -36,11 +37,12 @@ public class actuators{
     private static final double wrollServo_OriginPos = 0.86;
 
 
-    public actuators(Servo lwServo, Servo rwServo, Servo wrollServo, Servo beakServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor frontDistanceSensor, TouchSensor lifterTouchSensor, TouchSensor elbowTouchSensor){
+    public actuators(Servo lwServo, Servo rwServo, Servo wrollServo, Servo beakServo, Servo sweeperServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor frontDistanceSensor, TouchSensor lifterTouchSensor, TouchSensor elbowTouchSensor){
 
         this.lwServo = lwServo;
         this.rwServo = rwServo;
         this.wrollServo = wrollServo;
+        this.sweeperServo = sweeperServo;
 
         this.elbow = elbow;
         this.beak = beakServo;
@@ -551,6 +553,21 @@ public class actuators{
         hangInsertState = false;
     }
 
+    public double getSweeperPosition(){
+        return(sweeperServo.getPosition());
+    }
+    public void sweeperUp(){
+        sweeperServo.setPosition(0.4);
+    }
+    public void sweeperDown(){
+        sweeperServo.setPosition(0.05);
+    }
+    public void sweeperUpSmall(){
+        sweeperServo.setPosition(0.2);
+    }
+    public void sweeperSetup(){
+        sweeperServo.setPosition(0.4);
+    }
 
 }
 

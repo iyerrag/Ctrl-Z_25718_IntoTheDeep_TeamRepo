@@ -30,7 +30,7 @@ public class differentialTest extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
         actuators gripper = new actuators(hardwareMap.get(Servo.class, "lwServo"), hardwareMap.get(Servo.class, "rwServo"), hardwareMap.get(Servo.class, "wrollServo"), hardwareMap.get(Servo.class,
-                "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"),hardwareMap.get(TouchSensor.class,"elbowTouchSensor") );
+                "beak"), hardwareMap.get(Servo.class, "sweeper"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"),hardwareMap.get(TouchSensor.class,"elbowTouchSensor") );
 
         Servo lwServo = hardwareMap.get(Servo.class, "lwServo");
         Servo rwServo = hardwareMap.get(Servo.class, "rwServo");
