@@ -35,8 +35,7 @@ public class AutoStartLeft extends LinearOpMode {
 
         chassis robot = new chassis(fL, fR, bL, bR, IMU, "IMU", 120, 12, 0, voltmeter, hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"));
         actuators gripper = new actuators(hardwareMap.get(Servo.class, "lwServo"), hardwareMap.get(Servo.class, "rwServo"), hardwareMap.get(Servo.class, "wrollServo"), hardwareMap.get(Servo.class,
-                "beak"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class,
-                "lifterHeightSensor"), hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"), hardwareMap.get(TouchSensor.class,"elbowTouchSensor"));
+                "beak"), hardwareMap.get(Servo.class, "sweeperServo"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"), hardwareMap.get(TouchSensor.class,"elbowTouchSensor"));
 
         gripper.resetElbow(); // Safety
         gripper.resetLifters(); // Safety
@@ -162,8 +161,16 @@ public class AutoStartLeft extends LinearOpMode {
         Thread.sleep(200);
 
         // Go to Reset Position for TeleOp
+        fL.setPower(0.5);
+        fR.setPower(0.5);
+        bL.setPower(0.5);
+        bR.setPower(0.5);
         gripper.elbowRotateTo(90, 1);
         while(!gripper.eqWT(gripper.getElbowAngle(), 90, 5)){}
         gripper.moveToStartingPosition();
+        fL.setPower(0);
+        fR.setPower(0);
+        bL.setPower(0);
+        bR.setPower(0);
     }
 }
