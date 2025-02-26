@@ -107,15 +107,15 @@ public class TeleOp_Manual extends LinearOpMode {
                 "beak"), hardwareMap.get(Servo.class, "sweeperServo"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"), hardwareMap.get(TouchSensor.class,"elbowTouchSensor"));
 
 
-        //gripper.resetElbow(); // Safety
-        gripper.resetLifters(); // Safety
-        //gripper.closeBeak();
         //Wait for Driver to Start
         waitForStart();
 
         //Re-initialize Runtime
         runtime.reset();
-
+        gripper.resetElbow(); // Safety
+        gripper.resetLifters(); // Safety
+        gripper.sweeperUp(); // Safety
+        //gripper.closeBeak();
         //Until the Match-End:
         while (opModeIsActive()) {
            /* telemetry.addData("WristPos:", gripper.getWristPosition());
@@ -125,6 +125,8 @@ public class TeleOp_Manual extends LinearOpMode {
             telemetry.addData("Height", "CM: " + hardwareMap.get(DistanceSensor.class, "lifterHeightSensor").getDistance(DistanceUnit.CM));
             telemetry.addData("FrontDist", "CM: " + hardwareMap.get(DistanceSensor.class, "frontDistanceSensor").getDistance(DistanceUnit.CM));
             */
+
+
             if(gamepad1.a){
                 stopDriveBase();
                 gripper.moveToInsertPosition();

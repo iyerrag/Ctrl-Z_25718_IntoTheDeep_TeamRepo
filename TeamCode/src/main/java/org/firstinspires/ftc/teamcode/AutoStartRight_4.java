@@ -36,6 +36,8 @@ public class AutoStartRight_4 extends LinearOpMode {
         gripper.resetElbow(); // Safety
         gripper.resetLifters(); // Safety
         gripper.closeBeak();
+        gripper.sweeperUp();
+
         waitForStart();
 
         if (opModeIsActive()) {

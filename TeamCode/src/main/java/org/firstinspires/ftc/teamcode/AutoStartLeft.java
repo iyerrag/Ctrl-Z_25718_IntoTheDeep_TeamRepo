@@ -40,137 +40,156 @@ public class AutoStartLeft extends LinearOpMode {
         gripper.resetElbow(); // Safety
         gripper.resetLifters(); // Safety
         gripper.closeBeak();
+        gripper.sweeperUp();
+
         waitForStart();
-        gripper.initializePosition();
 
-        // First Sample
+        if (opModeIsActive()) {
+            gripper.initializePosition();
 
-        gripper.liftTo(72);
-        gripper.elbowRotateTo(160, 1);
-        gripper.wristRotateTo_Pitch(170);
-        gripper.wristRotateTo_Roll(0);//-180
-        ArrayList<double[]> firstHighBucketDropMov = new ArrayList<double[]>();
-        firstHighBucketDropMov.add(new double[]{120, 60, 0});
-        firstHighBucketDropMov.add(new double[]{34, 25, -45});
-        robot.toWaypointBezier(firstHighBucketDropMov, 1, 1.75, 2.75);
-        while(!gripper.eqWT(gripper.getElbowAngle(), 160, 1)){}
-        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)){}
-        gripper.declareHighBucketStatusTrue();
-        Thread.sleep(150);
-        gripper.openBeak();
-        Thread.sleep(200);
+            // First Sample basket drop
 
-        //Second Sample
+            gripper.liftTo(72);
+            gripper.elbowRotateTo(160, 1);
+            gripper.wristRotateTo_Pitch(170);
+            gripper.wristRotateTo_Roll(0);//-180
+            ArrayList<double[]> firstHighBucketDropMov = new ArrayList<double[]>();
+            firstHighBucketDropMov.add(new double[]{120, 60, 0});
+            firstHighBucketDropMov.add(new double[]{34, 25, -45});
+            robot.toWaypointBezier(firstHighBucketDropMov, 1, 1.75, 2.75);
+            while (!gripper.eqWT(gripper.getElbowAngle(), 160, 1)) {}
+            while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)) {}
+            gripper.declareHighBucketStatusTrue();
+            Thread.sleep(150);
+            gripper.openBeakWide();
+            Thread.sleep(200);
 
-        gripper.liftTo(0);
-        gripper.wristRotateTo_Pitch(115);//95
-        gripper.wristRotateTo_Roll(0);//-180
-        ArrayList<double[]> sample2Pickup = new ArrayList<double[]>();
-        sample2Pickup.add(new double[]{50, 50, 0});
-        sample2Pickup.add(new double[]{60, 54, 0});
-        robot.toWaypointBezier(sample2Pickup, 1, 1.5, 2.5);
-        gripper.elbowRotateTo(-15, 1);//-5
-        gripper.resetLifters();
-        while(!gripper.eqWT(gripper.getElbowAngle(), -15, 1)){}
-        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)){}
-        gripper.declareHighBucketStatusFalse();
+            //Second Sample pick up
+            gripper.elbowRotateTo(-15, .6);//-5
+            gripper.wristRotateTo_Pitch(115);//95
+            gripper.wristRotateTo_Roll(0);//-180
+            while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)) {} // clear the basket
+            gripper.liftTo(0);
 
-        Thread.sleep(150);
-        gripper.closeBeak();
-        Thread.sleep(150);
-        gripper.liftTo(72);
-        ArrayList<double[]> sample2DropOff = new ArrayList<double[]>();
-        sample2DropOff.add(new double[]{50, 50, -30});
-        sample2DropOff.add(new double[]{34, 25, -45});
-        robot.toWaypointBezier(sample2DropOff, 1, 2.25, 2.5);
-        gripper.elbowRotateTo(160, 1);
-        gripper.wristRotateTo_Pitch(170);
-        gripper.wristRotateTo_Roll(0);//-180
-        while(!gripper.eqWT(gripper.getElbowAngle(), 160, 1)){}
-        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)){}
-        gripper.declareHighBucketStatusTrue();
-        Thread.sleep(150);
-        gripper.openBeak();
-        Thread.sleep(200);
+            ArrayList<double[]> sample2Pickup = new ArrayList<double[]>();
+            sample2Pickup.add(new double[]{50, 50, 0});
+            sample2Pickup.add(new double[]{60, 55, 0});
+            robot.toWaypointBezier(sample2Pickup, 1, 1.5, 2.5);
 
-        //Third Sample
-        gripper.liftTo(0);
-        gripper.wristRotateTo_Pitch(115);//95
-        gripper.wristRotateTo_Roll(0);//-180
-        ArrayList<double[]> sample3Pickup = new ArrayList<double[]>();
-        sample3Pickup.add(new double[]{36, 50, 0});
-        sample3Pickup.add(new double[]{33, 54.6, 0});
-        robot.toWaypointBezier(sample3Pickup, 1, 1.5, 2.5);
-        gripper.elbowRotateTo(-15, 1);//-5
-        gripper.resetLifters();
-        while(!gripper.eqWT(gripper.getElbowAngle(), -15, 1)){}
-        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)){}
-        gripper.declareHighBucketStatusFalse();
+            gripper.resetLifters();
+            while (!gripper.eqWT(gripper.getElbowAngle(), -15, 1)) {}
+            while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)) {}
+            gripper.declareHighBucketStatusFalse();
 
-        Thread.sleep(150);
-        gripper.closeBeak();
-        Thread.sleep(150);
-        gripper.liftTo(72);
-        ArrayList<double[]> sample3DropOff = new ArrayList<double[]>();
-        sample3DropOff.add(new double[]{34, 50, -30});
-        sample3DropOff.add(new double[]{34, 26, -45});
-        robot.toWaypointBezier(sample3DropOff, 1, 2.25, 2.5);
-        gripper.elbowRotateTo(160, 1);
-        gripper.wristRotateTo_Pitch(170);
-        gripper.wristRotateTo_Roll(0);//-180
-        while(!gripper.eqWT(gripper.getElbowAngle(), 160, 1)){}
-        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)){}
-        gripper.declareHighBucketStatusTrue();
-        Thread.sleep(150);
-        gripper.openBeak();
-        Thread.sleep(200);
+            Thread.sleep(150);
+            gripper.closeBeak();
+            Thread.sleep(150);
 
-        //Fourth Sample
-        gripper.liftTo(0);
-        gripper.elbowRotateTo(0, 1);
-        gripper.wristRotateTo_Pitch(115);//95
-        gripper.wristRotateTo_Roll(-45);
-        ArrayList<double[]> sample4Pickup = new ArrayList<double[]>();
-        sample4Pickup.add(new double[]{60, 66, 45});
-        sample4Pickup.add(new double[]{47, 56.5, 45});//{45, 56.5, 45}
-        robot.toWaypointBezier(sample4Pickup, 1, 2.0, 2.25);
-        while(!gripper.eqWT(gripper.getElbowAngle(), 0, 1)){}
-        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)){}
-        gripper.resetLifters();
-        Thread.sleep(150);
-        gripper.elbowRotateTo(-15, 0.6);//-5
-        while(!gripper.eqWT(gripper.getElbowAngle(),-15, 1)){}
-        gripper.declareHighBucketStatusFalse();
+            // Second Sample basket drop
+            gripper.liftTo(72);
+            ArrayList<double[]> sample2DropOff = new ArrayList<double[]>();
+            sample2DropOff.add(new double[]{50, 50, -30});
+            sample2DropOff.add(new double[]{32, 23, -45});
+            robot.toWaypointBezier(sample2DropOff, 1, 2.25, 2.5);
+            gripper.elbowRotateTo(160, 1);
+            gripper.wristRotateTo_Pitch(170);
+            gripper.wristRotateTo_Roll(0);//-180
+            while (!gripper.eqWT(gripper.getElbowAngle(), 160, 1)) {}
+            while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)) {}
+            gripper.declareHighBucketStatusTrue();
+            Thread.sleep(150);
+            gripper.openBeakWide();
+            Thread.sleep(200);
 
-        Thread.sleep(150);
-        gripper.closeBeak();
-        Thread.sleep(150);
-        gripper.liftTo(72);
-        ArrayList<double[]> sample4DropOff = new ArrayList<double[]>();
-        sample3DropOff.add(new double[]{45, 45, -15});
-        sample3DropOff.add(new double[]{34, 26, -50});
-        robot.toWaypointBezier(sample3DropOff, 1, 2.5, 2.75);
-        gripper.elbowRotateTo(160, 1);
-        gripper.wristRotateTo_Pitch(170);
-        gripper.wristRotateTo_Roll(0);//-180
-        while(!gripper.eqWT(gripper.getElbowAngle(), 160, 1)){}
-        while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)){}
-        gripper.declareHighBucketStatusTrue();
-        Thread.sleep(150);
-        gripper.openBeak();
-        Thread.sleep(200);
+            //Third Sample pick up
+            gripper.elbowRotateTo(-15, .6);//-5
+            gripper.wristRotateTo_Pitch(115);//95
+            gripper.wristRotateTo_Roll(0);//-180
+            while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)) {} // clear the basket
+            gripper.liftTo(0);
 
-        // Go to Reset Position for TeleOp
-        fL.setPower(0.5);
-        fR.setPower(0.5);
-        bL.setPower(0.5);
-        bR.setPower(0.5);
-        gripper.elbowRotateTo(90, 1);
-        while(!gripper.eqWT(gripper.getElbowAngle(), 90, 5)){}
-        gripper.moveToStartingPosition();
-        fL.setPower(0);
-        fR.setPower(0);
-        bL.setPower(0);
-        bR.setPower(0);
+            ArrayList<double[]> sample3Pickup = new ArrayList<double[]>();
+            sample3Pickup.add(new double[]{36, 50, 0});
+            sample3Pickup.add(new double[]{28, 55, 0});
+            robot.toWaypointBezier(sample3Pickup, 1, 1.5, 2.5);
+
+            gripper.resetLifters();
+            while (!gripper.eqWT(gripper.getElbowAngle(), -15, 1)) {}
+            while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)) {}
+            gripper.declareHighBucketStatusFalse();
+            Thread.sleep(150);
+            gripper.closeBeak();
+            Thread.sleep(150);
+
+            // Third sample basket drop
+            gripper.liftTo(72);
+            ArrayList<double[]> sample3DropOff = new ArrayList<double[]>();
+            sample3DropOff.add(new double[]{34, 50, -30});
+            sample3DropOff.add(new double[]{32, 23, -45});
+            robot.toWaypointBezier(sample3DropOff, 1, 2.25, 2.5);
+            gripper.elbowRotateTo(160, 1);
+            gripper.wristRotateTo_Pitch(170);
+            gripper.wristRotateTo_Roll(0);//-180
+            while (!gripper.eqWT(gripper.getElbowAngle(), 160, 1)) {}
+            while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)) {}
+            gripper.declareHighBucketStatusTrue();
+            Thread.sleep(150);
+            gripper.openBeakWide();
+            Thread.sleep(200);
+
+            //Fourth Sample pick up
+            gripper.elbowRotateTo(0,1);
+            gripper.wristRotateTo_Pitch(115);//95
+            gripper.wristRotateTo_Roll(0);//-180
+            while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)) {} // clear the basket
+            gripper.liftTo(0);
+
+            gripper.wristRotateTo_Roll(-45);
+            ArrayList<double[]> sample4Pickup = new ArrayList<double[]>();
+            sample4Pickup.add(new double[]{60, 66, 45});
+            sample4Pickup.add(new double[]{45, 55, 45});//{45, 56.5, 45}
+
+            robot.toWaypointBezier(sample4Pickup, 1, 2.0, 2.25);
+            while (!gripper.eqWT(gripper.getElbowAngle(), 0, 1)) {}
+            while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)) {}
+            gripper.resetLifters();
+            Thread.sleep(150);
+            gripper.elbowRotateTo(-15, 0.6);//-5
+            while (!gripper.eqWT(gripper.getElbowAngle(), -15, 1)) {}
+            gripper.declareHighBucketStatusFalse();
+
+            Thread.sleep(150);
+            gripper.closeBeak();
+            Thread.sleep(150);
+
+            // Fourth sample basket drop
+            gripper.liftTo(72);
+            ArrayList<double[]> sample4DropOff = new ArrayList<double[]>();
+            sample3DropOff.add(new double[]{60, 60, -15});
+            sample3DropOff.add(new double[]{32, 23, -45}); //{37, 28, -45}
+            robot.toWaypointBezier(sample3DropOff, 1, 2.5, 2.75);
+            gripper.elbowRotateTo(160, 1);
+            gripper.wristRotateTo_Pitch(170);
+            gripper.wristRotateTo_Roll(0);//-180
+            while (!gripper.eqWT(gripper.getElbowAngle(), 160, 1)) {}
+            while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)) {}
+            gripper.declareHighBucketStatusTrue();
+            Thread.sleep(150);
+            gripper.openBeak();
+            Thread.sleep(200);
+
+            // Go to Reset Position for TeleOp
+            fL.setPower(0.25);
+            fR.setPower(0.25);
+            bL.setPower(0.25);
+            bR.setPower(0.25);
+            gripper.elbowRotateTo(90, 1);
+            while (!gripper.eqWT(gripper.getElbowAngle(), 90, 5)) {}
+            gripper.moveToStartingPosition();
+            fL.setPower(0);
+            fR.setPower(0);
+            bL.setPower(0);
+            bR.setPower(0);
+        }
     }
 }

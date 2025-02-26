@@ -527,7 +527,7 @@ public class actuators{
 
     public void initializePosition() throws InterruptedException {
         closeBeak();
-        wristRotateTo_Pitch(150);
+        //wristRotateTo_Pitch(150);
         Thread.sleep(200);
         wristRotateTo_Pitch(45);
         wristRotateTo_Roll(180);
