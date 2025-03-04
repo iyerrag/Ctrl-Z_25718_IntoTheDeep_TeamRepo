@@ -165,6 +165,18 @@ public class TeleOp_Manual extends LinearOpMode {
                 //gripper.sweeperDown();
                 gripper.sweeperClose();
             }
+            else if (gamepad1.dpad_right){
+                stopDriveBase();
+                gripper.sweeperOpen();
+                Thread.sleep(250);
+                gripper.sweeperClose();
+            }
+            else if (gamepad1.dpad_left){
+                stopDriveBase();
+                gripper.sweeperOpenSmall();
+                Thread.sleep(100);
+                gripper.sweeperClose();
+            }
             else if (Math.abs(gamepad2.left_stick_y) == 1) {
                 stopDriveBase();
                 if (gamepad2.left_stick_y == 1) {
@@ -278,10 +290,10 @@ public class TeleOp_Manual extends LinearOpMode {
         double addLeft;
         double addRight;
         if(gamepad1.right_stick_x >= 0){
-            powX = Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+            powX = 1.5 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
         }
         else{
-            powX = -1.0 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
+            powX = -1.5 * Math.pow(Math.abs(gamepad1.right_stick_x), 2);
         }
         if(gamepad1.right_stick_y >= 0){
             powY = -1 * Math.pow(Math.abs(gamepad1.right_stick_y), 2);
