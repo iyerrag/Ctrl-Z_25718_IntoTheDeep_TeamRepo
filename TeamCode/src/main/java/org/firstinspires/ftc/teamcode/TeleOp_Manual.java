@@ -104,7 +104,7 @@ public class TeleOp_Manual extends LinearOpMode {
 
         //Define TaskManipulator: new claw(wrist servo, beak servo, left lifter, right lifter, elbow);
         actuators gripper = new actuators(hardwareMap.get(Servo.class, "lwServo"), hardwareMap.get(Servo.class, "rwServo"), hardwareMap.get(Servo.class, "wrollServo"), hardwareMap.get(Servo.class,
-                "beak"), hardwareMap.get(Servo.class, "sweeperServo"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(DistanceSensor.class, "frontDistanceSensor"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"), hardwareMap.get(TouchSensor.class,"elbowTouchSensor"));
+                "beak"), hardwareMap.get(Servo.class, "sweeperServo"), hardwareMap.get(DcMotor.class, "lifterLeft"), hardwareMap.get(DcMotor.class, "lifterRight"), hardwareMap.get(DcMotor.class, "elbow"), hardwareMap.get(TouchSensor.class,"lifterTouchSensor"), hardwareMap.get(TouchSensor.class,"elbowTouchSensor"));
 
 
         //Wait for Driver to Start
@@ -112,9 +112,9 @@ public class TeleOp_Manual extends LinearOpMode {
 
         //Re-initialize Runtime
         runtime.reset();
+        gripper.sweeperUp(); // Safety
         gripper.resetElbow(); // Safety
         gripper.resetLifters(); // Safety
-        gripper.sweeperUp(); // Safety
         //gripper.closeBeak();
         //Until the Match-End:
         while (opModeIsActive()) {
@@ -155,105 +155,98 @@ public class TeleOp_Manual extends LinearOpMode {
                 stopDriveBase();
                 gripper.moveToHangInsertPosition();
             }
-            else if(Math.abs(gamepad2.left_stick_y) == 1){
+            else if (gamepad1.dpad_up){
                 stopDriveBase();
-                if(gamepad2.left_stick_y == 1){
-                    while(gamepad2.left_stick_y == 1){
+                //gripper.sweeperUp();
+                gripper.sweeperOpen();
+            }
+            else if (gamepad1.dpad_down) {
+                stopDriveBase();
+                //gripper.sweeperDown();
+                gripper.sweeperClose();
+            }
+            else if (Math.abs(gamepad2.left_stick_y) == 1) {
+                stopDriveBase();
+                if (gamepad2.left_stick_y == 1) {
+                    while (gamepad2.left_stick_y == 1) {
                         gripper.lift(-1);
                     }
                     gripper.hold();
-                }
-                else{
-                    while(gamepad2.left_stick_y == -1){
+                } else {
+                    while (gamepad2.left_stick_y == -1) {
                         gripper.lift(1);
                     }
                     gripper.hold();
                 }
-            }
-            else if(Math.abs(gamepad2.left_stick_x) == 1){
+            } else if (Math.abs(gamepad2.left_stick_x) == 1) {
                 stopDriveBase();
-                if(gamepad2.left_stick_x == 1){
+                if (gamepad2.left_stick_x == 1) {
                     gripper.wristRotateTo_Roll(gripper.getWristAngle_Roll() - 1);
-                }
-                else{
+                } else {
                     gripper.wristRotateTo_Roll(gripper.getWristAngle_Roll() + 1);
                 }
-            }
-            else if(Math.abs(gamepad2.right_stick_y) == 1){
+            } else if (Math.abs(gamepad2.right_stick_y) == 1) {
                 stopDriveBase();
-                if(gamepad2.right_stick_y == 1){
+                if (gamepad2.right_stick_y == 1) {
                     gripper.wristRotateTo_Pitch(gripper.getWristAngle_Pitch() - 1);
-                }
-                else{
+                } else {
                     gripper.wristRotateTo_Pitch(gripper.getWristAngle_Pitch() + 1);
                 }
-            }
-
-            else if(Math.abs(gamepad2.right_stick_x) == 1){
-                if(gamepad2.right_stick_x == 1){
-                    while(gamepad2.right_stick_x == 1){
+            } else if (Math.abs(gamepad2.right_stick_x) == 1) {
+                if (gamepad2.right_stick_x == 1) {
+                    while (gamepad2.right_stick_x == 1) {
                         gripper.elbowRotate(-0.5);
                         driveBase();
                     }
                     gripper.hold();
-                }
-                else{
-                    while(gamepad2.right_stick_x == -1){
+                } else {
+                    while (gamepad2.right_stick_x == -1) {
                         gripper.elbowRotate(0.5);
                         driveBase();
                     }
                     gripper.hold();
                 }
-            }
-            else if(gamepad2.a){
+            } else if (gamepad2.a) {
                 stopDriveBase();
                 gripper.changeClawState();
-            }
-            else if(gamepad2.b){
-                if(gripper.getHangInsertState()){
+            } else if (gamepad2.b) {
+                if (gripper.getHangInsertState()) {
                     stopDriveBase();
                     gripper.hangRelease();
                     gripper.moveToSpecimenExtractPos();
                 }
-            }
-            else if(gamepad2.x){
+            } else if (gamepad2.x) {
                 stopDriveBase();
                 gripper.extract();
                 gripper.moveToHangInsertPosition();
-            }
-            else if(gamepad2.y){
+            } else if (gamepad2.y) {
                 stopDriveBase();
                 gripper.submersiblePickup();
-            }
-            else if(gamepad2.left_bumper){
+            } else if (gamepad2.left_bumper) {
                 stopDriveBase();
                 gripper.wristRotateTo_Roll(45);
-            }
-            else if(gamepad2.left_trigger == 1){
+            } else if (gamepad2.left_trigger == 1) {
                 stopDriveBase();
                 gripper.wristRotateTo_Roll(0);
-            }
-            else if(gamepad2.right_bumper){
+            } else if (gamepad2.right_bumper) {
                 stopDriveBase();
                 gripper.wristRotateTo_Roll(-45);
-            }
-            else if(gamepad2.right_trigger == 1){
+            } else if (gamepad2.right_trigger == 1) {
                 stopDriveBase();
                 gripper.wristRotateTo_Roll(-90);
-            }
-            else if(gamepad2.dpad_up) {
+            } else if (gamepad2.dpad_up) {
                 //Initiate Robot Level2 Hang, go to hang ready position
                 gripper.liftTo(55);
                 Thread.sleep(500);
-                gripper.elbowRotateTo(60,1);
+                gripper.elbowRotateTo(60, 1);
                 gripper.wristRotateTo_Pitch(280);
-                while(gripper.getLiftHeight() <= 50 & gripper.getElbowAngle() <= 200) {
-                    if(gamepad2.guide){ // Safety Interrupt: Exit the while loop immediately
+                while (gripper.getLiftHeight() <= 50 & gripper.getElbowAngle() <= 200) {
+                    if (gamepad2.guide) { // Safety Interrupt: Exit the while loop immediately
                         gripper.moveToTransportPosition();
                         break;
                     }
                 }
-                Thread.sleep (1500);
+                Thread.sleep(1500);
                 gripper.liftTo(30);
                 while (gripper.getLiftHeight() <= 30) {
                     if (gamepad2.guide) {
@@ -261,14 +254,12 @@ public class TeleOp_Manual extends LinearOpMode {
                         break; // Safety Interrupt: Exit the while loop immediately once robot is in safer state
                     }
                 }
-            }
-            else if(gamepad2.guide){
+            } else if (gamepad2.guide) {
                 // Release Robot from hanging
                 gripper.liftTo(55);
-                Thread.sleep (1000);
-                gripper.elbowRotateTo(100,1);
-            }
-            else{
+                Thread.sleep(1000);
+                gripper.elbowRotateTo(100, 1);
+            } else {
                 driveBase();
             }
         }

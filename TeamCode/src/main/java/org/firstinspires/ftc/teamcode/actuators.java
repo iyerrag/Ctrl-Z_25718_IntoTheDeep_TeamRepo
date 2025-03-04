@@ -23,8 +23,8 @@ public class actuators{
     private DcMotor rightSlide;
     private Servo beak;
     private Servo sweeperServo;
-   // private Rev2mDistanceSensor lifterHeightSensor;
-    private Rev2mDistanceSensor frontDistanceSensor;
+    // private Rev2mDistanceSensor lifterHeightSensor;
+    //private Rev2mDistanceSensor frontDistanceSensor;
     private RevTouchSensor lifterTouchSensor;
     private RevTouchSensor elbowTouchSensor;
     private boolean closeState;
@@ -37,7 +37,7 @@ public class actuators{
     private static final double wrollServo_OriginPos = 0.86;
 
 
-    public actuators(Servo lwServo, Servo rwServo, Servo wrollServo, Servo beakServo, Servo sweeperServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow, DistanceSensor frontDistanceSensor, TouchSensor lifterTouchSensor, TouchSensor elbowTouchSensor){
+    public actuators(Servo lwServo, Servo rwServo, Servo wrollServo, Servo beakServo, Servo sweeperServo, DcMotor lifterLeft, DcMotor lifterRight, DcMotor elbow ,TouchSensor lifterTouchSensor, TouchSensor elbowTouchSensor){
 
         this.lwServo = lwServo;
         this.rwServo = rwServo;
@@ -70,7 +70,7 @@ public class actuators{
         hangInsertState = false;
 
         //this.lifterHeightSensor = (Rev2mDistanceSensor) lifterHeightSensor;
-        this.frontDistanceSensor = (Rev2mDistanceSensor) frontDistanceSensor;
+        //this.frontDistanceSensor = (Rev2mDistanceSensor) frontDistanceSensor;
         this.lifterTouchSensor = (RevTouchSensor) lifterTouchSensor;
         this.elbowTouchSensor = (RevTouchSensor) elbowTouchSensor;
     }
@@ -129,7 +129,7 @@ public class actuators{
     public void resetElbow(){
         elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         while(!elbowTouchSensor.isPressed()){
-            elbow.setPower(.25);
+            elbow.setPower(.75);
         }
         elbow.setPower(0);
         elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -420,6 +420,7 @@ public class actuators{
             closeBeak();
             liftTo(0);
             resetLifters();
+            elbowRotateTo(180,1);
         }
         else {
             closeBeak();
@@ -569,5 +570,12 @@ public class actuators{
         sweeperServo.setPosition(0.4);
     }
 
+    public void sweeperOpen(){sweeperServo.setPosition(0.0); }
+    public void sweeperClose(){
+        sweeperServo.setPosition(0.36);
+    }
+    public void sweeperOpenSmall(){
+        sweeperServo.setPosition(0.2);
+    }
 }
 

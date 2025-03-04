@@ -39,7 +39,7 @@ public class chassis{
     static private DcMotor bR;
     static private NonEulerianOdometry localizer;
     static private robotIMU imu;
-    static private Rev2mDistanceSensor frontDistanceSensor;
+    //static private Rev2mDistanceSensor frontDistanceSensor;
     static private ElapsedTime timer;
 
     static final double rightBias = 1.0;
@@ -65,7 +65,7 @@ public class chassis{
      */
     private VisionPortal visionPortal;
 
-    public chassis(DcMotor FL, DcMotor FR, DcMotor BL, DcMotor BR, BHI260IMU IMU, String thetaMode, double startingX, double startingY, double startingTheta, VoltageSensor voltmeter, DistanceSensor frontDistanceSensor) {
+    public chassis(DcMotor FL, DcMotor FR, DcMotor BL, DcMotor BR, BHI260IMU IMU, String thetaMode, double startingX, double startingY, double startingTheta, VoltageSensor voltmeter) {
         // Define Timer Objects:
         timer = new ElapsedTime();
         imu = new robotIMU(IMU);
@@ -110,7 +110,7 @@ public class chassis{
 
         //initAprilTag();
 
-        this.frontDistanceSensor = (Rev2mDistanceSensor) frontDistanceSensor;
+        //this.frontDistanceSensor = (Rev2mDistanceSensor) frontDistanceSensor;
     }
 
     /*private void initAprilTag() {
@@ -281,6 +281,8 @@ public class chassis{
             bL.setPower(0);
             bR.setPower(0);
         }
+
+        localizer.updateOdometry();
     }
 
 
@@ -734,6 +736,7 @@ public class chassis{
         fR.setPower(0);
         bL.setPower(0);
         bR.setPower(0);
+        updateOdometry();
         return new double[]{Imax, getBatteryVoltage(), 0.0, 0.0};
     }
 
@@ -1279,6 +1282,7 @@ public class chassis{
         fR.setPower(0);
         bL.setPower(0);
         bR.setPower(0);
+        updateOdometry();
         return new double[]{Imax, getBatteryVoltage(), 0.0, 0.0};
     }
 
@@ -1391,7 +1395,7 @@ public class chassis{
 
     }*/
 
-    public void ultrasonicLocalization(double[] objectPos){
+    /*public void ultrasonicLocalization(double[] objectPos){
         double Xobj = objectPos[0];
         double Yobj = objectPos[1];
 
@@ -1409,7 +1413,7 @@ public class chassis{
         Yupdated = xPrime * Math.sin(ThetaR) + yPrime * Math.cos(ThetaR);
 
         localize(Xupdated, Yupdated, ThetaR);
-    }
+    }*/
 
     public void setWaypointController(int controllerOption){
 
