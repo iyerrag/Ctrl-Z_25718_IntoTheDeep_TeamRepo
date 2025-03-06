@@ -100,8 +100,8 @@ public class AutoStartRight_5s extends LinearOpMode {
 
 
             //Collect third sample and extract second specimen
-            robot.translateRadDeg(1, -92.5, 1.2, true);//-95
-            robot.toWaypoint(robot.getPosition()[0], 25, 0, 1, 0.8);
+            robot.translateRadDeg(1, -88, 1.4, true);//-95
+            robot.toWaypoint(robot.getPosition()[0], 25, 0, 1, 0.7);
 
             /*ArrayList<double[]> secondSpecimenExtract = new ArrayList<double []>();
             secondSpecimenExtract.add(new double[]{330, 120, 0});

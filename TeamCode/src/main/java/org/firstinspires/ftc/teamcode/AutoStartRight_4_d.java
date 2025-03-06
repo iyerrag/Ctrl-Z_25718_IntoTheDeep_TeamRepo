@@ -42,22 +42,23 @@ public class AutoStartRight_4_d extends LinearOpMode {
             defencePos.add(new double[]{270, 60, 0});
             defencePos.add(new double[]{270, 120, 0});
             defencePos.add(new double[]{270, 150, 0});
-            defencePos.add(new double[]{335, 180, 0});
-            robot.toWaypointBezier(defencePos, 1, 1.5, 1.75);
+            defencePos.add(new double[]{333, 177, 0});
+            robot.toWaypointBezier(defencePos, 1, 1.5, 1.7);
 
             gripper.sweeperOpen();
-            Thread.sleep(200);
+            Thread.sleep(250);
 
 
-            robot.translateRadDeg(1,0, 0.35,false);
-            gripper.sweeperClose();
+            robot.translateRadDeg(1,0, 0.47,false);
+
 
             // First Collection
             ArrayList<double[]> firstCollection = new ArrayList<double[]>();
             firstCollection.add(new double[]{300, 180, 0});
             firstCollection.add(new double[]{300,150, 0});
             firstCollection.add(new double[]{300, 40, 0});
-            robot.toWaypointBezier(firstCollection, 1, 1.65, 1.65);
+            robot.toWaypointBezier(firstCollection, 1, 1.35, 1.35);
+            gripper.sweeperClose();
 
             // Second Collection
 
@@ -77,7 +78,7 @@ public class AutoStartRight_4_d extends LinearOpMode {
             ArrayList<double[]> secondSampleCollection = new ArrayList<double[]>();
             secondSampleCollection.add(new double[]{330,120,0});
             secondSampleCollection.add(new double[]{300, 25, 0});
-            robot.toWaypointBezier(secondSampleCollection, 1, 1.5, 1.65);
+            robot.toWaypointBezier(secondSampleCollection, 1, 1.45, 1.55);
 
             gripper.closeBeak();
             Thread.sleep(250);
@@ -108,11 +109,11 @@ public class AutoStartRight_4_d extends LinearOpMode {
             // Extract 2nd Specimen
             ArrayList<double[]> secondSpecimenExtractMov = new ArrayList<double[]>();
             secondSpecimenExtractMov.add(new double[]{210, 60, 0});
-            secondSpecimenExtractMov.add(new double[]{240, 90, 0});
-            secondSpecimenExtractMov.add(new double[]{350, 120, 0});
+            secondSpecimenExtractMov.add(new double[]{240, 80, 0});
+            secondSpecimenExtractMov.add(new double[]{320, 100, 0});
             secondSpecimenExtractMov.add(new double[]{290, 60, 0});
-            secondSpecimenExtractMov.add(new double[]{300, 25, 0});
-            robot.toWaypointBezier(secondSpecimenExtractMov, 1,2.25, 2.5);
+            secondSpecimenExtractMov.add(new double[]{277, 25, 0});
+            robot.toWaypointBezier(secondSpecimenExtractMov, 1,2.3, 2.8);
 
             gripper.closeBeak();
             Thread.sleep(250);
@@ -125,7 +126,7 @@ public class AutoStartRight_4_d extends LinearOpMode {
             //Go to Hang 2nd specimen and hang
             ArrayList<double[]> secondHang = new ArrayList<double[]>();
             secondHang.add(new double[]{157, 60, 0});
-            secondHang.add(new double[]{167, 95, 0});
+            secondHang.add(new double[]{165, 95, 0});
             robot.toWaypointBezier(secondHang, 1, 2.25, 2.5);
 
             gripper.liftTo(25);
@@ -140,14 +141,14 @@ public class AutoStartRight_4_d extends LinearOpMode {
             gripper.wristRotateTo_Roll(0);
             gripper.openBeakWide();
 
-            // Extract 2nd Specimen
+            // Extract 3rd Specimen
             ArrayList<double[]> thirdSpecimenExtractMov = new ArrayList<double[]>();
             thirdSpecimenExtractMov.add(new double[]{210, 60, 0});
-            thirdSpecimenExtractMov.add(new double[]{240, 90, 0});
-            thirdSpecimenExtractMov.add(new double[]{350, 120, 0});
+            thirdSpecimenExtractMov.add(new double[]{240, 80, 0});
+            thirdSpecimenExtractMov.add(new double[]{320, 100, 0});
             thirdSpecimenExtractMov.add(new double[]{290, 60, 0});
-            thirdSpecimenExtractMov.add(new double[]{300, 25, 0});
-            robot.toWaypointBezier(thirdSpecimenExtractMov, 1,2.25, 2.5);
+            thirdSpecimenExtractMov.add(new double[]{277, 25, 0});
+            robot.toWaypointBezier(thirdSpecimenExtractMov, 1,2.3, 2.7);
 
             gripper.closeBeak();
             Thread.sleep(250);
@@ -160,7 +161,7 @@ public class AutoStartRight_4_d extends LinearOpMode {
             //Go to Hang third specimen and hang
             ArrayList<double[]> thirdHang = new ArrayList<double[]>();
             thirdHang.add(new double[]{157, 60, 0});
-            thirdHang.add(new double[]{167, 95, 0});
+            thirdHang.add(new double[]{170, 95, 0});
             robot.toWaypointBezier(thirdHang, 1, 2.25, 2.5);
 
             gripper.liftTo(25);
@@ -179,11 +180,11 @@ public class AutoStartRight_4_d extends LinearOpMode {
             // Extract 4th Specimen
             ArrayList<double[]> fourthSpecimenExtractMov = new ArrayList<double[]>();
             fourthSpecimenExtractMov.add(new double[]{210, 60, 0});
-            fourthSpecimenExtractMov.add(new double[]{240, 90, 0});
-            fourthSpecimenExtractMov.add(new double[]{350, 120, 0});
+            fourthSpecimenExtractMov.add(new double[]{240, 80, 0});
+            fourthSpecimenExtractMov.add(new double[]{320, 100, 0});
             fourthSpecimenExtractMov.add(new double[]{290, 60, 0});
-            fourthSpecimenExtractMov.add(new double[]{300, 25, 0});
-            robot.toWaypointBezier(fourthSpecimenExtractMov, 1,2.25, 2.5);
+            fourthSpecimenExtractMov.add(new double[]{277, 25, 0});
+            robot.toWaypointBezier(fourthSpecimenExtractMov, 1,2.3, 2.7);
 
             gripper.closeBeak();
             Thread.sleep(250);

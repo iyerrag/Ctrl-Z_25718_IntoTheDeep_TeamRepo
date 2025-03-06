@@ -1436,7 +1436,7 @@ public class chassis{
                     1, 1, 1,
                     .1);
         }
-        else { // controllerOption 2 = Lower accelLims
+        else if (controllerOption == 2){ // controllerOption 2 = Lower accelLims
             waypointSettings(1, 1, 1.5,
                     30, 30, 5,
                     0.0872169527, -0.4891123746,
@@ -1452,6 +1452,25 @@ public class chassis{
                     .00, 0,
                     0.0, 0,
                     .024 * 0.5, .03 * 0.5, 0.0375 * 0.5,
+                    1, 1, 1,
+                    .1);
+        }
+        else{ //controllerOption3 = Maintain Target Position
+            waypointSettings(0, 0, 0,
+                    30, 30, 5,
+                    0.0872169527, -0.4891123746,
+                    4.060598e-5, 0,
+                    0.0002125, 0,
+                    0, 0,
+                    .117312536, -.5899072879,
+                    4.060598e-23, 7.598320549,
+                    0.002, 0,
+                    0.0, 0,
+                    2.147257771, -0.3554874788,
+                    11.49861303, -1.283011678,
+                    .00, 0,
+                    0.0, 0,
+                    .024, .03, 0.0375,
                     1, 1, 1,
                     .1);
         }

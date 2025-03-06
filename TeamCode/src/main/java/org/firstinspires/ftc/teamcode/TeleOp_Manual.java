@@ -113,8 +113,9 @@ public class TeleOp_Manual extends LinearOpMode {
         //Re-initialize Runtime
         runtime.reset();
         gripper.sweeperUp(); // Safety
-        gripper.resetElbow(); // Safety
         gripper.resetLifters(); // Safety
+        gripper.resetElbow(); // Safety
+
         //gripper.closeBeak();
         //Until the Match-End:
         while (opModeIsActive()) {
