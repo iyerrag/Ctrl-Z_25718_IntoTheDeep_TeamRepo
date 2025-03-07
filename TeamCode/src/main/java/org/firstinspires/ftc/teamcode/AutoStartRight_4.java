@@ -53,8 +53,8 @@ public class AutoStartRight_4 extends LinearOpMode {
             robot.translateRadDeg(1,50, 0.7, false);
             robot.toWaypoint(160, 95, 0, 1, .6);
 
-            gripper.liftTo(25);
-            while(!gripper.eqWT(gripper.getLiftHeight(), 23, 0.5)){};
+            gripper.liftTo(18);
+            while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};
             //Thread.sleep(700);
             gripper.openBeak();
 
@@ -100,8 +100,8 @@ public class AutoStartRight_4 extends LinearOpMode {
             secondHang.add(new double[]{157, 95, 0});
             robot.toWaypointBezier(secondHang, 1, 2.25, 2.5);
 
-            gripper.liftTo(25);
-            while(!gripper.eqWT(gripper.getLiftHeight(), 23, 0.5)){};
+            gripper.liftTo(18);
+            while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};
             //Thread.sleep(820);
             gripper.openBeak();
 
@@ -135,8 +135,8 @@ public class AutoStartRight_4 extends LinearOpMode {
             thirdHang.add(new double[]{167, 95, 0});
             robot.toWaypointBezier(thirdHang, 1, 2.5, 2.75);
 
-            gripper.liftTo(25);
-            while(!gripper.eqWT(gripper.getLiftHeight(), 23, 0.5)){};
+            gripper.liftTo(18);
+            while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};
             //Thread.sleep(820);
             gripper.openBeak();
 
@@ -171,8 +171,8 @@ public class AutoStartRight_4 extends LinearOpMode {
             fourthHang.add(new double[]{175, 95, 0});
             robot.toWaypointBezier(fourthHang, 1, 2.5, 2.75);
 
-            gripper.liftTo(25);
-            while(!gripper.eqWT(gripper.getLiftHeight(), 23, 0.5)){};
+            gripper.liftTo(18);
+            while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};
             //Thread.sleep(900);
             gripper.openBeak();
 

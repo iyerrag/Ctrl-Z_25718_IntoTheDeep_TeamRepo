@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import java.util.ArrayList;
 
-@Autonomous
+//@Autonomous
 public class AutoStartLeft_d extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         DcMotor fL = hardwareMap.get(DcMotor.class, "FrontLeft");

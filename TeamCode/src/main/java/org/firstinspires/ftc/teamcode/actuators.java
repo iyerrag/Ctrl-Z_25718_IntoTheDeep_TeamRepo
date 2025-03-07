@@ -483,8 +483,9 @@ public class actuators{
     public void hangRelease() throws InterruptedException {
         if(hangInsertState){
             moveToHangInsertPosition();
-            liftTo(25);
-            Thread.sleep(800);
+            liftTo(18);
+            while(!eqWT(getLiftHeight(), 16, 0.5)){};
+            //Thread.sleep(800);
             openBeak();
         }
         highBasketState = false;

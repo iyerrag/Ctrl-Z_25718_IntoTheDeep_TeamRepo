@@ -44,8 +44,8 @@ public class AutoStartRight_5s extends LinearOpMode {
             // Go to Hang 1st specimen and hang specimen
             robot.translateRadDeg(1,55, 0.7, false);
             robot.toWaypoint(155, 95, 0, 1, 0.5);
-            gripper.liftTo(23);
-            while(!gripper.eqWT(gripper.getLiftHeight(), 20, 0.5)){};
+            gripper.liftTo(18);
+            while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};
             gripper.openBeakWide();
             gripper.liftTo(0);
             gripper.elbowRotateTo(190, 1);
@@ -123,8 +123,8 @@ public class AutoStartRight_5s extends LinearOpMode {
             secondHang.add(new double[]{180, 95, 0});
             robot.toWaypointBezier(secondHang, 1, 2.5, 2.66);
 
-            gripper.liftTo(23);
-            while(!gripper.eqWT(gripper.getLiftHeight(), 20, 0.5)){};
+            gripper.liftTo(18);
+            while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};
             gripper.openBeakWide();
 
             // Extract 3rd Specimen
@@ -154,8 +154,8 @@ public class AutoStartRight_5s extends LinearOpMode {
             thirdHang.add(new double[]{163, 95, 0});
             robot.toWaypointBezier(thirdHang, 1, 2, 2.10);
 
-            gripper.liftTo(23);
-            while(!gripper.eqWT(gripper.getLiftHeight(), 20, 0.5)){};
+            gripper.liftTo(18);
+            while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};
             //Thread.sleep(900);
             gripper.openBeakWide();
 
@@ -186,8 +186,8 @@ public class AutoStartRight_5s extends LinearOpMode {
             fourthdHang.add(new double[]{170, 95, 0});
             robot.toWaypointBezier(fourthdHang, 1, 2, 2.15);
 
-            gripper.liftTo(23);
-            while(!gripper.eqWT(gripper.getLiftHeight(), 20, 0.5)){};
+            gripper.liftTo(18);
+            while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};
             //Thread.sleep(900);
             gripper.openBeakWide();
 
@@ -218,8 +218,8 @@ public class AutoStartRight_5s extends LinearOpMode {
             fifthhdHang.add(new double[]{178, 95, 0});
             robot.toWaypointBezier(fifthhdHang, 1, 2, 2.10);
 
-            gripper.liftTo(23);
-            while(!gripper.eqWT(gripper.getLiftHeight(), 20, 0.5)){};
+            gripper.liftTo(18);
+            while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};
             //Thread.sleep(900);
             gripper.openBeakWide();
             gripper.elbowRotateTo(180,1);

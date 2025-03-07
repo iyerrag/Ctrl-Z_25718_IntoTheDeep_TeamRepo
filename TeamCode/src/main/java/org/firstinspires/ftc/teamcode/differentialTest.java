@@ -24,7 +24,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
 import java.util.ArrayList;
 
-@Autonomous
+//@Autonomous
 public class differentialTest extends LinearOpMode {
 
     public void runOpMode() throws InterruptedException {

@@ -112,9 +112,6 @@ public class TeleOp_Manual extends LinearOpMode {
 
         //Re-initialize Runtime
         runtime.reset();
-        gripper.sweeperUp(); // Safety
-        gripper.resetLifters(); // Safety
-        gripper.resetElbow(); // Safety
 
         //gripper.closeBeak();
         //Until the Match-End:
@@ -177,6 +174,13 @@ public class TeleOp_Manual extends LinearOpMode {
                 gripper.sweeperOpenSmall();
                 Thread.sleep(100);
                 gripper.sweeperClose();
+            }
+            else if (gamepad1.guide){
+                // Reset Lifters, Elbow and Sweeper
+                gripper.sweeperUp(); // Safety
+                gripper.resetLifters(); // Safety
+                gripper.resetElbow(); // Safety
+                gripper.wristRotateTo_Pitch(90);
             }
             else if (Math.abs(gamepad2.left_stick_y) == 1) {
                 stopDriveBase();
@@ -259,7 +263,7 @@ public class TeleOp_Manual extends LinearOpMode {
                         break;
                     }
                 }
-                Thread.sleep(1500);
+                Thread.sleep(500);
                 gripper.liftTo(30);
                 while (gripper.getLiftHeight() <= 30) {
                     if (gamepad2.guide) {
