@@ -176,6 +176,7 @@ public class TeleOp_Manual extends LinearOpMode {
                 gripper.sweeperClose();
             }
             else if (gamepad1.guide){
+                stopDriveBase();
                 if(gripper.getHighBasketState()){
                     gripper.moveToTransportPosition();
                 }

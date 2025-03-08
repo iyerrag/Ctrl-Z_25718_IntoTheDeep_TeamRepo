@@ -43,7 +43,7 @@ public class AutoStartRight_5s extends LinearOpMode {
 
             // Go to Hang 1st specimen and hang specimen
             robot.translateRadDeg(1,55, 0.7, false);
-            robot.toWaypoint(155, 95, 0, 1, 0.5);
+            robot.toWaypoint(155, 100, 0, 1, 0.5);
             gripper.liftTo(18);
             while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};
             gripper.openBeakWide();
@@ -100,8 +100,8 @@ public class AutoStartRight_5s extends LinearOpMode {
 
 
             //Collect third sample and extract second specimen
-            robot.translateRadDeg(1, -88, 1.4, true);//-95
-            robot.toWaypoint(robot.getPosition()[0], 25, 0, 1, 0.7);
+            robot.translateRadDeg(1, -86, 1.15, true);//-95
+            robot.toWaypoint(robot.getPosition()[0] - 2, 28.5, 0, 1, .83);
 
             /*ArrayList<double[]> secondSpecimenExtract = new ArrayList<double []>();
             secondSpecimenExtract.add(new double[]{330, 120, 0});
@@ -110,7 +110,7 @@ public class AutoStartRight_5s extends LinearOpMode {
             robot.toWaypointBezier(secondSpecimenExtract, 1, 1.5, 2);*/
 
             gripper.closeBeak();
-            Thread.sleep(160);
+            Thread.sleep(150);
             gripper.liftTo(11.25);
             gripper.elbowRotateTo(112, 1);//32
             gripper.wristRotateTo_Pitch(85); //243.33
@@ -120,7 +120,7 @@ public class AutoStartRight_5s extends LinearOpMode {
             //Go to Hang 2nd specimen and hang
             ArrayList<double[]> secondHang = new ArrayList<double[]>();
             secondHang.add(new double[]{170, 60, 0});
-            secondHang.add(new double[]{180, 95, 0});
+            secondHang.add(new double[]{190, 95, 0});
             robot.toWaypointBezier(secondHang, 1, 2.5, 2.66);
 
             gripper.liftTo(18);
@@ -130,18 +130,18 @@ public class AutoStartRight_5s extends LinearOpMode {
             // Extract 3rd Specimen
             gripper.liftTo(0);
             gripper.elbowRotateTo(190, 1);
-            gripper.wristRotateTo_Pitch(160);
+            gripper.wristRotateTo_Pitch(166);
             gripper.wristRotateTo_Roll(0);
             //gripper.openBeakWide();
 
             ArrayList<double[]> thirdSpecimenExtractMov = new ArrayList<double[]>();
             thirdSpecimenExtractMov.add(new double[]{210, 20, 0});
             thirdSpecimenExtractMov.add(new double[]{290, 130, 0});
-            thirdSpecimenExtractMov.add(new double[]{277, 25, 0});
+            thirdSpecimenExtractMov.add(new double[]{277, 28.5, 0});
             robot.toWaypointBezier(thirdSpecimenExtractMov, 1,1.5, 1.8);
 
             gripper.closeBeak();
-            Thread.sleep(160);
+            Thread.sleep(150);
             gripper.liftTo(11.25);
             gripper.elbowRotateTo(112, 1);//32
             gripper.wristRotateTo_Pitch(85); //243.33
@@ -151,7 +151,7 @@ public class AutoStartRight_5s extends LinearOpMode {
             //Go to Hang 3rd specimen and hang
             ArrayList<double[]> thirdHang = new ArrayList<double[]>();
             thirdHang.add(new double[]{170, 50, 0});
-            thirdHang.add(new double[]{163, 95, 0});
+            thirdHang.add(new double[]{176, 100, 0});
             robot.toWaypointBezier(thirdHang, 1, 2, 2.10);
 
             gripper.liftTo(18);
@@ -162,18 +162,18 @@ public class AutoStartRight_5s extends LinearOpMode {
             // Extract 4th Specimen
             gripper.liftTo(0);
             gripper.elbowRotateTo(190, 1);
-            gripper.wristRotateTo_Pitch(160);
+            gripper.wristRotateTo_Pitch(166);
             gripper.wristRotateTo_Roll(0);
             //gripper.openBeakWide();
 
             ArrayList<double[]> fourthSpecimenExtractMov = new ArrayList<double[]>();
             fourthSpecimenExtractMov.add(new double[]{210, 20, 0});
             fourthSpecimenExtractMov.add(new double[]{290, 130, 0});
-            fourthSpecimenExtractMov.add(new double[]{277, 25, 0});
+            fourthSpecimenExtractMov.add(new double[]{277, 28.5, 0});
             robot.toWaypointBezier(fourthSpecimenExtractMov, 1,1.5, 1.8);
 
             gripper.closeBeak();
-            Thread.sleep(160);
+            Thread.sleep(150);
             gripper.liftTo(11.25);
             gripper.elbowRotateTo(112, 1);//32
             gripper.wristRotateTo_Pitch(85); //243.33
@@ -181,10 +181,10 @@ public class AutoStartRight_5s extends LinearOpMode {
             gripper.liftTo(0);
 
             //Go to Hang 4th specimen and hang
-            ArrayList<double[]> fourthdHang = new ArrayList<double[]>();
-            fourthdHang.add(new double[]{170, 50, 0});
-            fourthdHang.add(new double[]{170, 95, 0});
-            robot.toWaypointBezier(fourthdHang, 1, 2, 2.15);
+            ArrayList<double[]> fourthHang = new ArrayList<double[]>();
+            fourthHang.add(new double[]{170, 50, 0});
+            fourthHang.add(new double[]{181, 100, 0});
+            robot.toWaypointBezier(fourthHang, 1, 2, 2.15);
 
             gripper.liftTo(18);
             while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};
@@ -194,18 +194,18 @@ public class AutoStartRight_5s extends LinearOpMode {
             // Extract 5th Specimen
             gripper.liftTo(0);
             gripper.elbowRotateTo(190, 1);
-            gripper.wristRotateTo_Pitch(160);
+            gripper.wristRotateTo_Pitch(166);
             gripper.wristRotateTo_Roll(0);
             //gripper.openBeakWide();
 
             ArrayList<double[]> fifthSpecimenExtractMov = new ArrayList<double[]>();
             fifthSpecimenExtractMov.add(new double[]{210, 20, 0});
             fifthSpecimenExtractMov.add(new double[]{290, 130, 0});
-            fifthSpecimenExtractMov.add(new double[]{277, 25, 0});
+            fifthSpecimenExtractMov.add(new double[]{277, 28.5, 0});
             robot.toWaypointBezier(fifthSpecimenExtractMov, 1,1.5, 1.8);
 
             gripper.closeBeak();
-            Thread.sleep(160);
+            Thread.sleep(150);
             gripper.liftTo(11.25);
             gripper.elbowRotateTo(112, 1);//32
             gripper.wristRotateTo_Pitch(85); //243.33
@@ -213,10 +213,10 @@ public class AutoStartRight_5s extends LinearOpMode {
             gripper.liftTo(0);
 
             //Go to Hang 5th specimen and hang
-            ArrayList<double[]> fifthhdHang = new ArrayList<double[]>();
-            fifthhdHang.add(new double[]{170, 50, 0});
-            fifthhdHang.add(new double[]{178, 95, 0});
-            robot.toWaypointBezier(fifthhdHang, 1, 2, 2.10);
+            ArrayList<double[]> fifthHang = new ArrayList<double[]>();
+            fifthHang.add(new double[]{170, 50, 0});
+            fifthHang.add(new double[]{188, 100, 0});
+            robot.toWaypointBezier(fifthHang, 1, 2, 2.10);
 
             gripper.liftTo(18);
             while(!gripper.eqWT(gripper.getLiftHeight(), 16, 0.5)){};

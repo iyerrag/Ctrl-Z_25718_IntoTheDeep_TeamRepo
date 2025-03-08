@@ -55,7 +55,7 @@ public class AutoStartLeft extends LinearOpMode {
             gripper.wristRotateTo_Roll(0);//-180
             ArrayList<double[]> firstHighBucketDropMov = new ArrayList<double[]>();
             firstHighBucketDropMov.add(new double[]{120, 60, 0});
-            firstHighBucketDropMov.add(new double[]{34, 25, -45});
+            firstHighBucketDropMov.add(new double[]{35, 28, -40});
             robot.toWaypointBezier(firstHighBucketDropMov, 1, 1.75, 2.75);
             while (!gripper.eqWT(gripper.getElbowAngle(), 160, 1)) {}
             while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 170, 1)) {}
@@ -73,7 +73,7 @@ public class AutoStartLeft extends LinearOpMode {
 
             ArrayList<double[]> sample2Pickup = new ArrayList<double[]>();
             sample2Pickup.add(new double[]{50, 50, 0});
-            sample2Pickup.add(new double[]{60, 53, 0});
+            sample2Pickup.add(new double[]{60, 55, 0});
             robot.toWaypointBezier(sample2Pickup, 1, 1.5, 2.5);
             gripper.elbowRotateTo(-15, 1);
             gripper.resetLifters();
@@ -89,7 +89,7 @@ public class AutoStartLeft extends LinearOpMode {
             gripper.liftTo(72);
             ArrayList<double[]> sample2DropOff = new ArrayList<double[]>();
             sample2DropOff.add(new double[]{50, 50, -30});
-            sample2DropOff.add(new double[]{32, 23, -45});
+            sample2DropOff.add(new double[]{35, 28, -40});
             robot.toWaypointBezier(sample2DropOff, 1, 2.25, 2.5);
             gripper.elbowRotateTo(160, 1);
             gripper.wristRotateTo_Pitch(170);
@@ -110,7 +110,7 @@ public class AutoStartLeft extends LinearOpMode {
 
             ArrayList<double[]> sample3Pickup = new ArrayList<double[]>();
             sample3Pickup.add(new double[]{36, 50, 0});
-            sample3Pickup.add(new double[]{28, 56, 0});
+            sample3Pickup.add(new double[]{30, 56, 0});
             robot.toWaypointBezier(sample3Pickup, 1, 2, 2.5);
             gripper.elbowRotateTo(-15, 1);
             gripper.resetLifters();
@@ -125,7 +125,7 @@ public class AutoStartLeft extends LinearOpMode {
             gripper.liftTo(72);
             ArrayList<double[]> sample3DropOff = new ArrayList<double[]>();
             sample3DropOff.add(new double[]{34, 50, -30});
-            sample3DropOff.add(new double[]{32, 23, -45});
+            sample3DropOff.add(new double[]{35, 28, -40});
             robot.toWaypointBezier(sample3DropOff, 1, 2.25, 2.5);
             gripper.elbowRotateTo(160, 1);
             gripper.wristRotateTo_Pitch(170);
@@ -146,8 +146,8 @@ public class AutoStartLeft extends LinearOpMode {
 
             gripper.wristRotateTo_Roll(-45);
             ArrayList<double[]> sample4Pickup = new ArrayList<double[]>();
-            sample4Pickup.add(new double[]{60, 66, 35});
-            sample4Pickup.add(new double[]{45, 55, 35});//{45, 56.5, 45}
+            sample4Pickup.add(new double[]{65, 70, 45});
+            sample4Pickup.add(new double[]{55, 66, 50});//{45, 56.5, 45}
             gripper.elbowRotateTo(0,1);
 
             robot.toWaypointBezier(sample4Pickup, 1, 2.0, 2.25);
@@ -155,7 +155,7 @@ public class AutoStartLeft extends LinearOpMode {
             while (!gripper.eqWT(gripper.getWristAngle_Pitch(), 115, 1)) {}
             gripper.resetLifters();
             Thread.sleep(150);
-            robot.toWaypoint(41, 63, 45, 1, 0.75);
+            robot.toWaypoint(42, 66, 53, 1, 0.75);
             gripper.elbowRotateTo(-17, 0.6);//-5
             while (!gripper.eqWT(gripper.getElbowAngle(), -17, 1)) {}
             gripper.declareHighBucketStatusFalse();
@@ -167,10 +167,10 @@ public class AutoStartLeft extends LinearOpMode {
             // Fourth sample basket drop
             gripper.liftTo(72);
             ArrayList<double[]> sample4DropOff = new ArrayList<double[]>();
-            sample3DropOff.add(new double[]{60, 60, -15});
-            sample3DropOff.add(new double[]{120, 60, -30});//Added to move robot away from wall
-            sample3DropOff.add(new double[]{34, 23, -50}); //{37, 28, -45}
-            robot.toWaypointBezier(sample3DropOff, 1, 2.5, 2.75);
+            sample4DropOff.add(new double[]{60, 60, -15});
+            sample4DropOff.add(new double[]{120, 60, -30});//Added to move robot away from wall
+            sample4DropOff.add(new double[]{35, 28, -45}); //{37, 28, -45}
+            robot.toWaypointBezier(sample4DropOff, 1, 2.5, 2.75);
             gripper.elbowRotateTo(160, 1);
             gripper.wristRotateTo_Pitch(170);
             gripper.wristRotateTo_Roll(0);//-180
