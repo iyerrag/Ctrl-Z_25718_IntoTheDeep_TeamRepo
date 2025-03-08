@@ -176,11 +176,18 @@ public class TeleOp_Manual extends LinearOpMode {
                 gripper.sweeperClose();
             }
             else if (gamepad1.guide){
+                if(gripper.getHighBasketState()){
+                    gripper.moveToTransportPosition();
+                }
                 // Reset Lifters, Elbow and Sweeper
-                gripper.sweeperUp(); // Safety
+                gripper.wristRotateTo_Pitch(90);
+                gripper.sweeperClose(); // Safety
                 gripper.resetLifters(); // Safety
                 gripper.resetElbow(); // Safety
-                gripper.wristRotateTo_Pitch(90);
+                //gripper.setHighBasketState(false);
+                //gripper.setHangInsertState(false);
+
+                while(!gripper.eqWT(gripper.getWristAngle_Pitch(), 90, 5)){}
             }
             else if (Math.abs(gamepad2.left_stick_y) == 1) {
                 stopDriveBase();
@@ -239,13 +246,13 @@ public class TeleOp_Manual extends LinearOpMode {
             } else if (gamepad2.y) {
                 stopDriveBase();
                 gripper.submersiblePickup();
-            } else if (gamepad2.left_bumper) {
+            } else if (gamepad2.right_bumper) {
                 stopDriveBase();
                 gripper.wristRotateTo_Roll(45);
             } else if (gamepad2.left_trigger == 1) {
                 stopDriveBase();
                 gripper.wristRotateTo_Roll(0);
-            } else if (gamepad2.right_bumper) {
+            } else if (gamepad2.left_bumper) {
                 stopDriveBase();
                 gripper.wristRotateTo_Roll(-45);
             } else if (gamepad2.right_trigger == 1) {
@@ -257,7 +264,7 @@ public class TeleOp_Manual extends LinearOpMode {
                 Thread.sleep(500);
                 gripper.elbowRotateTo(60, 1);
                 gripper.wristRotateTo_Pitch(280);
-                while (gripper.getLiftHeight() <= 50 & gripper.getElbowAngle() <= 200) {
+                while (!gripper.eqWT(gripper.getLiftHeight(), 55, 5) || !gripper.eqWT(gripper.getElbowAngle(), 60, 5)) {
                     if (gamepad2.guide) { // Safety Interrupt: Exit the while loop immediately
                         gripper.moveToTransportPosition();
                         break;
