@@ -479,6 +479,7 @@ public class actuators{
     }
 
     public boolean getHangInsertState(){return hangInsertState;}
+    public boolean getHighBasketState(){return highBasketState;}
 
     public void hangRelease() throws InterruptedException {
         if(hangInsertState){
@@ -578,5 +579,8 @@ public class actuators{
     public void sweeperOpenSmall(){
         sweeperServo.setPosition(0.2);
     }
+
+    public void setHighBasketState(boolean State){highBasketState = State;}
+    public void setHangInsertState(boolean State){hangInsertState = State;}
 }
 

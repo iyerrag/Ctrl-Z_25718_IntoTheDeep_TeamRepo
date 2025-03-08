@@ -110,7 +110,7 @@ public class AutoStartLeft extends LinearOpMode {
 
             ArrayList<double[]> sample3Pickup = new ArrayList<double[]>();
             sample3Pickup.add(new double[]{36, 50, 0});
-            sample3Pickup.add(new double[]{27, 56, 0});
+            sample3Pickup.add(new double[]{28, 56, 0});
             robot.toWaypointBezier(sample3Pickup, 1, 2, 2.5);
             gripper.elbowRotateTo(-15, 1);
             gripper.resetLifters();
