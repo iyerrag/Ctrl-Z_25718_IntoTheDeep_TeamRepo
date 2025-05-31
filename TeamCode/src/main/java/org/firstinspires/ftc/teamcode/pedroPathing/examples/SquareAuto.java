@@ -9,8 +9,8 @@ import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -28,6 +28,8 @@ import pedroPathing.constants.LConstants;
 @Autonomous
 public class SquareAuto extends OpMode {
 
+    private Servo taskServo;
+
     private Follower follower;
 
     private Timer pathTimer;
@@ -38,12 +40,12 @@ public class SquareAuto extends OpMode {
     //Key Robot Positions:
     Pose startPose = new Pose(0, 0, 0);
     Pose firstCorner = new Pose(24, 0, Math.toRadians(45));
-    Pose secondCorner = new Pose(24, 48, -Math.toRadians(45));
-    Pose thirdCorner = new Pose(0, 48, Math.toRadians(45));
-
+    Pose secondCorner = new Pose(24, 24, -Math.toRadians(45));
+    Pose thirdCorner = new Pose(0, 24, Math.toRadians(45));
     Pose finalTurn = new Pose(0, 0 , Math.toRadians(90));
 
     private Path firstSide, secondSide, thirdSide, fourthSide, turn;
+    private PathChain firstChain, secondChain, thirdChain, fourthChain, turnChain;
 
 
 
@@ -61,8 +63,27 @@ public class SquareAuto extends OpMode {
         fourthSide = new Path(new BezierLine(new Point(thirdCorner), new Point(startPose)));
         fourthSide.setLinearHeadingInterpolation(Math.toRadians(45), 0);
 
-        turn = new Path(new BezierLine(new Point(startPose), new Point(finalTurn)));
-        turn.setLinearHeadingInterpolation(0, Math.toRadians(90));
+        turn = new Path(new BezierCurve(new Point(startPose), new Point(finalTurn)));
+
+        firstChain = follower.pathBuilder().addPath(firstSide).build();
+        secondChain = follower.pathBuilder().addPath(secondSide).build();
+        thirdChain = follower.pathBuilder().addPath(thirdSide).build();
+        fourthChain = follower.pathBuilder().addPath(fourthSide).build();
+        turnChain = follower.pathBuilder().addPath(turn).build();
+
+    }
+
+    public boolean eqWT(double val1, double val2, double e){
+        return Math.abs(val1 - val2) <= e;
+    }
+
+    public void oscillateServo(){
+        for(int i = 0; i < 10; i++){
+            taskServo.setPosition(1);
+            while(!eqWT(taskServo.getPosition(), 1, .05)){}
+            taskServo.setPosition(0);
+            while(!eqWT(taskServo.getPosition(), 0, .05)){}
+        }
     }
 
     /** This switch is called continuously and runs the pathing, at certain points, it triggers the action state.
@@ -73,7 +94,9 @@ public class SquareAuto extends OpMode {
             case 0:
 
                 if(!follower.isBusy()){
-                    follower.followPath(firstSide, true);
+                    follower.followPath(firstChain, true);
+                    //oscillateServo();
+                    taskServo.setPosition(0);
                     setPathState(1);
                 }
 
@@ -82,7 +105,9 @@ public class SquareAuto extends OpMode {
             case 1:
 
                 if(!follower.isBusy()){
-                    follower.followPath(secondSide, true);
+                    follower.followPath(secondChain, true);
+                    //oscillateServo();
+                    taskServo.setPosition(1);
                     setPathState(2);
                 }
 
@@ -91,7 +116,9 @@ public class SquareAuto extends OpMode {
             case 2:
 
                 if(!follower.isBusy()){
-                    follower.followPath(thirdSide, true);
+                    follower.followPath(thirdChain, true);
+                    //oscillateServo();
+                    taskServo.setPosition(0);
                     setPathState(3);
                 }
 
@@ -100,7 +127,9 @@ public class SquareAuto extends OpMode {
             case 3:
 
                 if(!follower.isBusy()){
-                    follower.followPath(fourthSide, true);
+                    follower.followPath(fourthChain, true);
+                    //oscillateServo();
+                    taskServo.setPosition(1);
                     setPathState(4);
                 }
 
@@ -109,7 +138,9 @@ public class SquareAuto extends OpMode {
             case 4:
 
                 if(!follower.isBusy()){
-                    follower.followPath(turn, true);
+                    follower.followPath(turnChain, true);
+                    //oscillateServo();
+                    taskServo.setPosition(0);
                     setPathState(5);
                 }
                 break;
@@ -145,6 +176,8 @@ public class SquareAuto extends OpMode {
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
+
+        taskServo = hardwareMap.get(Servo.class, "s1");
 
         follower = new Follower(hardwareMap, FConstants.class, LConstants.class);
         follower.setStartingPose(new Pose(0,0,0));

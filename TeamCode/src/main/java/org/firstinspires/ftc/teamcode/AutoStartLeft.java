@@ -23,7 +23,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
 import java.util.ArrayList;
 
-@Autonomous
+//@Autonomous
 public class AutoStartLeft extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         DcMotor fL = hardwareMap.get(DcMotor.class, "FrontLeft");

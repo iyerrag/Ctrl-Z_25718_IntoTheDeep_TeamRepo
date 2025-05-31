@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import java.util.ArrayList;
 
-@Autonomous
+//@Autonomous
 public class AutoStartRight_5s_Modified extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
 
