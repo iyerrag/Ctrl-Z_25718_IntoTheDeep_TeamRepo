@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.pedroPathing.examples;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.localization.Pose;
 import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
@@ -26,7 +27,7 @@ import pedroPathing.constants.LConstants;
  */
 
 @Autonomous
-public class SquareAuto extends OpMode {
+public class PriyaisaSquareAuto extends OpMode {
 
     private Servo taskServo;
 
@@ -39,13 +40,13 @@ public class SquareAuto extends OpMode {
 
     //Key Robot Positions:
     Pose startPose = new Pose(0, 0, 0);
-    Pose firstCorner = new Pose(24, 0, Math.toRadians(45));
-    Pose secondCorner = new Pose(24, 24, -Math.toRadians(45));
-    Pose thirdCorner = new Pose(0, 24, Math.toRadians(45));
-    Pose finalTurn = new Pose(0, 0 , Math.toRadians(90));
+    Pose firstCorner = new Pose(24, 0, Math.toRadians(0));
+    Pose secondCorner = new Pose(24, 24, -Math.toRadians(0));
+    Pose thirdCorner = new Pose(0, 24, Math.toRadians(0));
+    Pose finalTurn = new Pose(0, 24 , Math.toRadians(90));
 
-    private Path firstSide, secondSide, thirdSide, fourthSide, turn;
-    private PathChain firstChain, secondChain, thirdChain, fourthChain, turnChain;
+    private Path firstSide, secondSide, thirdSide, fourthSide, turn, fifthSide, sixthSide, megaSide, reverseFirstSide, strafeSide, seventhSide, reverseSeventhSide;
+    private PathChain firstChain, secondChain, thirdChain, fourthChain, turnChain, betterFirstChain, betterSecondChain,aChain,bChain, megaChain, fatChain;
 
 
 
@@ -54,25 +55,65 @@ public class SquareAuto extends OpMode {
         /*firstSide = new Path(new BezierLine(new Point(0, 0), new Point(24, 0)));
         firstSide.setLinearHeadingInterpolation(0, Math.toRadians(45));*/
 
-        firstSide = new Path(new BezierLine(new Point(startPose), new Point(firstCorner)));
+       // firstSide = new Path(new BezierLine(new Point(startPose), new Point(firstCorner)));
+        firstSide = new Path(new BezierCurve(new Point(startPose), new Point(firstCorner)));
         firstSide.setLinearHeadingInterpolation(startPose.getHeading(), firstCorner.getHeading());
 
-        secondSide = new Path(new BezierLine(new Point(firstCorner), new Point(secondCorner)));
+        secondSide = new Path(new BezierCurve(new Point(firstCorner), new Point(secondCorner)));
         secondSide.setLinearHeadingInterpolation(Math.toRadians(45), -Math.toRadians(45));
 
-        thirdSide = new Path(new BezierLine(new Point(secondCorner), new Point(thirdCorner)));
+        thirdSide = new Path(new BezierCurve(new Point(secondCorner), new Point(thirdCorner)));
         thirdSide.setLinearHeadingInterpolation(-Math.toRadians(45), Math.toRadians(45));
 
         fourthSide = new Path(new BezierLine(new Point(thirdCorner), new Point(startPose)));
         fourthSide.setLinearHeadingInterpolation(Math.toRadians(45), 0);
 
-        turn = new Path(new BezierCurve(new Point(startPose), new Point(finalTurn)));
+
+        fifthSide = new Path(new BezierCurve(new Point(startPose),new Point(firstCorner), new Point(secondCorner)));
+    //    fifthSide.setLinearHeadingInterpolation(startPose.getHeading(),secondCorner.getHeading());
+        fifthSide.setTangentHeadingInterpolation();
+
+        sixthSide = new Path(new BezierCurve(new Point(secondCorner), new Point(thirdCorner), new Point(startPose)));
+       // sixthSide.setLinearHeadingInterpolation(secondCorner.getHeading(),startPose.getHeading());
+        sixthSide.setTangentHeadingInterpolation();
+
+        megaSide = new Path(new BezierCurve(new Point(startPose),new Point(firstCorner), new Point(secondCorner), new Point(thirdCorner), new Point(startPose)));
+        megaSide.setTangentHeadingInterpolation();
+
+        reverseFirstSide = new Path(new BezierLine(new Point(firstCorner), new Point(startPose)));
+        reverseFirstSide.setLinearHeadingInterpolation(0,0);
+
+        strafeSide = new Path(new BezierLine(new Point(startPose), new Point(thirdCorner)));
+        strafeSide.setLinearHeadingInterpolation(0,0);
+
+        seventhSide = new Path(new BezierLine(new Point(thirdCorner), new Point(secondCorner)));
+        seventhSide.setLinearHeadingInterpolation(0,0);
+
+        reverseSeventhSide = new Path(new BezierLine(new Point(secondCorner), new Point(thirdCorner)));
+        reverseSeventhSide.setLinearHeadingInterpolation(0,0);
+
+        turn = new Path(new BezierCurve(new Point(thirdCorner), new Point(finalTurn)));
 
         firstChain = follower.pathBuilder().addPath(firstSide).build();
         secondChain = follower.pathBuilder().addPath(secondSide).build();
         thirdChain = follower.pathBuilder().addPath(thirdSide).build();
         fourthChain = follower.pathBuilder().addPath(fourthSide).build();
         turnChain = follower.pathBuilder().addPath(turn).build();
+
+
+        betterFirstChain = follower.pathBuilder().addPath(firstSide).addPath(secondSide).build();
+        betterSecondChain = follower.pathBuilder().addPath(thirdSide).addPath(fourthSide).build();
+        aChain = follower.pathBuilder().addPath(fifthSide).build();
+        bChain = follower.pathBuilder().addPath(sixthSide).build();
+        megaChain = follower.pathBuilder().addPath(megaSide).build();
+        fatChain = follower.pathBuilder()
+                .addPath(firstSide)
+                .addPath(reverseFirstSide)
+                .addPath(strafeSide)
+                .addPath(seventhSide)
+                .addPath(reverseSeventhSide)
+                .build();
+
 
     }
 
@@ -97,7 +138,7 @@ public class SquareAuto extends OpMode {
             case 0:
 
                 if(!follower.isBusy()){
-                    follower.followPath(firstChain, true);
+                    follower.followPath(fatChain, true);
                     //oscillateServo();
                     taskServo.setPosition(0);
                     setPathState(1);
@@ -108,8 +149,8 @@ public class SquareAuto extends OpMode {
             case 1:
 
                 if(!follower.isBusy()){
-                    follower.followPath(secondChain, true);
-                    follower.followPath(secondSide);
+                    follower.followPath(turnChain, true);
+                    //goodbye
                     //oscillateServo();
                     taskServo.setPosition(1);
                     setPathState(2);
@@ -117,7 +158,7 @@ public class SquareAuto extends OpMode {
 
                 break;
 
-            case 2:
+            /*case 2:
 
                 if(!follower.isBusy()){
                     follower.followPath(thirdChain, true);
@@ -147,9 +188,9 @@ public class SquareAuto extends OpMode {
                     taskServo.setPosition(0);
                     setPathState(5);
                 }
-                break;
+                break;*/
 
-            case 5:
+            case 2:
 
                 if(!follower.isBusy()) {
 
