@@ -51,8 +51,14 @@ public class ExampleRobotCentricTeleop extends OpMode {
         - Turn Left/Right Movement: -gamepad1.right_stick_x
         - Robot-Centric Mode: true
         */
+        
+        if(gamepad1.left_trigger == 1){
+            follower.setTeleOpMovementVectors(-0.25 * gamepad1.right_stick_y, -.25 * gamepad1.right_stick_x, -0.2 * gamepad1.left_stick_x, true);
+        }
+        else{
+            follower.setTeleOpMovementVectors(-0.60 * gamepad1.right_stick_y, -0.60* gamepad1.right_stick_x, -0.5 * gamepad1.left_stick_x, true);
+        }
 
-        follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         follower.update();
 
         /* Telemetry Outputs of our Follower */

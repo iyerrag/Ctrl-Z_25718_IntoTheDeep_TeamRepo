@@ -32,7 +32,7 @@ public class FConstants {
         FollowerConstants.useSecondaryTranslationalPID = true;
         FollowerConstants.secondaryTranslationalPIDFCoefficients.setCoefficients(0.0875,0,0.02,0); // Not being used, @see useSecondaryTranslationalPID
 
-        FollowerConstants.headingPIDFCoefficients.setCoefficients(1.5,0,0.075,0);
+        FollowerConstants.headingPIDFCoefficients.setCoefficients(1.05,0,0.075,0);
         FollowerConstants.useSecondaryHeadingPID = true;
         FollowerConstants.secondaryHeadingPIDFCoefficients.setCoefficients(2,0,0.06,0); // Not being used, @see useSecondaryHeadingPID
 
@@ -40,7 +40,7 @@ public class FConstants {
         FollowerConstants.useSecondaryDrivePID = true;
         FollowerConstants.secondaryDrivePIDFCoefficients.setCoefficients(0.05,0,0.01,0.6,0); // Not being used, @see useSecondaryDrivePID
 
-        FollowerConstants.zeroPowerAccelerationMultiplier = 36;
+        FollowerConstants.zeroPowerAccelerationMultiplier = 10.5; //was 36
         FollowerConstants.centripetalScaling = 0.0006;
 
         FollowerConstants.pathEndTimeoutConstraint = 50;
@@ -48,5 +48,11 @@ public class FConstants {
         FollowerConstants.pathEndVelocityConstraint = 0.01; // was 0.1
         FollowerConstants.pathEndTranslationalConstraint = 0.1;
         FollowerConstants.pathEndHeadingConstraint = 0.007;
+
+        //Modified by Ragav Iyer: Function --> Braking/Voltage Compensation
+        FollowerConstants.useBrakeModeInTeleOp = true;
+        FollowerConstants.useVoltageCompensationInAuto = true;
+        FollowerConstants.useVoltageCompensationInTeleOp = true;
+
     }
 }

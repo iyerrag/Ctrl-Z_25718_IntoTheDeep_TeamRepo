@@ -45,8 +45,8 @@ public class PriyaisaSquareAuto extends OpMode {
     Pose thirdCorner = new Pose(0, 24, Math.toRadians(0));
     Pose finalTurn = new Pose(0, 24 , Math.toRadians(90));
 
-    private Path firstSide, secondSide, thirdSide, fourthSide, turn, fifthSide, sixthSide, megaSide, reverseFirstSide, strafeSide, seventhSide, reverseSeventhSide;
-    private PathChain firstChain, secondChain, thirdChain, fourthChain, turnChain, betterFirstChain, betterSecondChain,aChain,bChain, megaChain, fatChain;
+    private Path firstSide, secondSide, thirdSide, fourthSide, turn, fifthSide, sixthSide, megaSide, reverseFirstSide, strafeSide, seventhSide, reverseSeventhSide, curve;
+    private PathChain firstChain, secondChain, thirdChain, fourthChain, turnChain, betterFirstChain, betterSecondChain,aChain,bChain, megaChain, fat1Chain, fat2Chain,  fat3Chain, curveChain;
 
 
 
@@ -92,6 +92,9 @@ public class PriyaisaSquareAuto extends OpMode {
         reverseSeventhSide = new Path(new BezierLine(new Point(secondCorner), new Point(thirdCorner)));
         reverseSeventhSide.setLinearHeadingInterpolation(0,0);
 
+        curve = new Path(new BezierCurve(new Point(firstCorner), new Point(startPose), new Point(thirdCorner)));
+        curve.setLinearHeadingInterpolation(0,0);
+
         turn = new Path(new BezierCurve(new Point(thirdCorner), new Point(finalTurn)));
 
         firstChain = follower.pathBuilder().addPath(firstSide).build();
@@ -106,15 +109,22 @@ public class PriyaisaSquareAuto extends OpMode {
         aChain = follower.pathBuilder().addPath(fifthSide).build();
         bChain = follower.pathBuilder().addPath(sixthSide).build();
         megaChain = follower.pathBuilder().addPath(megaSide).build();
-        fatChain = follower.pathBuilder()
+
+        curveChain =follower.pathBuilder().addPath(curve).build();
+
+        fat1Chain = follower.pathBuilder()
                 .addPath(firstSide)
                 .addPath(reverseFirstSide)
+                .build();
+
+        fat2Chain = follower.pathBuilder()
                 .addPath(strafeSide)
+                .build();
+
+        fat3Chain = follower.pathBuilder()
                 .addPath(seventhSide)
                 .addPath(reverseSeventhSide)
                 .build();
-
-
     }
 
     public boolean eqWT(double val1, double val2, double e){
@@ -138,9 +148,9 @@ public class PriyaisaSquareAuto extends OpMode {
             case 0:
 
                 if(!follower.isBusy()){
-                    follower.followPath(fatChain, true);
-                    //oscillateServo();
-                    taskServo.setPosition(0);
+                    //follower.followPath(fat1Chain, true);
+                    follower.followPath(firstSide);
+                    taskServo.setPosition(1);
                     setPathState(1);
                 }
 
@@ -149,21 +159,20 @@ public class PriyaisaSquareAuto extends OpMode {
             case 1:
 
                 if(!follower.isBusy()){
-                    follower.followPath(turnChain, true);
-                    //goodbye
-                    //oscillateServo();
-                    taskServo.setPosition(1);
+                    //follower.followPath(fat2Chain, true);
+                    follower.followPath(curveChain);
+                    taskServo.setPosition(0);
                     setPathState(2);
                 }
 
                 break;
 
-            /*case 2:
+            case 2:
 
                 if(!follower.isBusy()){
-                    follower.followPath(thirdChain, true);
-                    //oscillateServo();
-                    taskServo.setPosition(0);
+                    //follower.followPath(fat3Chain, true);
+                    //follower.followPath(strafeSide);
+                    taskServo.setPosition(1);
                     setPathState(3);
                 }
 
@@ -172,15 +181,40 @@ public class PriyaisaSquareAuto extends OpMode {
             case 3:
 
                 if(!follower.isBusy()){
-                    follower.followPath(fourthChain, true);
-                    //oscillateServo();
-                    taskServo.setPosition(1);
+                    //follower.followPath(turnChain, true);
+                    //follower.followPath(fat2Chain, true);
+                    follower.followPath(seventhSide);
+                    taskServo.setPosition(0);
                     setPathState(4);
                 }
 
                 break;
 
             case 4:
+
+                if(!follower.isBusy()){
+                    //follower.followPath(fat3Chain, true);
+                    //oscillateServo();
+                    follower.followPath(reverseSeventhSide);
+                    taskServo.setPosition(0);
+                    setPathState(5);
+                }
+
+                break;
+
+            case 5:
+
+                if(!follower.isBusy()){
+
+                    //oscillateServo();
+                    follower.followPath(turnChain);
+                    taskServo.setPosition(1);
+                    setPathState(6);
+                }
+
+                break;
+
+            /*case 4:
 
                 if(!follower.isBusy()){
                     follower.followPath(turnChain, true);
@@ -190,7 +224,7 @@ public class PriyaisaSquareAuto extends OpMode {
                 }
                 break;*/
 
-            case 2:
+            case 6:
 
                 if(!follower.isBusy()) {
 
